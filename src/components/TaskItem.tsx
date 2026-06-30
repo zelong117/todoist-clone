@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Pencil, Trash2, Flag, Calendar } from 'lucide-react';
+import { Pencil, Trash2, Flag, Calendar, Timer } from 'lucide-react';
 import type { Task } from '../types';
 import { useStore } from '../store';
 
@@ -186,6 +186,16 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         {/* Hover actions */}
         {hovered && !task.isCompleted && (
           <div className="flex items-center gap-0.5 animate-in fade-in duration-100">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                useStore.getState().startTimer(task.id);
+              }}
+              className="p-1 rounded hover:bg-red-100 text-gray-400 hover:text-[#DC4C3E] transition-colors"
+              title="开始番茄钟"
+            >
+              <Timer size={14} />
+            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();

@@ -5,7 +5,9 @@ import Sidebar from './components/Sidebar';
 import TaskList from './components/TaskList';
 import TaskDetail from './components/TaskDetail';
 import QuickAdd from './components/QuickAdd';
-
+import PomodoroBar from './components/PomodoroBar';
+import PomodoroSettings from './components/PomodoroSettings';
+import PomodoroTimer from './components/PomodoroTimer';
 import BoardView from './components/BoardView';
 import CalendarView from './components/CalendarView';
 import StatsView from './components/StatsView';
@@ -32,6 +34,7 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState<string>('inbox');
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showPomodoroSettings, setShowPomodoroSettings] = useState(false);
   const [activeFilter, setActiveFilter] = useState<{
     fn: ((task: Task) => boolean) | null;
     label: string;
@@ -165,7 +168,13 @@ export default function App() {
   return (
     <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
       {/* Sidebar */}
-      <Sidebar currentView={currentView} onViewChange={handleViewChange} />
+      <div className="flex flex-col h-screen">
+        <Sidebar currentView={currentView} onViewChange={handleViewChange} />
+        {/* Pomodoro Timer at bottom of sidebar */}
+        <div className="absolute bottom-0 left-0 z-20">
+          <PomodoroTimer />
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className={`flex-1 flex overflow-hidden ${darkClasses} transition-colors duration-200`}>
@@ -228,6 +237,9 @@ export default function App() {
             )}
           </div>
 
+          {/* Pomodoro Bar */}
+          <PomodoroBar />
+
           {/* Content Area */}
           <div className="px-6 py-4">
             {currentView === 'stats' ? (
@@ -275,6 +287,13 @@ export default function App() {
             defaultProjectId={currentProjectId || undefined}
             onClose={() => setShowQuickAdd(false)}
           />
+        </div>
+      )}
+
+      {/* Pomodoro Settings Modal */}
+      {showPomodoroSettings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <PomodoroSettings onClose={() => setShowPomodoroSettings(false)} />
         </div>
       )}
     </div>
