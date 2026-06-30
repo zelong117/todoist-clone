@@ -12,7 +12,7 @@ import BoardView from './components/BoardView';
 import CalendarView from './components/CalendarView';
 import StatsView from './components/StatsView';
 import FilterPanel from './components/FilterPanel';
-import { Inbox, CalendarDays, CalendarClock, LayoutDashboard } from 'lucide-react';
+import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid } from 'lucide-react';
 
 export default function App() {
   const {
@@ -204,26 +204,33 @@ export default function App() {
                 </span>
               </div>
 
-              {/* View Mode Toggle (only for project view) */}
+              {/* View Mode Toggle */}
               {currentView.startsWith('project-') && currentProject && (
-                <div className={`flex items-center gap-1 rounded-lg p-1 ${
-                  darkMode ? 'bg-gray-800' : 'bg-gray-100'
-                }`}>
-                  {(['list', 'board', 'calendar'] as const).map((mode) => (
+                <div className="relative flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 shadow-inner">
+                  {([ 'list', 'board', 'calendar'] as const).map((mode) => (
                     <button
                       key={mode}
                       onClick={() => useStore.getState().setViewMode(mode)}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                      className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                         viewMode === mode
-                          ? 'bg-[#DC4C3E] text-white shadow-sm'
-                          : darkMode
-                            ? 'text-gray-400 hover:text-white'
-                            : 'text-gray-600 hover:text-gray-900'
+                          ? 'text-white'
+                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                       }`}
                     >
-                      {mode === 'list' ? '列表' : mode === 'board' ? '看板' : '日历'}
+                      {mode === 'list' && <List size={16} />}
+                      {mode === 'board' && <LayoutGrid size={16} />}
+                      {mode === 'calendar' && <CalendarDays size={16} />}
+                      <span>{mode === 'list' ? '列表' : mode === 'board' ? '看板' : '日历'}</span>
                     </button>
                   ))}
+                  {/* Animated sliding background */}
+                  <div
+                    className="absolute top-1 bottom-1 bg-gradient-to-r from-[#DC4C3E] to-[#c4403a] rounded-lg shadow-md transition-all duration-300 ease-out"
+                    style={{
+                      width: 'calc(100% / 3 - 8px)',
+                      transform: `translateX(${viewMode === 'list' ? '0%' : viewMode === 'board' ? '100%' : '200%'})`,
+                    }}
+                  />
                 </div>
               )}
             </div>
