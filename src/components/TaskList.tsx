@@ -180,44 +180,32 @@ export default function TaskList({
           />
         ))}
 
-        {sectionsToShow.length === 1 && sectionsToShow[0] === null && (
-          <>
-            <SortableContext
-              items={incompleteTasks.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-0.5">
-                {incompleteTasks.map((task) => (
-                  <SortableTaskItem key={task.id} task={task} />
-                ))}
-              </div>
-            </SortableContext>
-
-            <button
-              onClick={() => {
-                const { addTask } = useStore.getState();
-                addTask({
-                  title: '新任务',
-                  description: '',
-                  projectId: projectId || null,
-                  sectionId: null,
-                  parentId: null,
-                  priority: 4,
-                  labels: [],
-                  dueDate: null,
-                  isRecurring: false,
-                  recurrenceRule: null,
-                  isCompleted: false,
-                  completedAt: null,
-                  order: incompleteTasks.length,
-                });
-              }}
-              className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors w-full"
-            >
-              <Plus size={16} />
-              <span>添加任务</span>
-            </button>
-          </>
+        {/* Show flat list + add button only when there are actual sections (not the null sentinel) */}
+        {showSections && sections.length > 0 && (
+          <button
+            onClick={() => {
+              const { addTask } = useStore.getState();
+              addTask({
+                title: '新任务',
+                description: '',
+                projectId: projectId || null,
+                sectionId: null,
+                parentId: null,
+                priority: 4,
+                labels: [],
+                dueDate: null,
+                isRecurring: false,
+                recurrenceRule: null,
+                isCompleted: false,
+                completedAt: null,
+                order: incompleteTasks.length,
+              });
+            }}
+            className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors w-full"
+          >
+            <Plus size={16} />
+            <span>添加任务</span>
+          </button>
         )}
 
         {completedTasks.length > 0 && (
