@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, MoreHorizontal } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
 
@@ -26,6 +26,13 @@ const PRIORITY_COLORS: Record<number, string> = {
   2: '#F59E0B',
   3: '#3B82F6',
   4: '#6B7280',
+};
+
+const PRIORITY_LABELS: Record<number, string> = {
+  1: 'P1',
+  2: 'P2',
+  3: 'P3',
+  4: 'P4',
 };
 
 interface BoardViewProps {
@@ -55,6 +62,26 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
     return task.dueDate < new Date().toISOString().split('T')[0];
   }, [task.dueDate, task.isCompleted]);
 
+  const isToday = useMemo(() => {
+    if (!task.dueDate) return false;
+    return task.dueDate === new Date().toISOString().split('T')[0];
+  }, [task.dueDate]);
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (date.getTime() === today.getTime()) return '今天';
+    if (date.getTime() === tomorrow.getTime()) return '明天';
+
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}月${day}日`;
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -62,11 +89,23 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
       {...attributes}
       {...listeners}
       onClick={() => setSelectedTaskId(task.id)}
-      className={`bg-white rounded-lg p-3 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all ${
-        isDragging || isSortableDragging ? 'opacity-50 shadow-lg ring-2 ring-[#DC4C3E]/20' : ''
+      className={`relative bg-white rounded-xl p-3.5 cursor-pointer transition-all duration-200 group ${
+        isDragging || isSortableDragging
+          ? 'opacity-60 shadow-2xl ring-2 ring-[#DC4C3E]/20 scale-[1.03] rotate-[1deg]'
+          : 'shadow-sm hover:shadow-md border border-gray-100/80'
       }`}
     >
-      <div className="flex items-start gap-2 mb-2">
+      {/* Left priority bar */}
+      <div
+        className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full"
+        style={{
+          backgroundColor: PRIORITY_COLORS[task.priority],
+          boxShadow: `0 0 6px ${PRIORITY_COLORS[task.priority]}30`,
+        }}
+      />
+
+      {/* Header with checkbox and title */}
+      <div className="flex items-start gap-2.5 mb-2 pl-2">
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -75,36 +114,40 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
           className="mt-0.5 flex-shrink-0"
         >
           <div
-            className={`w-4 h-4 rounded border-2 transition-colors ${
-              task.isCompleted ? 'border-transparent' : ''
+            className={`w-[18px] h-[18px] rounded-[5px] border-2 transition-all duration-200 flex items-center justify-center ${
+              task.isCompleted ? 'border-transparent shadow-sm' : 'border-gray-300 hover:border-gray-400'
             }`}
             style={{
-              borderColor: task.isCompleted ? 'transparent' : PRIORITY_COLORS[task.priority],
+              borderColor: task.isCompleted ? 'transparent' : undefined,
               backgroundColor: task.isCompleted ? PRIORITY_COLORS[task.priority] : 'transparent',
+              backgroundImage: task.isCompleted
+                ? `linear-gradient(135deg, ${PRIORITY_COLORS[task.priority]}, ${PRIORITY_COLORS[task.priority]}dd)`
+                : 'none',
             }}
           >
             {task.isCompleted && (
-              <svg className="w-full h-full text-white p-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
           </div>
         </button>
         <span
-          className={`text-sm leading-5 flex-1 ${
-            task.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'
+          className={`text-sm leading-5 flex-1 font-medium transition-all duration-200 ${
+            task.isCompleted ? 'line-through text-gray-400 opacity-60' : 'text-gray-800'
           }`}
         >
           {task.title}
         </span>
       </div>
 
+      {/* Labels */}
       {task.labels && task.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2">
+        <div className="flex flex-wrap gap-1 mb-2.5 pl-2">
           {task.labels.map((label) => (
             <span
               key={label}
-              className="px-1.5 py-0.5 text-[10px] rounded-full bg-blue-50 text-blue-600"
+              className="px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-gray-100 text-gray-600 border border-gray-200/50"
             >
               {label}
             </span>
@@ -112,22 +155,32 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        {task.dueDate && (
+      {/* Footer: date + priority */}
+      <div className="flex items-center justify-between pl-2">
+        {task.dueDate ? (
           <span
-            className={`flex items-center gap-1 text-[10px] ${
-              isOverdue ? 'text-red-500' : 'text-gray-400'
+            className={`flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5 rounded-md ${
+              isOverdue
+                ? 'text-red-600 bg-red-50'
+                : isToday
+                ? 'text-green-600 bg-green-50'
+                : 'text-gray-500 bg-gray-50'
             }`}
           >
             <Calendar size={10} />
-            {task.dueDate}
+            {formatDate(task.dueDate)}
           </span>
+        ) : (
+          <div />
         )}
         <span
-          className="text-[9px] font-bold px-1.5 py-0.5 rounded text-white ml-auto"
-          style={{ backgroundColor: PRIORITY_COLORS[task.priority] }}
+          className="text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white shadow-sm"
+          style={{
+            backgroundColor: PRIORITY_COLORS[task.priority],
+            boxShadow: `0 1px 3px ${PRIORITY_COLORS[task.priority]}25`,
+          }}
         >
-          P{task.priority}
+          {PRIORITY_LABELS[task.priority]}
         </span>
       </div>
     </div>
@@ -164,26 +217,30 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
   return (
     <div
       ref={setNodeRef}
-      className={`flex-shrink-0 w-72 bg-gray-50 rounded-xl flex flex-col max-h-full ${
-        isOver ? 'ring-2 ring-[#DC4C3E]/30 bg-gray-100' : ''
-      } transition-colors`}
+      className={`flex-shrink-0 w-[300px] rounded-2xl flex flex-col max-h-full transition-all duration-200 ${
+        isOver
+          ? 'bg-gray-100/80 ring-2 ring-[#DC4C3E]/20 shadow-inner'
+          : 'bg-gray-50/60'
+      }`}
     >
-      <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200/50">
-        <div className="flex items-center gap-2">
+      {/* Column header */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2.5">
           <h3 className="text-sm font-semibold text-gray-700">{section.name}</h3>
-          <span className="text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded-full">
+          <span className="text-[11px] font-medium text-gray-400 bg-white/80 px-2 py-0.5 rounded-full shadow-sm border border-gray-100">
             {columnTasks.length}
           </span>
         </div>
         <button
           onClick={handleAddTask}
-          className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-white/80 text-gray-400 hover:text-gray-600 transition-all duration-150 opacity-0 group-hover:opacity-100"
         >
-          <Plus size={16} />
+          <MoreHorizontal size={16} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2">
+      {/* Cards */}
+      <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2.5">
         <SortableContext
           items={columnTasks.map((t) => t.id)}
           strategy={verticalListSortingStrategy}
@@ -192,9 +249,23 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
             <TaskCard key={task.id} task={task} />
           ))}
         </SortableContext>
+
+        {/* Empty state */}
         {columnTasks.length === 0 && (
-          <p className="text-xs text-gray-300 text-center py-8">暂无任务</p>
+          <div className="border-2 border-dashed border-gray-200 rounded-xl py-8 flex flex-col items-center justify-center text-gray-300">
+            <p className="text-xs font-medium">暂无任务</p>
+            <p className="text-[10px] mt-1">拖拽任务到此处</p>
+          </div>
         )}
+
+        {/* Add task button */}
+        <button
+          onClick={handleAddTask}
+          className="w-full py-2 rounded-xl border border-dashed border-gray-200 text-gray-400 hover:text-gray-500 hover:border-gray-300 hover:bg-white/50 transition-all duration-200 flex items-center justify-center gap-1.5 text-xs font-medium"
+        >
+          <Plus size={14} />
+          添加任务
+        </button>
       </div>
     </div>
   );
@@ -260,14 +331,15 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 h-full overflow-x-auto pb-4">
+      <div className="flex gap-5 h-full overflow-x-auto pb-4 px-1 group">
         {sectionsToShow.map((section) => (
           <BoardColumn key={section.id} section={section} tasks={tasksToShow} />
         ))}
 
-        <button className="flex-shrink-0 w-72 h-12 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-500 hover:border-gray-300 transition-colors">
-          <Plus size={18} className="mr-1" />
-          添加列
+        {/* Add column button */}
+        <button className="flex-shrink-0 w-[300px] h-12 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-500 hover:border-gray-300 hover:bg-white/50 transition-all duration-200">
+          <Plus size={18} className="mr-1.5" />
+          <span className="text-sm font-medium">添加列</span>
         </button>
       </div>
 
