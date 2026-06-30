@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Flag, Calendar, Folder, Tag } from 'lucide-react';
+import { Flag, Calendar, Folder, Tag, Check } from 'lucide-react';
 import { useStore } from '../store';
 
 const PRIORITY_COLORS: Record<number, string> = {
@@ -9,7 +9,6 @@ const PRIORITY_COLORS: Record<number, string> = {
   4: '#6B7280',
 };
 
-// Simple natural language date parser (Chinese)
 function parseNaturalDate(input: string): { date: string | null; cleaned: string } {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -85,6 +84,8 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const projectPickerRef = useRef<HTMLDivElement>(null);
+  const labelPickerRef = useRef<HTMLDivElement>(null);
 
   const handleClose = useCallback(() => {
     if (onClose) onClose();
@@ -118,6 +119,20 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [handleClose]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (projectPickerRef.current && !projectPickerRef.current.contains(e.target as Node)) {
+        setShowProjectPicker(false);
+      }
+      if (labelPickerRef.current && !labelPickerRef.current.contains(e.target as Node)) {
+        setShowLabelPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const parsedResult = useMemo(() => {
     if (!input) return { title: '', date: null, priority: 4 as 1 | 2 | 3 | 4 };
@@ -156,13 +171,17 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-150">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.35)', backdropFilter: 'blur(6px)' }}
+    >
       <div
         ref={dialogRef}
-        className="w-full max-w-lg mx-4 bg-white rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="w-full max-w-lg mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden"
+        style={{ animation: 'slideUp 0.2s ease-out' }}
       >
         {/* Main input */}
-        <div className="px-4 pt-4 pb-2">
+        <div className="px-5 pt-5 pb-3">
           <input
             ref={inputRef}
             type="text"
@@ -174,20 +193,21 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
                 handleSubmit();
               }
             }}
-            placeholder="输入任务标题... (支持自然语言，如 '明天开会')"
-            className="w-full text-lg text-gray-800 outline-none placeholder-gray-300"
+            placeholder="输入任务标题..."
+            className="w-full text-lg text-gray-900 outline-none placeholder-gray-300 font-medium"
           />
+          {/* Parsed hints */}
           {input && (parsedResult.date || parsedResult.priority !== 4) && (
             <div className="flex items-center gap-2 mt-2 text-xs">
               {parsedResult.date && (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-600 rounded-full">
+                <span className="flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-600 rounded-full font-medium">
                   <Calendar size={10} />
                   {parsedResult.date}
                 </span>
               )}
               {parsedResult.priority !== 4 && (
                 <span
-                  className="flex items-center gap-1 px-2 py-0.5 text-white rounded-full"
+                  className="flex items-center gap-1 px-2.5 py-1 text-white rounded-full font-medium"
                   style={{ backgroundColor: PRIORITY_COLORS[parsedResult.priority] }}
                 >
                   <Flag size={10} />
@@ -199,18 +219,18 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-1 px-3 py-2 border-t border-gray-100">
+        <div className="flex items-center gap-1 px-3 py-3 border-t border-gray-100 bg-gray-50/50">
           {/* Project picker */}
-          <div className="relative">
+          <div ref={projectPickerRef} className="relative">
             <button
               onClick={() => {
                 setShowProjectPicker(!showProjectPicker);
                 setShowLabelPicker(false);
               }}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 projectId
                   ? 'bg-blue-50 text-blue-600'
-                  : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                  : 'text-gray-400 hover:bg-gray-200/60 hover:text-gray-600'
               }`}
             >
               <Folder size={14} />
@@ -219,13 +239,16 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
                 : '项目'}
             </button>
             {showProjectPicker && (
-              <div className="absolute bottom-full left-0 mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+              <div
+                className="absolute bottom-full left-0 mb-2 w-52 bg-white rounded-xl shadow-xl border border-gray-200 py-1 z-10"
+                style={{ animation: 'fadeIn 0.12s ease-out' }}
+              >
                 <button
                   onClick={() => {
                     setProjectId(null);
                     setShowProjectPicker(false);
                   }}
-                  className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+                  className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   无项目
                 </button>
@@ -236,10 +259,10 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
                       setProjectId(p.id);
                       setShowProjectPicker(false);
                     }}
-                    className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
                   >
                     <span
-                      className="w-2 h-2 rounded-full"
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: p.color }}
                     />
                     {p.name}
@@ -249,42 +272,53 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
             )}
           </div>
 
-          {/* Priority picker */}
-          <div className="flex items-center gap-0.5">
+          {/* Priority - circular buttons */}
+          <div className="flex items-center gap-1 ml-1">
             {([1, 2, 3, 4] as const).map((p) => (
               <button
                 key={p}
                 onClick={() => setPriority(p)}
-                className={`px-1.5 py-1 rounded text-xs font-medium transition-colors ${
-                  priority === p ? 'text-white' : 'text-gray-400 hover:bg-gray-100'
-                }`}
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-all"
                 style={{
-                  backgroundColor: priority === p ? PRIORITY_COLORS[p] : undefined,
+                  backgroundColor: priority === p ? PRIORITY_COLORS[p] : '#F3F4F6',
                 }}
+                title={`P${p}`}
               >
-                P{p}
+                {priority === p ? (
+                  <Check size={12} className="text-white" strokeWidth={3} />
+                ) : (
+                  <span
+                    className="text-[10px] font-bold"
+                    style={{ color: PRIORITY_COLORS[p] }}
+                  >
+                    P{p}
+                  </span>
+                )}
               </button>
             ))}
           </div>
 
           {/* Label picker */}
-          <div className="relative">
+          <div ref={labelPickerRef} className="relative">
             <button
               onClick={() => {
                 setShowLabelPicker(!showLabelPicker);
                 setShowProjectPicker(false);
               }}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 selectedLabels.length > 0
                   ? 'bg-purple-50 text-purple-600'
-                  : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                  : 'text-gray-400 hover:bg-gray-200/60 hover:text-gray-600'
               }`}
             >
               <Tag size={14} />
               {selectedLabels.length > 0 ? `${selectedLabels.length}个标签` : '标签'}
             </button>
             {showLabelPicker && (
-              <div className="absolute bottom-full left-0 mb-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+              <div
+                className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 py-1 z-10 max-h-48 overflow-y-auto"
+                style={{ animation: 'fadeIn 0.12s ease-out' }}
+              >
                 {labels.length === 0 ? (
                   <p className="px-3 py-2 text-xs text-gray-400">暂无标签</p>
                 ) : (
@@ -292,25 +326,17 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
                     <button
                       key={label.id}
                       onClick={() => toggleLabel(label.name)}
-                      className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center gap-2"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors"
                     >
                       <div
-                        className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
                           selectedLabels.includes(label.name)
                             ? 'bg-[#DC4C3E] border-[#DC4C3E]'
                             : 'border-gray-300'
                         }`}
                       >
                         {selectedLabels.includes(label.name) && (
-                          <svg
-                            className="w-2 h-2 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={3}
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
+                          <Check size={10} className="text-white" strokeWidth={3} />
                         )}
                       </div>
                       <span className="text-gray-600">{label.name}</span>
@@ -326,14 +352,14 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
             type="date"
             value={parsedResult.date || dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="text-xs text-gray-500 border border-gray-200 rounded px-2 py-1 outline-none"
+            className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none bg-white"
           />
 
           <div className="flex-1" />
           <button
             onClick={handleSubmit}
             disabled={!input.trim()}
-            className="px-4 py-1.5 bg-[#DC4C3E] text-white text-sm rounded-lg hover:bg-[#c4403a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-5 py-2 bg-[#DC4C3E] text-white text-sm font-medium rounded-xl hover:bg-[#c4403a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             添加任务
           </button>
