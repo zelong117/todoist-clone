@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { X, Flag, Calendar, Folder, Tag } from 'lucide-react';
+import { Flag, Calendar, Folder, Tag } from 'lucide-react';
 import { useStore } from '../store';
 
 const PRIORITY_COLORS: Record<number, string> = {

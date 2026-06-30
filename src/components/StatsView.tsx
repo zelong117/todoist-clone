@@ -39,8 +39,6 @@ export default function StatsView() {
 
   const stats = useMemo(() => {
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
-
     // Week boundaries (Monday to Sunday)
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));

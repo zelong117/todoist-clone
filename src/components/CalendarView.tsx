@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task } from '../types';
 
@@ -17,7 +17,7 @@ interface CalendarViewProps {
   projectId?: string;
 }
 
-export default function CalendarView({ tasks, projectId }: CalendarViewProps) {
+export default function CalendarView({ tasks }: CalendarViewProps) {
   const { setSelectedTaskId } = useStore();
   const [currentDate, setCurrentDate] = useState(new Date());
 

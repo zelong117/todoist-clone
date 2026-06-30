@@ -6,10 +6,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
   DragOverlay,
-  DragStartEvent,
 } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
@@ -18,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Flag, Calendar } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
 

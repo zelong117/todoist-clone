@@ -7,7 +7,7 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import { useStore } from '../store';
-import type { Section } from '../types';
+// types imported via store
 import TaskList from './TaskList';
 import BoardView from './BoardView';
 import CalendarView from './CalendarView';

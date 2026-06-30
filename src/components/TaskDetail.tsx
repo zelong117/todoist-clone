@@ -3,7 +3,6 @@ import {
   X,
   Flag,
   Calendar,
-  Tag,
   MessageSquare,
   Plus,
   Trash2,
@@ -11,7 +10,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useStore } from '../store';
-import type { Task } from '../types';
+// Task type used via store
 
 const PRIORITY_COLORS: Record<number, string> = {
   1: '#DC4C3E',
@@ -20,20 +19,13 @@ const PRIORITY_COLORS: Record<number, string> = {
   4: '#6B7280',
 };
 
-const PRIORITY_LABELS: Record<number, string> = {
-  1: '紧急',
-  2: '高',
-  3: '中',
-  4: '低',
-};
-
 interface TaskDetailProps {
   taskId: string;
   onClose: () => void;
 }
 
 export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
-  const { tasks, comments, updateTask, deleteTask, addComment, addTask, labels } = useStore();
+  const { tasks, comments, updateTask, deleteTask, addComment, addTask } = useStore();
   const task = useMemo(() => tasks.find((t) => t.id === taskId), [tasks, taskId]);
 
   // Subtasks: tasks whose parentId === this task.id
