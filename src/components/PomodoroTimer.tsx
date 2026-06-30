@@ -1,32 +1,53 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, Pause, SkipForward, Square, ChevronUp } from 'lucide-react';
+import { useStore } from '../store';
 
-type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
-type TimerStatus = 'idle' | 'running' | 'paused';
-
-const MODE_COLORS: Record<TimerMode, string> = {
+const MODE_COLORS = {
   focus: '#DC4C3E',
   shortBreak: '#22C55E',
   longBreak: '#3B82F6',
-};
+} as const;
 
-const MODE_LABELS: Record<TimerMode, string> = {
+const MODE_LABELS = {
   focus: '专注中',
   shortBreak: '短休息',
   longBreak: '长休息',
-};
+} as const;
 
 export default function PomodoroTimer() {
-  // Mock store values — replace with real store when available
-  const timerSeconds = 0;
-  const timerTotalSeconds = 25 * 60;
-  const timerStatus: TimerStatus = 'idle' as TimerStatus;
-  const timerMode: TimerMode = 'focus';
-  const currentTaskName: string | null = null;
+  const timerSeconds = useStore((s) => s.timerSeconds);
+  const timerStatus = useStore((s) => s.timerStatus);
+  const timerMode = useStore((s) => s.timerMode);
+  const activeTimerTaskId = useStore((s) => s.activeTimerTaskId);
+  const tasks = useStore((s) => s.tasks);
+  const pomodoroSettings = useStore((s) => s.pomodoroSettings);
+  const pauseTimer = useStore((s) => s.pauseTimer);
+  const resumeTimer = useStore((s) => s.resumeTimer);
+  const stopTimer = useStore((s) => s.stopTimer);
+  const skipToBreak = useStore((s) => s.skipToBreak);
+  const tick = useStore((s) => s.tick);
 
   const [expanded, setExpanded] = useState(false);
 
-  const remaining = timerTotalSeconds - timerSeconds;
+  // Tick every second when running
+  useEffect(() => {
+    if (timerStatus !== 'running') return;
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [timerStatus, tick]);
+
+  const currentTaskName = activeTimerTaskId
+    ? tasks.find((t) => t.id === activeTimerTaskId)?.title ?? null
+    : null;
+
+  const totalSeconds =
+    timerMode === 'focus'
+      ? pomodoroSettings.focusMinutes * 60
+      : timerMode === 'shortBreak'
+      ? pomodoroSettings.shortBreakMinutes * 60
+      : pomodoroSettings.longBreakMinutes * 60;
+
+  const remaining = timerSeconds;
   const minutes = Math.floor(remaining / 60);
   const seconds = remaining % 60;
   const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
@@ -34,7 +55,7 @@ export default function PomodoroTimer() {
   // SVG circle calculations
   const radius = expanded ? 88 : 20;
   const circumference = 2 * Math.PI * radius;
-  const progress = timerTotalSeconds > 0 ? timerSeconds / timerTotalSeconds : 0;
+  const progress = totalSeconds > 0 ? (totalSeconds - timerSeconds) / totalSeconds : 0;
   const offset = circumference * (1 - progress);
   const strokeColor = MODE_COLORS[timerMode];
 
@@ -42,8 +63,17 @@ export default function PomodoroTimer() {
   const isPaused = timerStatus === 'paused';
   const isActive = isRunning || isPaused;
 
+  const handleToggle = () => {
+    if (isRunning) pauseTimer();
+    else resumeTimer();
+  };
+
+  const handleSkip = () => {
+    if (timerMode === 'focus') skipToBreak();
+    else stopTimer();
+  };
+
   if (!expanded && !isActive) {
-    // Collapsed idle — small tomato button
     return (
       <button
         onClick={() => setExpanded(true)}
@@ -56,7 +86,6 @@ export default function PomodoroTimer() {
   }
 
   if (!expanded && isActive) {
-    // Collapsed active — mini progress ring
     return (
       <button
         onClick={() => setExpanded(true)}
@@ -64,14 +93,7 @@ export default function PomodoroTimer() {
         title={`${MODE_LABELS[timerMode]} ${display}`}
       >
         <svg width="48" height="48" className="transform -rotate-90">
-          <circle
-            cx="24"
-            cy="24"
-            r={20}
-            fill="none"
-            stroke="#e5e7eb"
-            strokeWidth="3"
-          />
+          <circle cx="24" cy="24" r={20} fill="none" stroke="#e5e7eb" strokeWidth="3" />
           <circle
             cx="24"
             cy="24"
@@ -92,10 +114,8 @@ export default function PomodoroTimer() {
     );
   }
 
-  // Expanded view
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 w-[200px] transition-all duration-300">
-      {/* Collapse button */}
       <button
         onClick={() => setExpanded(false)}
         className="w-full flex items-center justify-end mb-2 text-gray-400 hover:text-gray-600"
@@ -103,17 +123,9 @@ export default function PomodoroTimer() {
         <ChevronUp size={16} />
       </button>
 
-      {/* Progress ring */}
-      <div className="flex justify-center mb-3">
+      <div className="flex justify-center mb-3 relative">
         <svg width="176" height="176" className="transform -rotate-90">
-          <circle
-            cx="88"
-            cy="88"
-            r={88}
-            fill="none"
-            stroke="#e5e7eb"
-            strokeWidth="6"
-          />
+          <circle cx="88" cy="88" r={88} fill="none" stroke="#e5e7eb" strokeWidth="6" />
           <circle
             cx="88"
             cy="88"
@@ -131,26 +143,21 @@ export default function PomodoroTimer() {
           <span className="text-3xl font-mono font-bold text-gray-800 dark:text-white">
             {display}
           </span>
-          <span
-            className="text-xs mt-1 font-medium"
-            style={{ color: strokeColor }}
-          >
+          <span className="text-xs mt-1 font-medium" style={{ color: strokeColor }}>
             {MODE_LABELS[timerMode]}
           </span>
         </div>
       </div>
 
-      {/* Current task name */}
       {currentTaskName && (
         <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate mb-2 px-1">
           {currentTaskName}
         </p>
       )}
 
-      {/* Controls */}
       <div className="flex items-center justify-center gap-2 mt-2">
         <button
-          onClick={() => {/* store.toggleTimer() */}}
+          onClick={handleToggle}
           className="w-8 h-8 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
           style={{ backgroundColor: strokeColor }}
           title={isRunning ? '暂停' : '继续'}
@@ -158,14 +165,14 @@ export default function PomodoroTimer() {
           {isRunning ? <Pause size={14} /> : <Play size={14} />}
         </button>
         <button
-          onClick={() => {/* store.skipTimer() */}}
+          onClick={handleSkip}
           className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
           title="跳过"
         >
           <SkipForward size={14} />
         </button>
         <button
-          onClick={() => {/* store.stopTimer() */}}
+          onClick={stopTimer}
           className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
           title="停止"
         >

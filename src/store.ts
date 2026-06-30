@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { isToday, parseISO, isBefore, startOfDay, addDays } from 'date-fns';
-import type { Task, Project, Section, Label, Comment, ViewMode, ActiveView } from './types';
+import type { Task, Project, Section, Label, Comment, ViewMode, ActiveView, TimerMode, TimerStatus, PomodoroSettings, PomodoroSession } from './types';
 import { generateId } from './utils';
 import { seedTasks, seedProjects, seedSections, seedLabels, seedComments } from './data/seed';
 
@@ -32,6 +32,15 @@ interface AppState {
   sidebarCollapsed: boolean;
   searchQuery: string;
   darkMode: boolean;
+
+  // Pomodoro state
+  timerMode: TimerMode;
+  timerStatus: TimerStatus;
+  timerSeconds: number;
+  activeTimerTaskId: string | null;
+  completedPomodoros: number;
+  pomodoroSettings: PomodoroSettings;
+  pomodoroSessions: PomodoroSession[];
 
   // Task actions
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -69,6 +78,17 @@ interface AppState {
   setSearchQuery: (query: string) => void;
   toggleDarkMode: () => void;
 
+  // Pomodoro actions
+  startTimer: (taskId: string) => void;
+  pauseTimer: () => void;
+  resumeTimer: () => void;
+  stopTimer: () => void;
+  skipToBreak: () => void;
+  skipToFocus: () => void;
+  tick: () => void;
+  completePomodoro: () => void;
+  updatePomodoroSettings: (settings: Partial<PomodoroSettings>) => void;
+
   // Computed getters
   getTodayTasks: () => Task[];
   getUpcomingTasks: () => Task[];
@@ -95,6 +115,22 @@ export const useStore = create<AppState>()(
       sidebarCollapsed: false,
       searchQuery: '',
       darkMode: false,
+
+      // Pomodoro state
+      timerMode: 'focus',
+      timerStatus: 'idle',
+      timerSeconds: 25 * 60,
+      activeTimerTaskId: null,
+      completedPomodoros: 0,
+      pomodoroSettings: {
+        focusMinutes: 25,
+        shortBreakMinutes: 5,
+        longBreakMinutes: 15,
+        longBreakInterval: 4,
+        autoStartBreak: false,
+        autoStartPomodoro: false,
+      },
+      pomodoroSessions: [],
 
       // ===== Task actions =====
       addTask: (taskData) => {
@@ -274,6 +310,147 @@ export const useStore = create<AppState>()(
       toggleDarkMode: () =>
         set((state) => ({ darkMode: !state.darkMode })),
 
+      // ===== Pomodoro actions =====
+      startTimer: (taskId) => {
+        const settings = get().pomodoroSettings;
+        set({
+          activeTimerTaskId: taskId,
+          timerMode: 'focus',
+          timerStatus: 'running',
+          timerSeconds: settings.focusMinutes * 60,
+        });
+      },
+
+      pauseTimer: () => {
+        set({ timerStatus: 'paused' });
+      },
+
+      resumeTimer: () => {
+        set({ timerStatus: 'running' });
+      },
+
+      stopTimer: () => {
+        const { activeTimerTaskId, timerMode, timerSeconds, pomodoroSettings } = get();
+        if (activeTimerTaskId) {
+          const totalSeconds =
+            timerMode === 'focus'
+              ? pomodoroSettings.focusMinutes * 60
+              : timerMode === 'shortBreak'
+              ? pomodoroSettings.shortBreakMinutes * 60
+              : pomodoroSettings.longBreakMinutes * 60;
+          const elapsed = totalSeconds - timerSeconds;
+          if (elapsed > 0) {
+            const session: PomodoroSession = {
+              id: generateId(),
+              taskId: activeTimerTaskId,
+              mode: timerMode,
+              startedAt: new Date(Date.now() - elapsed * 1000).toISOString(),
+              endedAt: new Date().toISOString(),
+              durationMinutes: Math.round((elapsed / 60) * 100) / 100,
+              completed: false,
+            };
+            set((state) => ({
+              pomodoroSessions: [...state.pomodoroSessions, session],
+            }));
+          }
+        }
+        set({
+          timerMode: 'focus',
+          timerStatus: 'idle',
+          timerSeconds: get().pomodoroSettings.focusMinutes * 60,
+          activeTimerTaskId: null,
+        });
+      },
+
+      skipToBreak: () => {
+        const { completedPomodoros, pomodoroSettings } = get();
+        const isLong = (completedPomodoros + 1) % pomodoroSettings.longBreakInterval === 0;
+        const breakSeconds = isLong
+          ? pomodoroSettings.longBreakMinutes * 60
+          : pomodoroSettings.shortBreakMinutes * 60;
+        set({
+          timerMode: isLong ? 'longBreak' : 'shortBreak',
+          timerStatus: 'running',
+          timerSeconds: breakSeconds,
+        });
+      },
+
+      skipToFocus: () => {
+        set({
+          timerMode: 'focus',
+          timerStatus: 'running',
+          timerSeconds: get().pomodoroSettings.focusMinutes * 60,
+        });
+      },
+
+      tick: () => {
+        const { timerSeconds, timerStatus } = get();
+        if (timerStatus !== 'running') return;
+        if (timerSeconds <= 1) {
+          set({ timerSeconds: 0 });
+          get().completePomodoro();
+        } else {
+          set({ timerSeconds: timerSeconds - 1 });
+        }
+      },
+
+      completePomodoro: () => {
+        const { activeTimerTaskId, timerMode, pomodoroSettings, completedPomodoros } = get();
+        const totalSeconds =
+          timerMode === 'focus'
+            ? pomodoroSettings.focusMinutes * 60
+            : timerMode === 'shortBreak'
+            ? pomodoroSettings.shortBreakMinutes * 60
+            : pomodoroSettings.longBreakMinutes * 60;
+
+        if (activeTimerTaskId) {
+          const session: PomodoroSession = {
+            id: generateId(),
+            taskId: activeTimerTaskId,
+            mode: timerMode,
+            startedAt: new Date(Date.now() - totalSeconds * 1000).toISOString(),
+            endedAt: new Date().toISOString(),
+            durationMinutes:
+              timerMode === 'focus'
+                ? pomodoroSettings.focusMinutes
+                : timerMode === 'shortBreak'
+                ? pomodoroSettings.shortBreakMinutes
+                : pomodoroSettings.longBreakMinutes,
+            completed: true,
+          };
+          set((state) => ({
+            pomodoroSessions: [...state.pomodoroSessions, session],
+          }));
+        }
+
+        if (timerMode === 'focus') {
+          const newCount = completedPomodoros + 1;
+          const isLong = newCount % pomodoroSettings.longBreakInterval === 0;
+          const nextMode = isLong ? 'longBreak' : 'shortBreak';
+          const nextSeconds = isLong
+            ? pomodoroSettings.longBreakMinutes * 60
+            : pomodoroSettings.shortBreakMinutes * 60;
+          set({
+            completedPomodoros: newCount,
+            timerMode: nextMode,
+            timerSeconds: nextSeconds,
+            timerStatus: pomodoroSettings.autoStartBreak ? 'running' : 'idle',
+          });
+        } else {
+          set({
+            timerMode: 'focus',
+            timerSeconds: pomodoroSettings.focusMinutes * 60,
+            timerStatus: pomodoroSettings.autoStartPomodoro ? 'running' : 'idle',
+          });
+        }
+      },
+
+      updatePomodoroSettings: (settings) => {
+        set((state) => ({
+          pomodoroSettings: { ...state.pomodoroSettings, ...settings },
+        }));
+      },
+
       // ===== Computed getters =====
       getTodayTasks: () => {
         const today = startOfDay(new Date());
@@ -345,6 +522,9 @@ export const useStore = create<AppState>()(
         sections: state.sections,
         labels: state.labels,
         comments: state.comments,
+        pomodoroSettings: state.pomodoroSettings,
+        pomodoroSessions: state.pomodoroSessions,
+        completedPomodoros: state.completedPomodoros,
       }),
     }
   )

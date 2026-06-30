@@ -221,3 +221,22 @@ export function getPriorityBgColor(priority: number): string {
     default: return 'bg-gray-400';
   }
 }
+
+/**
+ * Format seconds into MM:SS display string.
+ */
+export function formatTimer(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+/**
+ * Get timer progress as a percentage (0-100).
+ * @param elapsed - seconds elapsed
+ * @param total - total seconds for the timer
+ */
+export function getTimerProgress(elapsed: number, total: number): number {
+  if (total <= 0) return 0;
+  return Math.min(100, Math.max(0, (elapsed / total) * 100));
+}

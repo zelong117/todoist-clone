@@ -49,3 +49,26 @@ export interface Comment {
 export type ViewMode = 'list' | 'board' | 'calendar';
 
 export type ActiveView = 'inbox' | 'today' | 'upcoming' | 'project' | 'label' | 'filter';
+
+// ===== Pomodoro Timer =====
+export type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
+export type TimerStatus = 'idle' | 'running' | 'paused';
+
+export interface PomodoroSettings {
+  focusMinutes: number; // default 25
+  shortBreakMinutes: number; // default 5
+  longBreakMinutes: number; // default 15
+  longBreakInterval: number; // every 4 pomodoros
+  autoStartBreak: boolean;
+  autoStartPomodoro: boolean;
+}
+
+export interface PomodoroSession {
+  id: string;
+  taskId: string;
+  mode: TimerMode;
+  startedAt: string;
+  endedAt: string | null;
+  durationMinutes: number;
+  completed: boolean;
+}
