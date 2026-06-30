@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Pencil, Trash2, Clock, MessageSquare, Calendar, Flag } from 'lucide-react';
+import { Pencil, Trash2, Clock, MessageSquare, Calendar } from 'lucide-react';
 import type { Task } from '../types';
 import { useStore } from '../store';
 
@@ -25,7 +25,7 @@ interface TaskItemProps {
 
 export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItemProps) {
   const [hovered, setHovered] = useState(false);
-  const { toggleComplete, deleteTask, setSelectedTaskId, updateTask, tasks, selectedTaskId } = useStore();
+  const { toggleComplete, deleteTask, setSelectedTaskId, tasks, selectedTaskId } = useStore();
   const isSelected = selectedTaskId === task.id;
 
   const subtasks = useMemo(
