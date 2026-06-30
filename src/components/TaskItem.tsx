@@ -91,7 +91,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
     >
       {/* Left priority bar */}
       <div
-        className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full transition-all duration-200 ${
+        className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-8 rounded-r-full transition-all duration-200 ${
           isSelected ? 'h-8' : hovered ? 'h-6' : 'h-0'
         }`}
         style={{
@@ -110,7 +110,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         style={{ width: 20, height: 20 }}
       >
         <div
-          className={`w-5 h-5 rounded-[5px] border-2 transition-all duration-200 flex items-center justify-center ${
+          className={`w-[22px] h-[22px] rounded-[5px] border-2 transition-all duration-200 flex items-center justify-center ${
             task.isCompleted
               ? 'border-transparent shadow-sm'
               : 'border-gray-300 group-hover/check:border-current group-hover/check:shadow-sm'
@@ -142,7 +142,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className={`text-sm leading-5 transition-all duration-300 ${
+            className={`text-[14px] leading-5 transition-all duration-300 ${
               task.isCompleted
                 ? 'line-through text-gray-400 opacity-60'
                 : 'text-gray-800 font-medium'
@@ -158,7 +158,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
             {task.labels.map((label) => (
               <span
                 key={label}
-                className="px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-gray-100 text-gray-600 border border-gray-200/50"
+                className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-gray-100 text-gray-600 border border-gray-200/50"
               >
                 {label}
               </span>
@@ -209,7 +209,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
         {/* Priority badge */}
         <span
-          className="text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white shadow-sm"
+          className="text-[11px] font-bold px-1.5 py-0.5 rounded-md text-white shadow-sm"
           style={{
             backgroundColor: PRIORITY_COLORS[task.priority],
             boxShadow: `0 1px 3px ${PRIORITY_COLORS[task.priority]}30`,
@@ -223,7 +223,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           className={`flex items-center gap-0.5 transition-all duration-200 ${
             hovered && !task.isCompleted
               ? 'opacity-100 translate-x-0'
-              : 'opacity-0 translate-x-2 pointer-events-none'
+              : 'opacity-0 translate-x-4 pointer-events-none'
           }`}
         >
           <button
@@ -234,7 +234,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
             className="p-1.5 rounded-lg hover:bg-red-100 text-gray-400 hover:text-[#DC4C3E] transition-all duration-150"
             title="开始番茄钟"
           >
-            <Timer size={14} />
+            <Timer size={15} />
           </button>
           <button
             onClick={(e) => {
@@ -244,7 +244,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
             className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-all duration-150"
             title="编辑"
           >
-            <Pencil size={14} />
+            <Pencil size={15} />
           </button>
           <button
             onClick={(e) => {
@@ -254,7 +254,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
             className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-all duration-150"
             title="切换优先级"
           >
-            <Flag size={14} />
+            <Flag size={15} />
           </button>
           <button
             onClick={(e) => {
@@ -264,7 +264,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
             className="p-1.5 rounded-lg hover:bg-red-100 text-gray-400 hover:text-red-500 transition-all duration-150"
             title="删除"
           >
-            <Trash2 size={14} />
+            <Trash2 size={15} />
           </button>
         </div>
       </div>
