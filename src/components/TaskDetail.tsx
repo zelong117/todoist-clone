@@ -609,19 +609,14 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               </div>
 
               {/* Due Date */}
-              <div className="flex items-center justify-between group">
+              <div className="flex items-center justify-between group relative">
                 <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">截止</span>
                 <button
-                  onClick={() => {
-                    const date = prompt('输入截止日期 (YYYY-MM-DD)：');
-                    if (date) {
-                      updateTask(task.id, { dueDate: date });
-                    }
-                  }}
+                  onClick={() => setShowDatePicker(!showDatePicker)}
                   className="flex items-center gap-1.5 text-sm font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <Calendar size={14} />
-                  <span>设置截止日期</span>
+                  <span>{formatDateDisplay(task.dueDate)}</span>
                 </button>
               </div>
 
