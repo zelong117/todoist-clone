@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Calendar, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Trash2 } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
 
@@ -244,9 +244,10 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
         </div>
         <button
           onClick={handleAddTask}
-          className="p-1.5 rounded-lg hover:bg-[var(--bg-card)]/80 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-150 opacity-0 group-hover:opacity-100"
+          className="p-1.5 rounded-lg hover:bg-[var(--bg-card)]/80 text-[var(--text-tertiary)] hover:text-[#DC4C3E] transition-all duration-150"
+          title="添加任务"
         >
-          <MoreHorizontal size={16} />
+          <Plus size={16} />
         </button>
       </div>
 
