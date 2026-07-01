@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Inbox, Plus } from 'lucide-react';
+import { Inbox, Plus, MoreHorizontal, GripVertical } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
 import TaskItem from './TaskItem';
@@ -53,12 +53,18 @@ function SectionGroup({
   section,
   tasks,
   projectId,
+  onAddSection,
 }: {
   section: Section | null;
   tasks: Task[];
   projectId?: string;
+  onAddSection?: () => void;
 }) {
-  const { addTask } = useStore();
+  const { addTask, updateSection, deleteSection } = useStore();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(section?.name || '');
+  const [showMenu, setShowMenu] = useState(false);
+
   const sectionTasks = useMemo(
     () => tasks.filter((t) => (section ? t.sectionId === section.id : !t.sectionId)),
     [tasks, section]
@@ -84,33 +90,113 @@ function SectionGroup({
     });
   }, [section, projectId, addTask]);
 
-  if (sectionTasks.length === 0 && section) return null;
+  const handleSaveName = useCallback(() => {
+    if (section && editName.trim() && editName !== section.name) {
+      updateSection(section.id, { name: editName.trim() });
+    }
+    setIsEditing(false);
+  }, [section, editName, updateSection]);
 
   return (
-    <div className="mb-4">
+    <div className="mb-2">
+      {/* Section Header */}
       {section && (
-        <div className="flex items-center gap-2 px-3 py-2 mb-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
-          <h3 className="text-sm font-semibold text-gray-600">{section.name}</h3>
-          <span className="text-xs text-gray-400">({sectionTasks.length})</span>
+        <div className="group/section flex items-center gap-2 px-4 py-2.5">
+          <GripVertical size={14} className="text-gray-300 cursor-grab opacity-0 group-hover/section:opacity-100 transition-opacity" />
+          {isEditing ? (
+            <input
+              autoFocus
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleSaveName}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveName();
+                if (e.key === 'Escape') {
+                  setEditName(section.name);
+                  setIsEditing(false);
+                }
+              }}
+              className="text-[13px] font-semibold text-gray-800 bg-transparent border-b border-gray-300 focus:outline-none focus:border-gray-500 px-0.5 py-0"
+            />
+          ) : (
+            <span
+              className="text-[13px] font-semibold text-gray-800 cursor-pointer hover:text-gray-900"
+              onClick={() => setIsEditing(true)}
+            >
+              {section.name}
+            </span>
+          )}
+          <span className="text-xs text-gray-400">{sectionTasks.length}</span>
+          <div className="relative ml-auto opacity-0 group-hover/section:opacity-100 transition-opacity">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <MoreHorizontal size={16} />
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  重命名版块
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm('确定删除此版块？')) {
+                      deleteSection(section.id);
+                    }
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  删除版块
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
+      {/* Section divider line */}
+      {section && (
+        <div className="mx-4 mb-1 border-t border-gray-100" />
+      )}
+
+      {/* Tasks */}
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-        <div className="space-y-0.5">
+        <div className="px-2">
           {sectionTasks.map((task) => (
             <SortableTaskItem key={task.id} task={task} />
           ))}
         </div>
       </SortableContext>
 
+      {/* Add Task Button */}
       <button
         onClick={handleAddTask}
-        className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors w-full"
+        className="flex items-center gap-2 px-5 py-2 mx-2 mt-1 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors w-[calc(100%-16px)]"
       >
         <Plus size={16} />
         <span>添加任务</span>
       </button>
+
+      {/* Add Section Button (between sections) */}
+      {onAddSection && !section && (
+        <div className="flex justify-center py-3">
+          <button
+            onClick={onAddSection}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors border border-dashed border-gray-200 hover:border-gray-300"
+          >
+            <Plus size={14} />
+            <span>添加版块</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -122,7 +208,7 @@ export default function TaskList({
   viewTitle,
   showSections = true,
 }: TaskListProps) {
-  const { reorderTasks } = useStore();
+  const { reorderTasks, addSection } = useStore();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -133,7 +219,6 @@ export default function TaskList({
     (event: DragEndEvent) => {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
-      // Reorder: move active before over
       const currentIds = tasks.map((t) => t.id);
       const oldIndex = currentIds.indexOf(active.id as string);
       const newIndex = currentIds.indexOf(over.id as string);
@@ -154,6 +239,18 @@ export default function TaskList({
     return sections;
   }, [showSections, sections]);
 
+  const handleAddSection = useCallback(() => {
+    if (!projectId) return;
+    const name = prompt('输入版块名称：');
+    if (name?.trim()) {
+      addSection({
+        projectId,
+        name: name.trim(),
+        order: sections.length,
+      });
+    }
+  }, [projectId, addSection, sections.length]);
+
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-gray-400">
@@ -167,55 +264,47 @@ export default function TaskList({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <div className="py-2">
+        {/* View Title */}
         {viewTitle && (
-          <h2 className="text-xl font-bold text-gray-800 px-3 mb-4">{viewTitle}</h2>
+          <h2 className="text-xl font-bold text-gray-800 px-4 mb-3">{viewTitle}</h2>
         )}
 
-        {sectionsToShow.map((section) => (
-          <SectionGroup
-            key={section?.id || '__no_section__'}
-            section={section}
-            tasks={incompleteTasks}
-            projectId={projectId}
-          />
+        {/* Sections */}
+        {sectionsToShow.map((section, index) => (
+          <div key={section?.id || '__no_section__'}>
+            <SectionGroup
+              section={section}
+              tasks={incompleteTasks}
+              projectId={projectId}
+              onAddSection={
+                index === sectionsToShow.length - 1 ? handleAddSection : undefined
+              }
+            />
+          </div>
         ))}
 
-        {/* Show flat list + add button only when there are actual sections (not the null sentinel) */}
-        {showSections && sections.length > 0 && (
-          <button
-            onClick={() => {
-              const { addTask } = useStore.getState();
-              addTask({
-                title: '新任务',
-                description: '',
-                projectId: projectId || null,
-                sectionId: null,
-                parentId: null,
-                priority: 4,
-                labels: [],
-                dueDate: null,
-                isRecurring: false,
-                recurrenceRule: null,
-                isCompleted: false,
-                completedAt: null,
-                order: incompleteTasks.length,
-              });
-            }}
-            className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors w-full"
-          >
-            <Plus size={16} />
-            <span>添加任务</span>
-          </button>
+        {/* Add Section button when no sections exist */}
+        {showSections && sections.length === 0 && projectId && (
+          <div className="flex justify-center py-3">
+            <button
+              onClick={handleAddSection}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors border border-dashed border-gray-200 hover:border-gray-300"
+            >
+              <Plus size={14} />
+              <span>添加版块</span>
+            </button>
+          </div>
         )}
 
+        {/* Completed Tasks */}
         {completedTasks.length > 0 && (
-          <div className="mt-6">
-            <div className="flex items-center gap-2 px-3 py-2">
+          <div className="mt-6 px-4">
+            <div className="flex items-center gap-2 py-2 border-t border-gray-100">
               <span className="text-sm font-medium text-gray-400">
                 已完成 ({completedTasks.length})
               </span>
             </div>
-            <div className="space-y-0.5 opacity-60">
+            <div className="space-y-0 opacity-60">
               {completedTasks.map((task) => (
                 <TaskItem key={task.id} task={task} />
               ))}

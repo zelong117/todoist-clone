@@ -8,10 +8,12 @@ import {
   Settings,
   Moon,
   Sun,
-  ChevronLeft,
-  ChevronRight,
-  LayoutDashboard,
-  BarChart3,
+  Bell,
+  Star,
+  Filter,
+  Activity,
+  HelpCircle,
+  ChevronDown,
 } from 'lucide-react';
 import { useStore } from '../store';
 import type { Project } from '../types';
@@ -22,13 +24,14 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
+  const [showFavorites, setShowFavorites] = useState(true);
+  const [showProjects, setShowProjects] = useState(true);
 
   const {
     projects,
     tasks,
     sidebarCollapsed,
-    toggleSidebar,
     darkMode,
     toggleDarkMode,
     getInboxTasks,
@@ -53,129 +56,139 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
     );
   }, [projects, searchQuery]);
 
-  const smartViews = [
-    { id: 'inbox', label: '收件箱', icon: Inbox, count: inboxCount, color: 'text-[#0066FF]', activeBar: '#0066FF' },
-    { id: 'today', label: '今天', icon: CalendarDays, count: todayCount, color: 'text-[#058527]', activeBar: '#058527' },
-    { id: 'upcoming', label: '即将到来', icon: CalendarClock, count: upcomingCount, color: 'text-[#9B59B6]', activeBar: '#9B59B6' },
-  ];
+  const favoriteProjects = useMemo(
+    () => filteredProjects.filter((p) => p.isFavorite),
+    [filteredProjects]
+  );
+
+  const totalTasks = useMemo(() => tasks.length, [tasks]);
+  const completedTasks = useMemo(
+    () => tasks.filter((t) => t.isCompleted).length,
+    [tasks]
+  );
 
   const collapsed = sidebarCollapsed;
 
   return (
     <aside
-      className="flex flex-col h-screen transition-all duration-300 ease-in-out select-none relative overflow-hidden"
+      className="flex flex-col h-screen transition-all duration-300 ease-in-out select-none relative overflow-hidden bg-[#fafafa] border-r border-gray-200"
       style={{
         width: collapsed ? 56 : 260,
         minWidth: collapsed ? 56 : 260,
-        background: 'linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 100%)',
       }}
     >
-      {/* Subtle noise texture overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
-        }}
-      />
-
-      {/* Header with glass effect */}
-      <div className="relative flex items-center justify-between px-3 py-4 backdrop-blur-sm border-b border-white/5">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#DC4C3E] to-[#B83A2E] flex items-center justify-center shadow-lg shadow-[#DC4C3E]/20">
-              <LayoutDashboard className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-white font-bold text-lg tracking-tight">Todoist</span>
-          </div>
-        )}
-        <button
-          onClick={toggleSidebar}
-          className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
-          title={collapsed ? '展开侧边栏' : '收起侧边栏'}
-        >
-          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </button>
-      </div>
-
-      {/* Search & Quick Add */}
+      {/* Header: User info + icons */}
       {!collapsed && (
-        <div className="px-3 py-3 space-y-2">
-          <div className="relative group">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-[#DC4C3E] transition-colors" />
-            <input
-              type="text"
-              placeholder="搜索..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white/5 text-white placeholder-gray-500 rounded-lg text-[13px] border border-white/10 focus:border-[#DC4C3E]/50 focus:bg-white/10 focus:outline-none transition-all duration-200"
-            />
-          </div>
+        <div className="flex items-center justify-between px-3 py-3">
           <button
-            onClick={() => onViewChange('quick-add')}
-            className="flex items-center gap-2.5 w-full px-3 py-2.5 bg-gradient-to-r from-[#DC4C3E] to-[#c4403a] hover:from-[#c4403a] hover:to-[#B83A2E] text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-md shadow-[#DC4C3E]/20 hover:shadow-lg hover:shadow-[#DC4C3E]/30"
+            onClick={() => onViewChange('inbox')}
+            className="flex items-center gap-2 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition-colors"
           >
-            <Plus size={20} />
-            <span>快速添加</span>
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+              W
+            </div>
+            <span className="text-sm font-semibold text-gray-800">ww</span>
+            <ChevronDown size={14} className="text-gray-400" />
           </button>
+          <div className="flex items-center gap-1">
+            <button
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+              title="通知"
+            >
+              <Bell size={18} />
+            </button>
+            <button
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+              title="日历"
+            >
+              <CalendarDays size={18} />
+            </button>
+          </div>
         </div>
       )}
 
       {collapsed && (
         <div className="flex flex-col items-center py-3 gap-2">
-          <button
-            onClick={() => {
-              toggleSidebar();
-            }}
-            className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
-            title="搜索"
-          >
-            <Search size={20} />
-          </button>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+            W
+          </div>
+        </div>
+      )}
+
+      {/* Add Task Button */}
+      {!collapsed && (
+        <div className="px-3 pb-2">
           <button
             onClick={() => onViewChange('quick-add')}
-            className="p-2 rounded-lg bg-gradient-to-br from-[#DC4C3E] to-[#c4403a] hover:from-[#c4403a] hover:to-[#B83A2E] text-white transition-all duration-200 shadow-md shadow-[#DC4C3E]/20"
-            title="快速添加任务"
+            className="flex items-center gap-2 w-full px-3 py-2 bg-[#DC4C3E] hover:bg-[#c4403a] text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus size={18} />
+            <span>添加任务</span>
+          </button>
+        </div>
+      )}
+
+      {collapsed && (
+        <div className="flex flex-col items-center py-2 gap-2">
+          <button
+            onClick={() => onViewChange('quick-add')}
+            className="p-2 rounded-lg bg-[#DC4C3E] hover:bg-[#c4403a] text-white transition-colors"
+            title="添加任务"
           >
             <Plus size={20} />
           </button>
         </div>
       )}
 
-      {/* Smart Views */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 scrollbar-thin">
+      {/* Main Navigation */}
+      <nav className="flex-1 overflow-y-auto px-2 py-1 scrollbar-thin">
+        {/* Search */}
+        {!collapsed && (
+          <button
+            onClick={() => onViewChange('inbox')}
+            className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentView === 'search'
+                ? 'bg-gray-100 text-gray-900 font-medium'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <Search size={18} className="text-gray-500 flex-shrink-0" />
+            <span>搜索</span>
+          </button>
+        )}
+
+        {/* Smart Views */}
         <div className="space-y-0.5">
-          {smartViews.map((view) => {
+          {[
+            { id: 'inbox', label: '收件箱', icon: Inbox, count: inboxCount, color: '#0066FF' },
+            { id: 'today', label: '今天', icon: CalendarDays, count: todayCount, color: '#058527' },
+            { id: 'upcoming', label: '即将到来', icon: CalendarClock, count: upcomingCount, color: '#9B59B6' },
+            { id: 'filters', label: '过滤器 & 标签', icon: Filter, count: 0, color: '#6B7280' },
+            { id: 'log', label: '日志', icon: Activity, count: 0, color: '#6B7280' },
+          ].map((view) => {
             const Icon = view.icon;
             const isActive = currentView === view.id;
             return (
               <button
                 key={view.id}
                 onClick={() => onViewChange(view.id)}
-                className={`group flex items-center gap-3.5 w-full px-3 py-2.5 rounded-lg text-sm transition-all duration-200 relative ${
+                className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    ? 'bg-gray-100 text-gray-900 font-medium'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
                 title={collapsed ? view.label : undefined}
               >
-                {/* Active indicator bar - colored per view type */}
-                {isActive && (
-                  <div
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full shadow-sm"
-                    style={{
-                      backgroundColor: view.activeBar,
-                      boxShadow: `0 0 8px ${view.activeBar}40`,
-                    }}
-                  />
-                )}
-                <Icon size={20} className={`transition-colors duration-200 ${isActive ? view.color : 'text-gray-500 group-hover:text-gray-400'}`} />
+                <Icon
+                  size={18}
+                  className="flex-shrink-0"
+                  style={{ color: isActive ? view.color : '#9CA3AF' }}
+                />
                 {!collapsed && (
                   <>
                     <span className="flex-1 text-left">{view.label}</span>
                     {view.count > 0 && (
-                      <span className={`px-2 py-0.5 text-[11px] rounded-full min-w-[22px] text-center transition-colors duration-200 ${
-                        isActive ? 'bg-white/15 text-white' : 'bg-white/5 text-gray-500'
-                      }`}>
+                      <span className="text-xs text-gray-400 min-w-[20px] text-center">
                         {view.count}
                       </span>
                     )}
@@ -186,142 +199,179 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
           })}
         </div>
 
-        {/* Stats Link */}
-        <button
-          onClick={() => onViewChange('stats')}
-          className={`group flex items-center gap-3.5 w-full px-3 py-2.5 mt-1 rounded-lg text-sm transition-all duration-200 relative ${
-            currentView === 'stats'
-              ? 'bg-white/10 text-white shadow-sm'
-              : 'text-gray-400 hover:bg-white/5 hover:text-white'
-          }`}
-          title={collapsed ? '效率统计' : undefined}
-        >
-          {currentView === 'stats' && (
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gray-400 rounded-r-full shadow-sm shadow-gray-400/50" />
-          )}
-          <BarChart3 size={20} className={`transition-colors duration-200 ${currentView === 'stats' ? 'text-gray-500' : 'text-gray-500 group-hover:text-gray-400'}`} />
-          {!collapsed && <span className="flex-1 text-left">效率统计</span>}
-        </button>
-
-        {/* Divider */}
-        <div className="my-3 border-t border-white/5" />
-
-        {/* Projects */}
-        {!collapsed && (
-          <div className="px-2 mb-2">
-            <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">项目</span>
+        {/* Favorites Section */}
+        {!collapsed && favoriteProjects.length > 0 && (
+          <div className="mt-4">
+            <button
+              onClick={() => setShowFavorites(!showFavorites)}
+              className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700 transition-colors w-full"
+            >
+              <Star size={12} className="text-yellow-500" />
+              <span>收藏</span>
+              <ChevronDown
+                size={12}
+                className={`ml-auto transition-transform ${showFavorites ? '' : '-rotate-90'}`}
+              />
+            </button>
+            {showFavorites && (
+              <div className="space-y-0.5 mt-1">
+                {favoriteProjects.map((project: Project) => {
+                  const isActive = currentView === `project-${project.id}`;
+                  const count = getProjectTaskCount(project.id);
+                  return (
+                    <button
+                      key={project.id}
+                      onClick={() => onViewChange(`project-${project.id}`, project.id)}
+                      className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
+                        isActive
+                          ? 'bg-gray-100 text-gray-900 font-medium'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: project.color }}
+                      />
+                      <span className="flex-1 text-left truncate">{project.name}</span>
+                      {count > 0 && (
+                        <span className="text-xs text-gray-400 min-w-[20px] text-center">
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
-        <div className="space-y-0.5">
-          {filteredProjects.map((project: Project) => {
-            const isActive = currentView === `project-${project.id}`;
-            const count = getProjectTaskCount(project.id);
-            return (
-              <button
-                key={project.id}
-                onClick={() => onViewChange(`project-${project.id}`, project.id)}
-                className={`group flex items-center gap-3.5 w-full px-3 py-2.5 rounded-lg text-sm transition-all duration-200 relative ${
-                  isActive
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                }`}
-                title={collapsed ? project.name : undefined}
-              >
-                {/* Active indicator bar - project color */}
-                {isActive && (
-                  <div
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full shadow-sm"
-                    style={{
-                      backgroundColor: project.color,
-                      boxShadow: `0 0 8px ${project.color}40`,
-                    }}
-                  />
-                )}
-                <span
-                  className={`w-3 h-3 rounded-full flex-shrink-0 transition-all duration-200 ${
-                    isActive ? 'shadow-sm' : 'opacity-70 group-hover:opacity-100'
-                  }`}
-                  style={{
-                    backgroundColor: project.color,
-                    boxShadow: isActive ? `0 0 8px ${project.color}60` : 'none',
-                  }}
-                />
-                {!collapsed && (
-                  <>
-                    <span className="flex-1 text-left truncate">{project.name}</span>
-                    {count > 0 && (
-                      <span className={`px-2 py-0.5 text-[11px] rounded-full min-w-[22px] text-center transition-colors duration-200 ${
-                        isActive ? 'bg-white/15 text-white' : 'bg-white/5 text-gray-500'
-                      }`}>
-                        {count}
-                      </span>
-                    )}
-                  </>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        {/* My Projects */}
+        <div className="mt-4">
+          {!collapsed && (
+            <button
+              onClick={() => setShowProjects(!showProjects)}
+              className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700 transition-colors w-full"
+            >
+              <span>我的项目</span>
+              <span className="text-gray-400 font-normal">
+                ({completedTasks}/{totalTasks})
+              </span>
+              <ChevronDown
+                size={12}
+                className={`ml-auto transition-transform ${showProjects ? '' : '-rotate-90'}`}
+              />
+            </button>
+          )}
 
-        {/* New Project */}
-        <button
-          onClick={() => {
-            const name = prompt('输入项目名称：');
-            if (name?.trim()) {
-              useStore.getState().addProject({
-                name: name.trim(),
-                color: '#DC4C3E',
-                order: projects.length,
-                isFavorite: false,
-              });
-            }
-          }}
-          className={`flex items-center gap-3.5 w-full px-3 py-2.5 mt-1 rounded-lg text-sm text-gray-500 hover:text-white border border-dashed border-white/10 hover:border-white/30 hover:bg-white/5 transition-all duration-200 ${
-            collapsed ? 'justify-center' : ''
-          }`}
-          title={collapsed ? '新建项目' : undefined}
-        >
-          <Plus size={20} className="opacity-60" />
-          {!collapsed && <span>新建项目</span>}
-        </button>
+          {showProjects && (
+            <div className="space-y-0.5 mt-1">
+              {filteredProjects.map((project: Project) => {
+                const isActive = currentView === `project-${project.id}`;
+                const count = getProjectTaskCount(project.id);
+                return (
+                  <button
+                    key={project.id}
+                    onClick={() => onViewChange(`project-${project.id}`, project.id)}
+                    className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
+                      isActive
+                        ? 'bg-gray-100 text-gray-900 font-medium'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                    title={collapsed ? project.name : undefined}
+                  >
+                    <span
+                      className="w-3 h-3 rounded-sm flex-shrink-0"
+                      style={{ backgroundColor: project.color }}
+                    />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-left truncate">{project.name}</span>
+                        {count > 0 && (
+                          <span className="text-xs text-gray-400 min-w-[20px] text-center">
+                            {count}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                );
+              })}
+
+              {/* Add Project Button */}
+              {!collapsed && (
+                <button
+                  onClick={() => {
+                    const name = prompt('输入项目名称：');
+                    if (name?.trim()) {
+                      useStore.getState().addProject({
+                        name: name.trim(),
+                        color: '#DC4C3E',
+                        order: projects.length,
+                        isFavorite: false,
+                      });
+                    }
+                  }}
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <Plus size={18} className="text-gray-400" />
+                  <span>新建项目</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-white/5 px-2 py-2 backdrop-blur-sm">
+      <div className="border-t border-gray-200 px-2 py-2">
         {collapsed ? (
           <div className="flex flex-col items-center gap-1">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
               title={darkMode ? '浅色模式' : '暗色模式'}
             >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button
               onClick={() => onViewChange('settings')}
-              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
               title="设置"
             >
-              <Settings size={20} />
+              <Settings size={18} />
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onViewChange('settings')}
-              className="flex items-center gap-2 flex-1 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-            >
-              <Settings size={20} />
-              <span>设置</span>
-            </button>
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
-              title={darkMode ? '浅色模式' : '暗色模式'}
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+          <div className="space-y-1">
+            {/* User Status */}
+            <div className="flex items-center gap-2 px-3 py-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-xs text-gray-500">在线</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onViewChange('settings')}
+                className="flex items-center gap-2 flex-1 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <HelpCircle size={18} className="text-gray-500" />
+                <span>帮助 & 资源</span>
+              </button>
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+                title={darkMode ? '浅色模式' : '暗色模式'}
+              >
+                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+              <button
+                onClick={() => onViewChange('settings')}
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+                title="设置"
+              >
+                <Settings size={18} />
+              </button>
+            </div>
           </div>
         )}
       </div>

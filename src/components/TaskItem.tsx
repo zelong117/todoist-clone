@@ -77,30 +77,19 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
   return (
     <div
-      className={`group relative flex items-start gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
+      className={`group relative flex items-start gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 cursor-pointer ${
         isDragging
-          ? 'bg-white shadow-xl ring-2 ring-[#DC4C3E]/30 scale-[1.02] rotate-[0.5deg]'
+          ? 'bg-white shadow-xl ring-2 ring-[#DC4C3E]/30 scale-[1.02]'
           : isSelected
-          ? 'bg-blue-50/80 shadow-sm'
-          : 'hover:bg-gray-50/80 hover:shadow-sm'
+          ? 'bg-blue-50/80'
+          : 'hover:bg-gray-50'
       }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => setSelectedTaskId(task.id)}
       {...(dragHandleProps || {})}
     >
-      {/* Left priority bar - thinner w-[3px] */}
-      <div
-        className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full transition-all duration-200 ${
-          isSelected ? 'h-8' : hovered ? 'h-6' : 'h-0'
-        }`}
-        style={{
-          backgroundColor: PRIORITY_COLORS[task.priority],
-          boxShadow: isSelected ? `0 0 8px ${PRIORITY_COLORS[task.priority]}40` : 'none',
-        }}
-      />
-
-      {/* Checkbox - w-5 h-5, border-2, rounded */}
+      {/* Circular Checkbox - Todoist style */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -110,18 +99,15 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         style={{ width: 20, height: 20 }}
       >
         <div
-          className={`w-5 h-5 rounded-md border-2 transition-all duration-200 flex items-center justify-center ${
+          className={`w-5 h-5 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${
             task.isCompleted
-              ? 'border-transparent shadow-sm'
-              : 'border-gray-300 group-hover/check:border-current group-hover/check:shadow-sm'
+              ? 'border-transparent'
+              : 'border-gray-300 group-hover/check:border-current'
           }`}
           style={{
             borderColor: task.isCompleted ? 'transparent' : undefined,
             backgroundColor: task.isCompleted ? PRIORITY_COLORS[task.priority] : 'transparent',
             color: PRIORITY_COLORS[task.priority],
-            backgroundImage: task.isCompleted
-              ? `linear-gradient(135deg, ${PRIORITY_COLORS[task.priority]}, ${PRIORITY_COLORS[task.priority]}dd)`
-              : 'none',
           }}
         >
           {task.isCompleted && (
@@ -142,23 +128,23 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className={`text-[14px] leading-5 transition-all duration-300 ${
+            className={`text-[14px] leading-5 transition-all duration-200 ${
               task.isCompleted
                 ? 'line-through text-gray-400 opacity-60'
-                : 'text-gray-800 font-medium'
+                : 'text-gray-800'
             }`}
           >
             {task.title}
           </span>
         </div>
 
-        {/* Labels */}
+        {/* Labels as pills */}
         {task.labels && task.labels.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1.5">
+          <div className="flex flex-wrap gap-1 mt-1">
             {task.labels.map((label) => (
               <span
                 key={label}
-                className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-gray-100 text-gray-600"
+                className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-gray-100 text-gray-600"
               >
                 {label}
               </span>
@@ -168,13 +154,13 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
         {/* Subtask Progress */}
         {subtaskProgress && (
-          <div className="flex items-center gap-2 mt-1.5">
+          <div className="flex items-center gap-2 mt-1">
             <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{
                   width: `${subtaskProgress.percent}%`,
-                  backgroundImage: `linear-gradient(90deg, ${PRIORITY_COLORS[task.priority]}, ${PRIORITY_COLORS[task.priority]}cc)`,
+                  backgroundColor: PRIORITY_COLORS[task.priority],
                 }}
               />
             </div>
@@ -185,21 +171,21 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         )}
       </div>
 
-      {/* Right side info */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {/* Due Date - Calendar icon + text */}
+      {/* Right side: Date, Priority, Hover actions */}
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        {/* Due Date */}
         {task.dueDate && (
           <span
-            className={`flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md font-medium transition-colors ${
+            className={`flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded font-medium transition-colors ${
               isOverdue
-                ? 'text-red-600 bg-red-50 border border-red-100'
+                ? 'text-red-600 bg-red-50'
                 : isToday
-                ? 'text-green-600 bg-green-50 border border-green-100'
+                ? 'text-green-600 bg-green-50'
                 : isTomorrow
-                ? 'text-blue-600 bg-blue-50 border border-blue-100'
+                ? 'text-blue-600 bg-blue-50'
                 : task.isCompleted
                 ? 'text-gray-400'
-                : 'text-gray-500 bg-gray-50 border border-gray-100'
+                : 'text-gray-500 bg-gray-50'
             }`}
           >
             <Calendar size={10} />
@@ -207,9 +193,9 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           </span>
         )}
 
-        {/* Priority badge - simple P1/P2/P3/P4 text */}
+        {/* Priority indicator */}
         <span
-          className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+          className="text-[10px] font-semibold px-1 py-0.5 rounded"
           style={{
             color: PRIORITY_COLORS[task.priority],
             backgroundColor: `${PRIORITY_COLORS[task.priority]}10`,
@@ -218,57 +204,53 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           {PRIORITY_LABELS[task.priority]}
         </span>
 
-        {/* Hover actions - Todoist style 4 icons: Clock, Pencil, MessageSquare, Trash2 */}
+        {/* Hover actions */}
         <div
-          className={`flex items-center gap-0.5 transition-all duration-200 ${
+          className={`flex items-center gap-0.5 transition-all duration-150 ${
             hovered && !task.isCompleted
               ? 'opacity-100 translate-x-0'
-              : 'opacity-0 translate-x-4 pointer-events-none'
+              : 'opacity-0 translate-x-2 pointer-events-none'
           }`}
         >
-          {/* Clock - schedule date */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               setSelectedTaskId(task.id);
             }}
-            className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-all duration-150"
+            className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
             title="安排日期"
           >
-            <Clock size={15} />
+            <Clock size={14} />
           </button>
-          {/* Pencil - edit */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               setSelectedTaskId(task.id);
             }}
-            className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-all duration-150"
+            className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
             title="编辑"
           >
-            <Pencil size={15} />
+            <Pencil size={14} />
           </button>
-          {/* MessageSquare - comment/bubble */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               setSelectedTaskId(task.id);
             }}
-            className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-all duration-150"
+            className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
             title="评论"
           >
-            <MessageSquare size={15} />
+            <MessageSquare size={14} />
           </button>
-          {/* Trash2 - delete */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               deleteTask(task.id);
             }}
-            className="p-1.5 rounded-lg hover:bg-red-100 text-gray-400 hover:text-red-500 transition-all duration-150"
+            className="p-1 rounded hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors"
             title="删除"
           >
-            <Trash2 size={15} />
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
