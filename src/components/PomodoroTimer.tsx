@@ -144,14 +144,38 @@ export default function PomodoroTimer() {
     );
   }
 
+  const statusText = isRunning ? MODE_LABELS[timerMode] : isPaused ? '已暂停' : '准备开始';
+
   return (
-    <div className="bg-[var(--bg-card)] dark:bg-gray-800 rounded-xl shadow-lg p-4 w-[200px] transition-all duration-300">
-      <button
-        onClick={() => setExpanded(false)}
-        className="w-full flex items-center justify-end mb-2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
-      >
-        <ChevronUp size={16} />
-      </button>
+    <div className="bg-[var(--bg-card)] dark:bg-gray-800 rounded-xl shadow-lg p-4 w-[220px] transition-all duration-300">
+      {/* Header with collapse and mode selector */}
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={() => setExpanded(false)}
+          className="p-1 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+        >
+          <ChevronUp size={16} />
+        </button>
+        <div className="flex items-center gap-1 bg-[var(--bg-active)] dark:bg-gray-700 rounded-lg p-0.5">
+          {(['focus', 'shortBreak', 'longBreak'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => {
+                if (timerMode === mode) return;
+                useStore.getState().stopTimer();
+                useStore.getState().startTimer('__manual__');
+              }}
+              className={`px-2 py-1 rounded-md text-[10px] font-medium transition-all ${
+                timerMode === mode
+                  ? 'bg-[var(--accent)] text-white shadow-sm'
+                  : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+              }`}
+            >
+              {mode === 'focus' ? '🍅' : mode === 'shortBreak' ? '☕' : '🌴'}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="flex justify-center mb-3 relative">
         <svg width="176" height="176" className="transform -rotate-90">
@@ -175,7 +199,7 @@ export default function PomodoroTimer() {
             {display}
           </span>
           <span className="text-xs mt-1 font-medium" style={{ color: strokeColor }}>
-            {MODE_LABELS[timerMode]}
+            {statusText}
           </span>
         </div>
       </div>
