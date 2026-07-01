@@ -255,20 +255,20 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         {!task.isCompleted && (
           <button
             onClick={handleTimerToggle}
-            className={`p-1.5 rounded-lg transition-all duration-150 ${
+            className={`p-1.5 rounded-lg transition-all duration-150 z-20 ${
               activeTimerTaskId === task.id
-                ? 'bg-red-100 text-red-500 animate-pulse'
-                : 'hover:bg-red-100 text-gray-400 hover:text-red-500'
+                ? 'bg-red-100 text-red-500 animate-pulse shadow-sm'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-red-100 hover:text-red-500'
             }`}
             title={activeTimerTaskId === task.id ? '暂停计时' : '开始番茄钟'}
           >
-            {activeTimerTaskId === task.id ? <Pause size={15} /> : <Timer size={15} />}
+            {activeTimerTaskId === task.id ? <Pause size={16} /> : <Timer size={16} />}
           </button>
         )}
 
         {/* Hover actions */}
         <div
-          className={`flex items-center gap-0.5 transition-all duration-150 ${
+          className={`flex items-center gap-0.5 transition-all duration-150 z-20 ${
             hovered && !task.isCompleted
               ? 'opacity-100 translate-x-0'
               : 'opacity-0 translate-x-2 pointer-events-none'
