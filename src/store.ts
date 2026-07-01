@@ -515,6 +515,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'todoist-clone-storage',
+      version: 2,  // bump this to force reset localStorage
       // Persist data + UI preferences
       partialize: (state) => ({
         tasks: state.tasks,
