@@ -310,7 +310,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <button
               onClick={() => navigateTask(-1)}
               disabled={currentIndex <= 0}
-              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               title="上一个任务"
             >
               <ChevronUp size={16} />
@@ -318,20 +318,20 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <button
               onClick={() => navigateTask(1)}
               disabled={currentIndex >= siblingTasks.length - 1}
-              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               title="下一个任务"
             >
               <ChevronDown size={16} />
             </button>
             <button
-              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-gray-200 transition-colors"
+              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
               title="更多"
             >
               <MoreHorizontal size={16} />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-gray-200 transition-colors"
+              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
               title="关闭 (Esc)"
             >
               <X size={16} />
@@ -374,7 +374,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       (e.target as HTMLInputElement).blur();
                     }
                   }}
-                  className="flex-1 text-xl font-bold text-white bg-transparent border-none outline-none focus:ring-0 placeholder-[var(--text-tertiary)] leading-tight"
+                  className="flex-1 text-xl font-bold text-[var(--text-primary)] bg-transparent border-none outline-none focus:ring-0 placeholder-[var(--text-tertiary)] leading-tight"
                   placeholder="任务标题"
                 />
               </div>
@@ -669,7 +669,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                               <span>{`P${p}`}</span>
                             )}
                           </div>
-                          <span className={`text-[10px] font-medium ${task.priority === p ? 'text-gray-200' : 'text-[var(--text-tertiary)]'}`}>
+                          <span className={`text-[10px] font-medium ${task.priority === p ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}`}>
                             {PRIORITY_LABELS[p]}
                           </span>
                         </button>
@@ -762,7 +762,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                               {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
                             </div>
                             <span>{colorMap[labelName] || '🏷️'}</span>
-                            <span className={isSelected ? 'text-gray-200 font-medium' : 'text-[var(--text-tertiary)]'}>
+                            <span className={isSelected ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-tertiary)]'}>
                               {labelName}
                             </span>
                           </button>
