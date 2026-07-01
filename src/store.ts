@@ -139,6 +139,9 @@ export const useStore = create<AppState>()(
           ...taskData,
           id: generateId(),
           pomodoroCount: taskData.pomodoroCount ?? 0,
+          plannedPomodoros: taskData.plannedPomodoros ?? 1,
+          completedPomodoros: taskData.completedPomodoros ?? 0,
+          estimatedMinutes: taskData.estimatedMinutes ?? (taskData.plannedPomodoros ?? 1) * 25,
           createdAt: now,
           updatedAt: now,
         };
@@ -443,6 +446,14 @@ export const useStore = create<AppState>()(
               tasks: state.tasks.map((t) =>
                 t.id === activeTimerTaskId
                   ? { ...t, pomodoroCount: (t.pomodoroCount || 0) + 1, updatedAt: new Date().toISOString() }
+                  : t
+              ),
+            }));
+            // Also update planned/completed pomodoro counts on the task
+            set((state) => ({
+              tasks: state.tasks.map((t) =>
+                t.id === activeTimerTaskId
+                  ? { ...t, completedPomodoros: t.completedPomodoros + 1, updatedAt: new Date().toISOString() }
                   : t
               ),
             }));

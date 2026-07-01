@@ -181,6 +181,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       recurrenceRule: null,
       isCompleted: false,
       pomodoroCount: 0,
+      plannedPomodoros: 0,
+      completedPomodoros: 0,
+      estimatedMinutes: 0,
       completedAt: null,
       order: subtasks.length,
     });
@@ -379,6 +382,31 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                   placeholder="任务标题"
                 />
               </div>
+
+              {/* Pomodoro Progress */}
+              {task.plannedPomodoros > 0 && (
+                <div className="flex items-center gap-3 mb-4 p-3 bg-[var(--bg-secondary)] rounded-lg">
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: task.plannedPomodoros }).map((_, i) => (
+                      <span key={i} className={`text-lg ${i < task.completedPomodoros ? '' : 'opacity-30 grayscale'}`}>🍅</span>
+                    ))}
+                  </div>
+                  <span className="text-sm font-medium text-[var(--text-primary)]">
+                    {task.completedPomodoros}/{task.plannedPomodoros}
+                  </span>
+                  <span className="text-xs text-[var(--text-tertiary)]">
+                    = {task.plannedPomodoros * 25}m
+                  </span>
+                </div>
+              )}
+
+              {/* Pomodoro Completed Celebration */}
+              {task.completedPomodoros >= task.plannedPomodoros && task.plannedPomodoros > 0 && (
+                <div className="text-center py-2">
+                  <span className="text-2xl animate-bounce">🎉</span>
+                  <p className="text-xs text-green-500 font-medium">番茄任务完成！</p>
+                </div>
+              )}
 
               {/* Description */}
               <div className="pl-8">
@@ -772,6 +800,25 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     })()}
                   </div>
                 )}
+              </div>
+
+              {/* Pomodoro Settings */}
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-[var(--text-tertiary)] w-16">🍅 番茄</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateTask(task.id, { plannedPomodoros: Math.max(1, task.plannedPomodoros - 1), estimatedMinutes: Math.max(1, task.plannedPomodoros - 1) * 25 })}
+                    className="w-6 h-6 rounded-md bg-[var(--bg-active)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] flex items-center justify-center text-sm font-bold transition-colors"
+                  >-</button>
+                  <span className="text-sm font-semibold text-[var(--text-primary)] min-w-[40px] text-center">
+                    {task.completedPomodoros}/{task.plannedPomodoros}
+                  </span>
+                  <button
+                    onClick={() => updateTask(task.id, { plannedPomodoros: task.plannedPomodoros + 1, estimatedMinutes: (task.plannedPomodoros + 1) * 25 })}
+                    className="w-6 h-6 rounded-md bg-[var(--bg-active)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] flex items-center justify-center text-sm font-bold transition-colors"
+                  >+</button>
+                  <span className="text-xs text-[var(--text-tertiary)]">= {task.plannedPomodoros * 25}m</span>
+                </div>
               </div>
 
               {/* Reminders */}

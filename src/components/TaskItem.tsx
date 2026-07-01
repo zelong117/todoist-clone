@@ -177,11 +177,12 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           </div>
         )}
 
-        {/* Pomodoro count - show when task has completed pomodoros */}
-        {task.pomodoroCount > 0 && (
-          <div className="flex items-center gap-1 mt-1 text-xs text-orange-500">
+        {/* Pomodoro count - show planned/completed progress */}
+        {task.plannedPomodoros > 0 && (
+          <div className="flex items-center gap-1 text-xs text-orange-500 mt-0.5">
             <span>🍅</span>
-            <span>{task.pomodoroCount}</span>
+            <span>{task.completedPomodoros}/{task.plannedPomodoros}</span>
+            <span className="text-[var(--text-tertiary)]">· {task.plannedPomodoros * 25}m</span>
           </div>
         )}
 

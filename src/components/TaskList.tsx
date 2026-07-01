@@ -86,6 +86,9 @@ function SectionGroup({
       recurrenceRule: null,
       isCompleted: false,
       pomodoroCount: 0,
+      plannedPomodoros: 0,
+      completedPomodoros: 0,
+      estimatedMinutes: 0,
       completedAt: null,
       order: 0,
     });

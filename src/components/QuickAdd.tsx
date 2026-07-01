@@ -158,6 +158,9 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
       recurrenceRule: null,
       isCompleted: false,
       pomodoroCount: 0,
+      plannedPomodoros: 1,
+      completedPomodoros: 0,
+      estimatedMinutes: 25,
       completedAt: null,
       order: 0,
     });

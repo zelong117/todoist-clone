@@ -13,6 +13,9 @@ export interface Task {
   isCompleted: boolean;
   completedAt: string | null;
   pomodoroCount: number;
+  plannedPomodoros: number;
+  completedPomodoros: number;
+  estimatedMinutes: number;
   order: number;
   createdAt: string;
   updatedAt: string;

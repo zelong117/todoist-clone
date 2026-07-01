@@ -14,7 +14,7 @@ import CalendarView from './components/CalendarView';
 import StatsView from './components/StatsView';
 import FilterPage from './components/FilterPage';
 import ActivityLog from './components/ActivityLog';
-import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity } from 'lucide-react';
+import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play } from 'lucide-react';
 
 export default function App() {
   const {
@@ -155,6 +155,17 @@ export default function App() {
     }
     return [];
   }, [currentView, sections]);
+
+  // Stats for the stats bar
+  const statsData = useMemo(() => {
+    const allTasks = viewTasks;
+    const totalEstimated = allTasks.reduce((sum, t) => sum + (t.estimatedMinutes || t.plannedPomodoros * 25 || 0), 0);
+    const pendingTasks = allTasks.filter((t) => !t.isCompleted).length;
+    const completedTasks = allTasks.filter((t) => t.isCompleted).length;
+    const elapsedPomodoros = allTasks.reduce((sum, t) => sum + (t.completedPomodoros || 0), 0);
+    const elapsedTime = elapsedPomodoros * 25;
+    return { totalEstimated, pendingTasks, completedTasks, elapsedTime };
+  }, [viewTasks]);
 
   const currentProjectId = useMemo(() => {
     if (currentView.startsWith('project-')) {
@@ -345,6 +356,28 @@ export default function App() {
           {/* Pomodoro Bar */}
           <PomodoroBar />
 
+          {/* Stats Bar - for task list views */}
+          {isTaskListView && viewTasks.length > 0 && (
+            <div className="flex items-center gap-6 px-6 py-2 bg-[var(--bg-secondary)] border-b border-[var(--border-color)]">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--text-tertiary)]">预计时间</span>
+                <span className="text-sm font-bold text-[var(--accent)]">{statsData.totalEstimated}m</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--text-tertiary)]">待完成</span>
+                <span className="text-sm font-bold text-[var(--accent)]">{statsData.pendingTasks}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--text-tertiary)]">已用时间</span>
+                <span className="text-sm font-bold">{statsData.elapsedTime}m</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--text-tertiary)]">已完成</span>
+                <span className="text-sm font-bold text-green-500">{statsData.completedTasks}</span>
+              </div>
+            </div>
+          )}
+
           {/* Content Area */}
           <div className="px-6 py-4">
             {currentView === 'stats' ? (
@@ -404,26 +437,41 @@ export default function App() {
       {/* Pomodoro Timer - fixed at bottom right */}
       <div className="fixed bottom-6 right-6 z-30 max-h-[calc(100vh-48px)] overflow-visible">
         {activeTimerTaskId ? (
-          // Mini timer when a task timer is active
-          (() => {
-            const isRunning = timerStatus === 'running';
-            const isPaused = timerStatus === 'paused';
-            const MODE_LABELS: Record<string, string> = {
-              focus: '专注中',
-              shortBreak: '短休息',
-              longBreak: '长休息',
-            };
-            const statusText = isRunning ? MODE_LABELS[timerMode] : isPaused ? '已暂停' : '准备开始';
-            return (
-              <div className="flex items-center gap-2 bg-[var(--bg-card)] dark:bg-gray-800 rounded-full shadow-lg px-4 py-2">
-                <span className="text-sm">🍅</span>
-                <span className="text-sm font-mono font-bold text-[var(--text-primary)]">
-                  {formatTimer(timerSeconds)}
-                </span>
-                <span className="text-xs text-[var(--text-tertiary)]">{statusText}</span>
-              </div>
-            );
-          })()
+            // Mini timer when a task timer is active
+            (() => {
+              const isRunning = timerStatus === 'running';
+              const isPaused = timerStatus === 'paused';
+              const MODE_LABELS: Record<string, string> = {
+                focus: '专注中',
+                shortBreak: '短休息',
+                longBreak: '长休息',
+              };
+              const statusText = isRunning ? MODE_LABELS[timerMode] : isPaused ? '已暂停' : '准备开始';
+              const currentTaskName = activeTimerTaskId
+                ? tasks.find((t) => t.id === activeTimerTaskId)?.title || '未知任务'
+                : '';
+              return (
+                <div className="flex items-center gap-3 bg-[var(--bg-card)] dark:bg-gray-800 rounded-xl shadow-xl px-5 py-3 border border-[var(--border-color)]">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#DC4C3E] to-[#B83A2E] flex items-center justify-center">
+                    <span className="text-white text-sm">🍅</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">{currentTaskName}</p>
+                    <p className="text-xs text-[var(--text-tertiary)]">{statusText}</p>
+                  </div>
+                  <span className="text-lg font-mono font-bold text-[var(--accent)]">{formatTimer(timerSeconds)}</span>
+                  <button
+                    onClick={() => {
+                      if (isRunning) useStore.getState().pauseTimer();
+                      else useStore.getState().resumeTimer();
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-[var(--bg-hover)]"
+                  >
+                    {isRunning ? <Pause size={16} /> : <Play size={16} />}
+                  </button>
+                </div>
+              );
+            })()
         ) : (
           <PomodoroTimer />
         )}
