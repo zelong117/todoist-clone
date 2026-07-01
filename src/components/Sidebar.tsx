@@ -15,9 +15,12 @@ import {
   BarChart3,
   HelpCircle,
   ChevronDown,
+  Timer,
 } from 'lucide-react';
 import { useStore } from '../store';
 import type { Project } from '../types';
+import NewProjectModal from './NewProjectModal';
+import ProjectSettingsModal from './ProjectSettingsModal';
 
 interface SidebarProps {
   currentView: string;
@@ -28,6 +31,8 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
   const [searchQuery] = useState('');
   const [showFavorites, setShowFavorites] = useState(true);
   const [showProjects, setShowProjects] = useState(true);
+  const [showNewProjectModal, setShowNewProjectModal] = useState(false);
+  const [showProjectSettings, setShowProjectSettings] = useState<string | null>(null);
 
   const {
     projects,
@@ -71,6 +76,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
   const collapsed = sidebarCollapsed;
 
   return (
+    <>
     <aside
       className="flex flex-col h-screen transition-all duration-300 ease-in-out select-none relative overflow-hidden bg-[var(--bg-primary)] border-r border-[var(--border-color)]"
       style={{
@@ -235,6 +241,9 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                         style={{ backgroundColor: project.color }}
                       />
                       <span className="flex-1 text-left truncate font-medium">{project.name}</span>
+                      {project.usePomodoro && (
+                        <span title="番茄钟已启用"><Timer size={12} className="text-[#DC4C3E] flex-shrink-0" /></span>
+                      )}
                       {count > 0 && (
                         <span className="text-xs font-medium text-[var(--text-secondary)] min-w-[20px] text-center bg-[var(--bg-active)] rounded-full px-1.5">
                           {count}
@@ -272,48 +281,54 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                 const isActive = currentView === `project-${project.id}`;
                 const count = getProjectTaskCount(project.id);
                 return (
-                  <button
-                    key={project.id}
-                    onClick={() => onViewChange(`project-${project.id}`, project.id)}
-                    className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive
-                        ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold'
-                        : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
-                    }`}
-                    title={collapsed ? project.name : undefined}
-                  >
-                    <span
-                      className="w-3 h-3 rounded-sm flex-shrink-0"
-                      style={{ backgroundColor: project.color }}
-                    />
+                  <div key={project.id} className="relative group/item">
+                    <button
+                      onClick={() => onViewChange(`project-${project.id}`, project.id)}
+                      className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
+                        isActive
+                          ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold'
+                          : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
+                      }`}
+                      title={collapsed ? project.name : undefined}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: project.color }}
+                      />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 text-left truncate font-medium">{project.name}</span>
+                          {project.usePomodoro && (
+                            <span title="番茄钟已启用"><Timer size={12} className="text-[#DC4C3E] flex-shrink-0" /></span>
+                          )}
+                          {count > 0 && (
+                            <span className="text-xs font-medium text-[var(--text-secondary)] min-w-[20px] text-center bg-[var(--bg-active)] rounded-full px-1.5">
+                              {count}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </button>
                     {!collapsed && (
-                      <>
-                        <span className="flex-1 text-left truncate font-medium">{project.name}</span>
-                        {count > 0 && (
-                          <span className="text-xs font-medium text-[var(--text-secondary)] min-w-[20px] text-center bg-[var(--bg-active)] rounded-full px-1.5">
-                            {count}
-                          </span>
-                        )}
-                      </>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowProjectSettings(project.id);
+                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded-md opacity-0 group-hover/item:opacity-100 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] transition-all"
+                        title="项目设置"
+                      >
+                        <Settings size={13} />
+                      </button>
                     )}
-                  </button>
+                  </div>
                 );
               })}
 
               {/* Add Project Button */}
               {!collapsed && (
                 <button
-                  onClick={() => {
-                    const name = prompt('输入项目名称：');
-                    if (name?.trim()) {
-                      useStore.getState().addProject({
-                        name: name.trim(),
-                        color: '#DC4C3E',
-                        order: projects.length,
-                        isFavorite: false,
-                      });
-                    }
-                  }}
+                  onClick={() => setShowNewProjectModal(true)}
                   className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] transition-colors"
                 >
                   <Plus size={18} className="text-[var(--text-tertiary)]" />
@@ -378,5 +393,19 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
         )}
       </div>
     </aside>
+
+    {/* New Project Modal */}
+    {showNewProjectModal && (
+      <NewProjectModal onClose={() => setShowNewProjectModal(false)} />
+    )}
+
+    {/* Project Settings Modal */}
+    {showProjectSettings && (
+      <ProjectSettingsModal
+        projectId={showProjectSettings}
+        onClose={() => setShowProjectSettings(null)}
+      />
+    )}
+    </>
   );
 }
