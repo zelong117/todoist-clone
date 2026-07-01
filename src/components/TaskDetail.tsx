@@ -39,7 +39,7 @@ interface TaskDetailProps {
 }
 
 export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
-  const { tasks, comments, projects, sections, updateTask, deleteTask, addComment, addTask, labels, selectedTaskId, setSelectedTaskId } = useStore();
+  const { tasks, comments, projects, sections, updateTask, deleteTask, addComment, addTask, labels, setSelectedTaskId } = useStore();
   const task = useMemo(() => tasks.find((t) => t.id === taskId), [tasks, taskId]);
 
   // Find sibling tasks for navigation
