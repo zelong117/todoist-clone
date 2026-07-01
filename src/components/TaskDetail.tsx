@@ -539,7 +539,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <div className="w-[260px] border-l border-[var(--border-color)] px-5 py-5 space-y-4 flex-shrink-0">
               {/* Project */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm font-medium text-[var(--text-secondary)] w-16">项目</span>
+                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">项目</span>
                 <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
                   <span
                     className="w-2.5 h-2.5 rounded-full"
@@ -553,14 +553,14 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Date */}
               <div className="flex items-center justify-between group relative" ref={datePickerRef}>
-                <span className="text-sm font-medium text-[var(--text-secondary)] w-16">日期</span>
+                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">日期</span>
                 <button
                   onClick={() => setShowDatePicker(!showDatePicker)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-[var(--text-primary)] hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <span>{formatDateDisplay(task.dueDate)}</span>
                   {task.dueDate ? (
-                    <span className="text-[var(--text-tertiary)]">📅</span>
+                    <span className="text-[var(--text-primary)]">📅</span>
                   ) : (
                     <Plus size={14} className="text-[var(--text-tertiary)]" />
                   )}
@@ -610,7 +610,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Due Date */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm font-medium text-[var(--text-secondary)] w-16">截止</span>
+                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">截止</span>
                 <button
                   onClick={() => {
                     const date = prompt('输入截止日期 (YYYY-MM-DD)：');
@@ -618,7 +618,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       updateTask(task.id, { dueDate: date });
                     }
                   }}
-                  className="flex items-center gap-1.5 text-sm font-medium text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <Calendar size={14} />
                   <span>设置截止日期</span>
@@ -627,10 +627,10 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Priority */}
               <div className="flex items-center justify-between group relative" ref={priorityRef}>
-                <span className="text-sm font-medium text-[var(--text-secondary)] w-16">优先级</span>
+                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">优先级</span>
                 <button
                   onClick={() => setShowPriorityPicker(!showPriorityPicker)}
-                  className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] hover:text-white transition-colors"
+                  className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <span
                     className="w-3 h-3 rounded-full"
@@ -687,7 +687,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Labels */}
               <div className="group relative" ref={tagDropdownRef}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-[var(--text-secondary)] w-16">标签</span>
+                  <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">标签</span>
                   <button
                     onClick={() => setShowTagDropdown(!showTagDropdown)}
                     className="flex items-center gap-1 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
@@ -780,7 +780,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Reminders */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm font-medium text-[var(--text-secondary)] w-16">提醒</span>
+                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">提醒</span>
                 <button
                   onClick={() => {
                     const reminder = prompt('输入提醒时间 (YYYY-MM-DD HH:MM)：');
@@ -797,7 +797,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Location */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm font-medium text-[var(--text-secondary)] w-16">地点</span>
+                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">地点</span>
                 <button
                   onClick={() => {
                     const location = prompt('输入地点：');
