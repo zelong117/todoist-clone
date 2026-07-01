@@ -138,6 +138,7 @@ export const useStore = create<AppState>()(
         const task: Task = {
           ...taskData,
           id: generateId(),
+          pomodoroCount: taskData.pomodoroCount ?? 0,
           createdAt: now,
           updatedAt: now,
         };
@@ -436,6 +437,16 @@ export const useStore = create<AppState>()(
             timerSeconds: nextSeconds,
             timerStatus: pomodoroSettings.autoStartBreak ? 'running' : 'idle',
           });
+          // Increment pomodoro count on the active task
+          if (activeTimerTaskId) {
+            set((state) => ({
+              tasks: state.tasks.map((t) =>
+                t.id === activeTimerTaskId
+                  ? { ...t, pomodoroCount: (t.pomodoroCount || 0) + 1, updatedAt: new Date().toISOString() }
+                  : t
+              ),
+            }));
+          }
         } else {
           set({
             timerMode: 'focus',

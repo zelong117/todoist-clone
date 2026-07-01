@@ -12,6 +12,7 @@ export interface Task {
   recurrenceRule: string | null;
   isCompleted: boolean;
   completedAt: string | null;
+  pomodoroCount: number;
   order: number;
   createdAt: string;
   updatedAt: string;

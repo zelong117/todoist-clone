@@ -83,6 +83,7 @@ export const seedTasks: Task[] = [
     recurrenceRule: null,
     isCompleted: false,
     completedAt: null,
+    pomodoroCount: 0,
     order: 0,
     createdAt: now,
     updatedAt: now,

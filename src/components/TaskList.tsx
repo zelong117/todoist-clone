@@ -208,7 +208,7 @@ export default function TaskList({
   viewTitle,
   showSections = true,
 }: TaskListProps) {
-  const { reorderTasks, addSection } = useStore();
+  const { reorderTasks, addSection, activeTimerTaskId } = useStore();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -231,7 +231,17 @@ export default function TaskList({
     [tasks, reorderTasks]
   );
 
-  const incompleteTasks = useMemo(() => tasks.filter((t) => !t.isCompleted), [tasks]);
+  const incompleteTasks = useMemo(() => {
+    const tasksFiltered = tasks.filter((t) => !t.isCompleted);
+    // Move the active timer task to the top
+    if (activeTimerTaskId) {
+      const timerTask = tasksFiltered.find((t) => t.id === activeTimerTaskId);
+      if (timerTask) {
+        return [timerTask, ...tasksFiltered.filter((t) => t.id !== activeTimerTaskId)];
+      }
+    }
+    return tasksFiltered;
+  }, [tasks, activeTimerTaskId]);
   const completedTasks = useMemo(() => tasks.filter((t) => t.isCompleted), [tasks]);
 
   const sectionsToShow = useMemo(() => {
