@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Calendar, MoreHorizontal } from 'lucide-react';
+import { Plus, Calendar, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
 
@@ -41,7 +41,7 @@ interface BoardViewProps {
 }
 
 function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
-  const { setSelectedTaskId, toggleComplete } = useStore();
+  const { setSelectedTaskId, toggleComplete, deleteTask } = useStore();
 
   const {
     attributes,
@@ -103,6 +103,17 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
           boxShadow: `0 0 6px ${PRIORITY_COLORS[task.priority]}30`,
         }}
       />
+
+      {/* Delete button - hover to show */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          deleteTask(task.id);
+        }}
+        className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/30 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-150"
+      >
+        <Trash2 size={13} />
+      </button>
 
       {/* Header with checkbox and title */}
       <div className="flex items-start gap-2.5 mb-2 pl-2">
