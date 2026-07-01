@@ -343,7 +343,7 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-5 h-full overflow-x-auto pb-4 px-1 group">
+      <div className="flex gap-5 h-full overflow-x-auto pb-4 px-1">
         {sectionsToShow.map((section) => (
           <BoardColumn key={section.id} section={section} tasks={tasksToShow} />
         ))}
