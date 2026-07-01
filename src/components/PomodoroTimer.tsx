@@ -155,18 +155,19 @@ export default function PomodoroTimer() {
 
       <div className="flex justify-center mb-3 relative">
         <svg width="176" height="176" className="transform -rotate-90">
-          <circle cx="88" cy="88" r={88} fill="none" stroke="#e5e7eb" strokeWidth="6" />
+          <circle cx="88" cy="88" r={80} fill="none" stroke="var(--border-light)" strokeWidth="6" opacity="0.3" />
           <circle
             cx="88"
             cy="88"
-            r={88}
+            r={80}
             fill="none"
             stroke={strokeColor}
             strokeWidth="6"
             strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            className="transition-all duration-300"
+            strokeDasharray={2 * Math.PI * 80}
+            strokeDashoffset={2 * Math.PI * 80 * (1 - progress)}
+            className="transition-all duration-500"
+            style={{ filter: `drop-shadow(0 0 6px ${strokeColor}50)` }}
           />
         </svg>
         <div className="absolute flex flex-col items-center justify-center w-[176px] h-[176px]">
@@ -211,30 +212,28 @@ export default function PomodoroTimer() {
       </div>
       {/* Completed Pomodoros */}
       <div className="mt-4 pt-3 border-t border-[var(--border-light)] dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] text-[var(--text-tertiary)]">今日完成</span>
-          <div className="flex items-center gap-1">
-            {Array.from({ length: Math.min(completedPomodoros, 8) }).map((_, i) => (
-              <span key={i} className="text-sm">🍅</span>
-            ))}
-            {completedPomodoros > 8 && (
-              <span className="text-[10px] text-[var(--text-tertiary)]">+{completedPomodoros - 8}</span>
-            )}
-          </div>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[11px] text-[var(--text-tertiary)] font-medium">今日完成</span>
+          <span className="text-[11px] text-[var(--text-secondary)] font-bold">{completedPomodoros}/{pomodoroSettings.longBreakInterval}</span>
         </div>
-        {completedPomodoros > 0 && (
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 h-1.5 bg-[var(--bg-active)] dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#DC4C3E] to-[#F59E0B] rounded-full transition-all duration-500"
-                style={{ width: `${Math.min((completedPomodoros / pomodoroSettings.longBreakInterval) * 100, 100)}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-[var(--text-tertiary)] font-medium">
-              {completedPomodoros}/{pomodoroSettings.longBreakInterval}
+        {/* Tomato icons */}
+        <div className="flex items-center gap-1 mb-2">
+          {Array.from({ length: pomodoroSettings.longBreakInterval }).map((_, i) => (
+            <span 
+              key={i} 
+              className={`text-sm transition-all duration-300 ${i < completedPomodoros ? 'opacity-100 scale-110' : 'opacity-20 grayscale'}`}
+            >
+              🍅
             </span>
-          </div>
-        )}
+          ))}
+        </div>
+        {/* Progress bar */}
+        <div className="h-1.5 bg-[var(--bg-active)] dark:bg-gray-700 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#DC4C3E] to-[#F59E0B] rounded-full transition-all duration-500"
+            style={{ width: `${Math.min((completedPomodoros / pomodoroSettings.longBreakInterval) * 100, 100)}%` }}
+          />
+        </div>
       </div>
       {/* Completed Toast */}
       {showCompleted && (
