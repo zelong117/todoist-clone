@@ -11,10 +11,9 @@ import PomodoroTimer from './components/PomodoroTimer';
 import BoardView from './components/BoardView';
 import CalendarView from './components/CalendarView';
 import StatsView from './components/StatsView';
-import FilterPanel from './components/FilterPanel';
 import FilterPage from './components/FilterPage';
 import ActivityLog from './components/ActivityLog';
-import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal } from 'lucide-react';
+import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity } from 'lucide-react';
 
 export default function App() {
   const {
@@ -57,9 +56,7 @@ export default function App() {
       const pid = currentView.replace('project-', '');
       setActiveView('project');
       setSelectedProjectId(pid);
-    } else if (currentView === 'filter') {
-      setActiveView('filter');
-    } else if (currentView === 'filters') {
+    } else if (currentView === 'filter' || currentView === 'filters') {
       setActiveView('filter');
     } else if (currentView === 'log') {
       setActiveView('filter');
@@ -94,7 +91,6 @@ export default function App() {
 
   // Get tasks for current view
   const viewTasks = useMemo(() => {
-    // Apply search filter first
     let baseTasks: Task[];
     switch (currentView) {
       case 'inbox':
@@ -109,10 +105,13 @@ export default function App() {
       case 'stats':
         return []; // Stats view doesn't show tasks
       case 'filter':
+      case 'filters':
         baseTasks = activeFilter.fn
           ? tasks.filter((t) => !t.isCompleted && activeFilter.fn!(t))
           : tasks.filter((t) => !t.isCompleted);
         break;
+      case 'log':
+        return []; // Activity log doesn't show task list
       default:
         if (currentView.startsWith('project-')) {
           const pid = currentView.replace('project-', '');
@@ -162,7 +161,9 @@ export default function App() {
       case 'today': return '今天';
       case 'upcoming': return '即将到来';
       case 'stats': return '效率统计';
-      case 'filter': return activeFilter.label || '过滤器';
+      case 'filter':
+      case 'filters': return activeFilter.label || '过滤器 & 标签';
+      case 'log': return '日志';
       default:
         if (currentProject) return currentProject.name;
         return '所有任务';
@@ -171,16 +172,13 @@ export default function App() {
 
   const darkClasses = darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900';
 
+  // Whether the current view shows a task list (inbox, today, upcoming, projects)
+  const isTaskListView = currentView === 'inbox' || currentView === 'today' || currentView === 'upcoming' || currentView.startsWith('project-');
+
   return (
     <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
       {/* Sidebar */}
-      <div className="flex flex-col h-screen">
-        <Sidebar currentView={currentView} onViewChange={handleViewChange} />
-        {/* Pomodoro Timer at bottom of sidebar */}
-        <div className="absolute bottom-0 left-0 z-20">
-          <PomodoroTimer />
-        </div>
-      </div>
+      <Sidebar currentView={currentView} onViewChange={handleViewChange} />
 
       {/* Main Content */}
       <main className={`flex-1 flex overflow-hidden ${darkClasses} transition-colors duration-200`}>
@@ -199,6 +197,7 @@ export default function App() {
                 {currentView === 'today' && <CalendarDays size={22} className="text-green-500" />}
                 {currentView === 'upcoming' && <CalendarClock size={22} className="text-purple-500" />}
                 {currentView === 'stats' && <LayoutDashboard size={22} className="text-amber-500" />}
+                {currentView === 'log' && <Activity size={22} className="text-gray-500" />}
                 {currentProject && (
                   <span
                     className="w-3 h-3 rounded-full"
@@ -209,15 +208,17 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-1">
-                {/* View Mode Toggle (for project views) */}
-                {currentView !== 'stats' && currentView !== 'filter' && currentView !== 'activity' && currentView !== 'filters' && currentView !== 'log' && (
+                {/* View Mode Toggle - show for all task-list views */}
+                {isTaskListView && (
                   <>
-                    <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                      darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
-                    }`}>
-                      <Users size={15} />
-                      <span>共享</span>
-                    </button>
+                    {currentView.startsWith('project-') && currentProject && (
+                      <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                        darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                      }`}>
+                        <Users size={15} />
+                        <span>共享</span>
+                      </button>
+                    )}
 
                     <div className={`flex items-center rounded-lg p-0.5 ${
                       darkMode ? 'bg-gray-800' : 'bg-gray-100'
@@ -244,11 +245,13 @@ export default function App() {
                       ))}
                     </div>
 
-                    <button className={`p-2 rounded-lg transition-colors ${
-                      darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
-                    }`} title="评论">
-                      <MessageSquare size={18} />
-                    </button>
+                    {currentView.startsWith('project-') && currentProject && (
+                      <button className={`p-2 rounded-lg transition-colors ${
+                        darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                      }`} title="评论">
+                        <MessageSquare size={18} />
+                      </button>
+                    )}
                   </>
                 )}
 
@@ -299,14 +302,6 @@ export default function App() {
                 </button>
               </div>
             )}
-
-            {/* Filter Panel (for filter view) */}
-            {currentView === 'filter' && (
-              <FilterPanel
-                onFilterChange={(fn, label) => setActiveFilter({ fn, label })}
-                activeFilterLabel={activeFilter.label}
-              />
-            )}
           </div>
 
           {/* Pomodoro Bar */}
@@ -316,33 +311,28 @@ export default function App() {
           <div className="px-6 py-4">
             {currentView === 'stats' ? (
               <StatsView />
-            ) : currentView === 'filters' ? (
+            ) : currentView === 'filter' || currentView === 'filters' ? (
               <FilterPage
                 onFilterChange={(fn, label) => setActiveFilter({ fn, label })}
                 activeFilterLabel={activeFilter.label}
               />
             ) : currentView === 'log' ? (
               <ActivityLog />
-            ) : currentView.startsWith('project-') && currentProjectId ? (
+            ) : isTaskListView ? (
               viewMode === 'list' ? (
                 <TaskList
                   tasks={viewTasks}
-                  sections={viewSections}
-                  projectId={currentProjectId}
+                  sections={currentView.startsWith('project-') ? viewSections : []}
+                  projectId={currentProjectId || undefined}
                   viewTitle={viewTitle}
-                  showSections
+                  showSections={currentView.startsWith('project-') && viewSections.length > 0}
                 />
               ) : viewMode === 'board' ? (
                 <BoardView tasks={viewTasks} sections={viewSections} />
               ) : (
                 <CalendarView tasks={viewTasks} />
               )
-            ) : (
-              <TaskList
-                tasks={viewTasks}
-                viewTitle={viewTitle}
-              />
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -372,6 +362,11 @@ export default function App() {
           <PomodoroSettings onClose={() => setShowPomodoroSettings(false)} />
         </div>
       )}
+
+      {/* Pomodoro Timer - fixed at bottom right */}
+      <div className="fixed bottom-4 right-4 z-30">
+        <PomodoroTimer />
+      </div>
     </div>
   );
 }
