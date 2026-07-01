@@ -67,7 +67,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
 
   if (!project) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-400">
+      <div className="flex-1 flex items-center justify-center text-[var(--text-tertiary)]">
         项目不存在
       </div>
     );
@@ -82,7 +82,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+      <div className="px-6 pt-6 pb-4 border-b border-[var(--border-light)]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <span
@@ -100,11 +100,11 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
                   if (e.key === 'Escape') setEditingTitle(false);
                 }}
                 autoFocus
-                className="text-xl font-bold text-gray-800 border-b-2 border-[#DC4C3E] outline-none bg-transparent"
+                className="text-xl font-bold text-[var(--text-primary)] border-b-2 border-[#DC4C3E] outline-none bg-transparent"
               />
             ) : (
               <h1
-                className="text-xl font-bold text-gray-800 cursor-pointer hover:text-[#DC4C3E] transition-colors flex items-center gap-2 group"
+                className="text-xl font-bold text-[var(--text-primary)] cursor-pointer hover:text-[#DC4C3E] transition-colors flex items-center gap-2 group"
                 onClick={handleTitleEdit}
               >
                 {project.name}
@@ -117,15 +117,15 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
           </div>
 
           {/* View switcher */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-[var(--bg-active)] rounded-lg p-0.5">
             {viewButtons.map(({ type, icon: Icon, label }) => (
               <button
                 key={type}
                 onClick={() => setViewType(type)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all ${
                   viewType === type
-                    ? 'bg-white text-gray-800 shadow-sm font-medium'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm font-medium'
+                    : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
                 }`}
               >
                 <Icon size={14} />
@@ -148,7 +148,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
             />
             <button
               onClick={handleAddSection}
-              className="flex items-center gap-2 px-3 py-2 mt-4 text-sm text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 mt-4 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
             >
               <Plus size={16} />
               添加 Section

@@ -177,7 +177,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
     >
       <div
         ref={dialogRef}
-        className="w-full max-w-lg mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-lg mx-4 bg-[var(--bg-card)] rounded-2xl shadow-2xl overflow-hidden"
         style={{ animation: 'slideUp 0.2s ease-out' }}
       >
         {/* Main input */}
@@ -219,7 +219,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-1 px-3 py-3 border-t border-gray-100 bg-gray-50/50">
+        <div className="flex items-center gap-1 px-3 py-3 border-t border-[var(--border-light)] bg-[var(--bg-hover)]/50">
           {/* Project picker */}
           <div ref={projectPickerRef} className="relative">
             <button
@@ -230,7 +230,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 projectId
                   ? 'bg-blue-50 text-blue-600'
-                  : 'text-gray-400 hover:bg-gray-200/60 hover:text-gray-600'
+                  : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]/60 hover:text-[var(--text-secondary)]'
               }`}
             >
               <Folder size={14} />
@@ -240,7 +240,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
             </button>
             {showProjectPicker && (
               <div
-                className="absolute bottom-full left-0 mb-2 w-52 bg-white rounded-xl shadow-xl border border-gray-200 py-1 z-10"
+                className="absolute bottom-full left-0 mb-2 w-52 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] py-1 z-10"
                 style={{ animation: 'fadeIn 0.12s ease-out' }}
               >
                 <button
@@ -248,7 +248,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
                     setProjectId(null);
                     setShowProjectPicker(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
                 >
                   无项目
                 </button>
@@ -259,7 +259,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
                       setProjectId(p.id);
                       setShowProjectPicker(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] flex items-center gap-2 transition-colors"
                   >
                     <span
                       className="w-2.5 h-2.5 rounded-full flex-shrink-0"
@@ -308,7 +308,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 selectedLabels.length > 0
                   ? 'bg-purple-50 text-purple-600'
-                  : 'text-gray-400 hover:bg-gray-200/60 hover:text-gray-600'
+                  : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]/60 hover:text-[var(--text-secondary)]'
               }`}
             >
               <Tag size={14} />
@@ -316,17 +316,17 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
             </button>
             {showLabelPicker && (
               <div
-                className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 py-1 z-10 max-h-48 overflow-y-auto"
+                className="absolute bottom-full left-0 mb-2 w-48 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] py-1 z-10 max-h-48 overflow-y-auto"
                 style={{ animation: 'fadeIn 0.12s ease-out' }}
               >
                 {labels.length === 0 ? (
-                  <p className="px-3 py-2 text-xs text-gray-400">暂无标签</p>
+                  <p className="px-3 py-2 text-xs text-[var(--text-tertiary)]">暂无标签</p>
                 ) : (
                   labels.map((label) => (
                     <button
                       key={label.id}
                       onClick={() => toggleLabel(label.name)}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-hover)] flex items-center gap-2 transition-colors"
                     >
                       <div
                         className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
@@ -339,7 +339,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
                           <Check size={10} className="text-white" strokeWidth={3} />
                         )}
                       </div>
-                      <span className="text-gray-600">{label.name}</span>
+                      <span className="text-[var(--text-secondary)]">{label.name}</span>
                     </button>
                   ))
                 )}
@@ -352,7 +352,7 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
             type="date"
             value={parsedResult.date || dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none bg-white"
+            className="text-xs text-[var(--text-tertiary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 outline-none bg-[var(--bg-card)]"
           />
 
           <div className="flex-1" />

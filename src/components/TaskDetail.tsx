@@ -296,12 +296,12 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       >
         {/* Top Bar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-700/50">
-          <div className="flex items-center gap-2 text-sm text-gray-400">
-            <span className="text-gray-500">#</span>
+          <div className="flex items-center gap-2 text-sm text-[var(--text-tertiary)]">
+            <span className="text-[var(--text-tertiary)]">#</span>
             <span>{currentProject?.name || '收件箱'}</span>
             {currentSection && (
               <>
-                <span className="text-gray-600">/</span>
+                <span className="text-[var(--text-secondary)]">/</span>
                 <span>{currentSection.name}</span>
               </>
             )}
@@ -310,7 +310,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <button
               onClick={() => navigateTask(-1)}
               disabled={currentIndex <= 0}
-              className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 rounded-md hover:bg-gray-700 text-[var(--text-tertiary)] hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               title="上一个任务"
             >
               <ChevronUp size={16} />
@@ -318,20 +318,20 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <button
               onClick={() => navigateTask(1)}
               disabled={currentIndex >= siblingTasks.length - 1}
-              className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 rounded-md hover:bg-gray-700 text-[var(--text-tertiary)] hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               title="下一个任务"
             >
               <ChevronDown size={16} />
             </button>
             <button
-              className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors"
+              className="p-1.5 rounded-md hover:bg-gray-700 text-[var(--text-tertiary)] hover:text-gray-200 transition-colors"
               title="更多"
             >
               <MoreHorizontal size={16} />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors"
+              className="p-1.5 rounded-md hover:bg-gray-700 text-[var(--text-tertiary)] hover:text-gray-200 transition-colors"
               title="关闭 (Esc)"
             >
               <X size={16} />
@@ -393,7 +393,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 ) : (
                   <button
                     onClick={() => setShowDescription(true)}
-                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition-colors py-2"
+                    className="flex items-center gap-2 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors py-2"
                   >
                     <span className="text-lg leading-none">≡</span>
                     <span>添加描述</span>
@@ -406,10 +406,10 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Subtasks */}
               <div className="pl-8">
-                <label className="text-xs font-medium text-gray-500 mb-2 block uppercase tracking-wide">
+                <label className="text-xs font-medium text-[var(--text-tertiary)] mb-2 block uppercase tracking-wide">
                   子任务
                   {subtasks.length > 0 && (
-                    <span className="text-gray-600 ml-1 normal-case">
+                    <span className="text-[var(--text-secondary)] ml-1 normal-case">
                       ({completedSubtasks}/{subtasks.length})
                     </span>
                   )}
@@ -445,7 +445,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       </button>
                       <span
                         className={`text-sm flex-1 ${
-                          sub.isCompleted ? 'line-through text-gray-500' : 'text-gray-300'
+                          sub.isCompleted ? 'line-through text-[var(--text-tertiary)]' : 'text-gray-300'
                         }`}
                       >
                         {sub.title}
@@ -454,7 +454,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                   ))}
                   <div className="flex items-center gap-3 px-3 py-2">
                     <div className="w-4 h-4 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center flex-shrink-0">
-                      <Plus size={8} className="text-gray-500" />
+                      <Plus size={8} className="text-[var(--text-tertiary)]" />
                     </div>
                     <input
                       type="text"
@@ -464,7 +464,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                         if (e.key === 'Enter') handleAddSubtask();
                       }}
                       placeholder="添加子任务..."
-                      className="flex-1 text-sm text-gray-400 outline-none placeholder-gray-600 bg-transparent"
+                      className="flex-1 text-sm text-[var(--text-tertiary)] outline-none placeholder-gray-600 bg-transparent"
                     />
                   </div>
                 </div>
@@ -475,7 +475,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Comments */}
               <div className="pl-8">
-                <label className="text-xs font-medium text-gray-500 mb-3 block flex items-center gap-1.5 uppercase tracking-wide">
+                <label className="text-xs font-medium text-[var(--text-tertiary)] mb-3 block flex items-center gap-1.5 uppercase tracking-wide">
                   <MessageSquare size={13} />
                   评论
                 </label>
@@ -488,7 +488,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-semibold text-gray-300">我</span>
-                          <span className="text-[10px] text-gray-500">
+                          <span className="text-[10px] text-[var(--text-tertiary)]">
                             {formatCommentDate(comment.createdAt)}
                           </span>
                         </div>
@@ -499,7 +499,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     </div>
                   ))}
                   {taskComments.length === 0 && (
-                    <p className="text-xs text-gray-600 pl-9">暂无评论</p>
+                    <p className="text-xs text-[var(--text-secondary)] pl-9">暂无评论</p>
                   )}
                 </div>
                 {/* New comment input */}
@@ -519,13 +519,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       className="flex-1 text-sm text-gray-300 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 outline-none focus:border-[#DC4C3E]/40 transition-colors placeholder-gray-600"
                     />
                     <button
-                      className="p-2 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-gray-800 transition-colors"
+                      className="p-2 rounded-lg text-[var(--text-tertiary)] hover:text-gray-300 hover:bg-gray-800 transition-colors"
                       title="添加附件"
                     >
                       <Paperclip size={16} />
                     </button>
                     <button
-                      className="p-2 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-gray-800 transition-colors"
+                      className="p-2 rounded-lg text-[var(--text-tertiary)] hover:text-gray-300 hover:bg-gray-800 transition-colors"
                       title="添加图片"
                     >
                       <ImageIcon size={16} />
@@ -539,7 +539,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <div className="w-[260px] border-l border-gray-700/50 px-5 py-5 space-y-4 flex-shrink-0">
               {/* Project */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm text-gray-500 w-16">项目</span>
+                <span className="text-sm text-[var(--text-tertiary)] w-16">项目</span>
                 <div className="flex items-center gap-2 text-sm text-gray-300">
                   <span
                     className="w-2.5 h-2.5 rounded-full"
@@ -553,16 +553,16 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Date */}
               <div className="flex items-center justify-between group relative" ref={datePickerRef}>
-                <span className="text-sm text-gray-500 w-16">日期</span>
+                <span className="text-sm text-[var(--text-tertiary)] w-16">日期</span>
                 <button
                   onClick={() => setShowDatePicker(!showDatePicker)}
                   className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors"
                 >
                   <span>{formatDateDisplay(task.dueDate)}</span>
                   {task.dueDate ? (
-                    <span className="text-gray-500">📅</span>
+                    <span className="text-[var(--text-tertiary)]">📅</span>
                   ) : (
-                    <Plus size={14} className="text-gray-500" />
+                    <Plus size={14} className="text-[var(--text-tertiary)]" />
                   )}
                 </button>
                 {showDatePicker && (
@@ -599,7 +599,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     {task.dueDate && (
                       <button
                         onClick={() => handleSetDate(null)}
-                        className="w-full mt-2 text-xs text-gray-400 hover:text-red-400 transition-colors py-1"
+                        className="w-full mt-2 text-xs text-[var(--text-tertiary)] hover:text-red-400 transition-colors py-1"
                       >
                         清除日期
                       </button>
@@ -610,8 +610,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Due Date */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm text-gray-500 w-16">截止</span>
-                <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-300 transition-colors">
+                <span className="text-sm text-[var(--text-tertiary)] w-16">截止</span>
+                <button className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors">
                   <Calendar size={14} />
                   <span>设置截止日期</span>
                 </button>
@@ -619,7 +619,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Priority */}
               <div className="flex items-center justify-between group relative" ref={priorityRef}>
-                <span className="text-sm text-gray-500 w-16">优先级</span>
+                <span className="text-sm text-[var(--text-tertiary)] w-16">优先级</span>
                 <button
                   onClick={() => setShowPriorityPicker(!showPriorityPicker)}
                   className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
@@ -664,10 +664,10 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Labels */}
               <div className="group relative" ref={tagDropdownRef}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm text-gray-500 w-16">标签</span>
+                  <span className="text-sm text-[var(--text-tertiary)] w-16">标签</span>
                   <button
                     onClick={() => setShowTagDropdown(!showTagDropdown)}
-                    className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-300 transition-colors"
+                    className="flex items-center gap-1 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors"
                   >
                     <Plus size={14} />
                   </button>
@@ -690,7 +690,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                   {(!task.labels || task.labels.length === 0) && !showTagDropdown && (
                     <button
                       onClick={() => setShowTagDropdown(true)}
-                      className="text-xs text-gray-500 hover:text-gray-400 transition-colors"
+                      className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-tertiary)] transition-colors"
                     >
                       + 添加标签
                     </button>
@@ -702,7 +702,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     style={{ animation: 'fadeIn 0.15s ease-out' }}
                   >
                     {labels.length === 0 ? (
-                      <p className="px-3 py-2 text-xs text-gray-500">暂无可用标签</p>
+                      <p className="px-3 py-2 text-xs text-[var(--text-tertiary)]">暂无可用标签</p>
                     ) : (
                       labels.map((label) => {
                         const isSelected = (task.labels || []).includes(label.name);
@@ -721,7 +721,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                             >
                               {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
                             </div>
-                            <span className={isSelected ? 'text-gray-200 font-medium' : 'text-gray-400'}>
+                            <span className={isSelected ? 'text-gray-200 font-medium' : 'text-[var(--text-tertiary)]'}>
                               {label.name}
                             </span>
                           </button>
@@ -734,8 +734,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Reminders */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm text-gray-500 w-16">提醒</span>
-                <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-300 transition-colors">
+                <span className="text-sm text-[var(--text-tertiary)] w-16">提醒</span>
+                <button className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors">
                   <Bell size={14} />
                   <span>+ 添加提醒</span>
                 </button>
@@ -743,8 +743,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Location */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm text-gray-500 w-16">地点</span>
-                <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-300 transition-colors">
+                <span className="text-sm text-[var(--text-tertiary)] w-16">地点</span>
+                <button className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors">
                   <MapPin size={14} />
                   <span>设置地点</span>
                 </button>
@@ -752,12 +752,12 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Meta info */}
               <div className="border-t border-gray-700/50 pt-3 mt-3 space-y-1.5">
-                <div className="flex items-center gap-2 text-[11px] text-gray-600">
+                <div className="flex items-center gap-2 text-[11px] text-[var(--text-secondary)]">
                   <Clock size={11} />
                   <span>创建于 {formatDate(task.createdAt)}</span>
                 </div>
                 {task.completedAt && (
-                  <div className="flex items-center gap-2 text-[11px] text-gray-600">
+                  <div className="flex items-center gap-2 text-[11px] text-[var(--text-secondary)]">
                     <CheckCircle2 size={11} />
                     <span>完成于 {formatDate(task.completedAt)}</span>
                   </div>
@@ -768,10 +768,10 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               <div className="border-t border-gray-700/50 pt-3">
                 {showDeleteConfirm ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-400 flex-1">确认删除？</span>
+                    <span className="text-sm text-[var(--text-tertiary)] flex-1">确认删除？</span>
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="px-2.5 py-1 text-xs text-gray-500 hover:bg-gray-700 rounded-lg transition-colors"
+                      className="px-2.5 py-1 text-xs text-[var(--text-tertiary)] hover:bg-gray-700 rounded-lg transition-colors"
                     >
                       取消
                     </button>

@@ -87,7 +87,7 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-4 px-1">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold text-gray-800">{monthLabel}</h2>
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">{monthLabel}</h2>
           <button
             onClick={handleToday}
             className="px-2 py-1 text-xs text-[#DC4C3E] hover:bg-red-50 rounded transition-colors"
@@ -98,13 +98,13 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
         <div className="flex items-center gap-1">
           <button
             onClick={handlePrevMonth}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] transition-colors"
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={handleNextMonth}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] transition-colors"
           >
             <ChevronRight size={18} />
           </button>
@@ -113,13 +113,13 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
 
       <div className="grid grid-cols-7 gap-px mb-1">
         {WEEKDAYS.map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-gray-400 py-2">
+          <div key={day} className="text-center text-xs font-medium text-[var(--text-tertiary)] py-2">
             {day}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-px flex-1 bg-gray-200 rounded-xl overflow-hidden">
+      <div className="grid grid-cols-7 gap-px flex-1 bg-[var(--bg-active)] rounded-xl overflow-hidden">
         {calendarDays.map(({ date, day, isCurrentMonth }) => {
           const dayTasks = tasksByDate[date] || [];
           const isToday = date === today;
@@ -127,9 +127,9 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
           return (
             <div
               key={date}
-              className={`bg-white min-h-[80px] p-1.5 cursor-pointer transition-colors ${
-                !isCurrentMonth ? 'bg-gray-50' : ''
-              } hover:bg-gray-50`}
+              className={`bg-[var(--bg-card)] min-h-[80px] p-1.5 cursor-pointer transition-colors ${
+                !isCurrentMonth ? 'bg-[var(--bg-hover)]' : ''
+              } hover:bg-[var(--bg-hover)]`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span
@@ -137,7 +137,7 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
                     isToday
                       ? 'bg-[#DC4C3E] text-white'
                       : isCurrentMonth
-                      ? 'text-gray-700'
+                      ? 'text-[var(--text-secondary)]'
                       : 'text-gray-300'
                   }`}
                 >
@@ -167,7 +167,7 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
                   </div>
                 ))}
                 {dayTasks.length > 3 && (
-                  <span className="text-[9px] text-gray-400 px-1">
+                  <span className="text-[9px] text-[var(--text-tertiary)] px-1">
                     +{dayTasks.length - 3}个
                   </span>
                 )}

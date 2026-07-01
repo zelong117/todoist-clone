@@ -83,23 +83,23 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
         <div className="flex items-center justify-between px-3 py-3">
           <button
             onClick={() => onViewChange('inbox')}
-            className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg px-2 py-1.5 transition-colors"
+            className="flex items-center gap-2 hover:bg-[var(--bg-active)] dark:hover:bg-[var(--bg-card)]/10 rounded-lg px-2 py-1.5 transition-colors"
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
               W
             </div>
-            <span className="text-sm font-semibold text-gray-800 dark:text-zinc-100">ww</span>
-            <ChevronDown size={14} className="text-gray-400 dark:text-zinc-1000" />
+            <span className="text-sm font-semibold text-[var(--text-primary)] dark:text-[var(--text-primary)]">ww</span>
+            <ChevronDown size={14} className="text-[var(--text-tertiary)] dark:text-[var(--text-primary)]0" />
           </button>
           <div className="flex items-center gap-1">
             <button
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-zinc-400 hover:text-gray-700 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[var(--bg-active)] dark:hover:bg-[var(--bg-card)]/10 text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
               title="通知"
             >
               <Bell size={18} />
             </button>
             <button
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-zinc-400 hover:text-gray-700 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[var(--bg-active)] dark:hover:bg-[var(--bg-card)]/10 text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
               title="日历"
             >
               <CalendarDays size={18} />
@@ -149,11 +149,11 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
             onClick={() => onViewChange('inbox')}
             className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
               currentView === 'search'
-                ? 'bg-gray-100 text-gray-900 font-medium'
-                : 'text-gray-600 dark:text-zinc-300 hover:bg-gray-100'
+                ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-medium'
+                : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
             }`}
           >
-            <Search size={18} className="text-gray-500 flex-shrink-0" />
+            <Search size={18} className="text-[var(--text-tertiary)] flex-shrink-0" />
             <span>搜索</span>
           </button>
         )}
@@ -176,8 +176,8 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                 onClick={() => onViewChange(view.id)}
                 className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? 'bg-gray-100 text-gray-900 font-medium'
-                    : 'text-gray-600 dark:text-zinc-300 hover:bg-gray-100'
+                    ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-medium'
+                    : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
                 }`}
                 title={collapsed ? view.label : undefined}
               >
@@ -190,7 +190,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                   <>
                     <span className="flex-1 text-left">{view.label}</span>
                     {view.count > 0 && (
-                      <span className="text-xs text-gray-400 min-w-[20px] text-center">
+                      <span className="text-xs text-[var(--text-tertiary)] min-w-[20px] text-center">
                         {view.count}
                       </span>
                     )}
@@ -206,7 +206,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
           <div className="mt-4">
             <button
               onClick={() => setShowFavorites(!showFavorites)}
-              className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider hover:text-gray-700 transition-colors w-full"
+              className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] uppercase tracking-wider hover:text-[var(--text-secondary)] transition-colors w-full"
             >
               <Star size={12} className="text-yellow-500" />
               <span>收藏</span>
@@ -226,8 +226,8 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                       onClick={() => onViewChange(`project-${project.id}`, project.id)}
                       className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
                         isActive
-                          ? 'bg-gray-100 text-gray-900 font-medium'
-                          : 'text-gray-600 dark:text-zinc-300 hover:bg-gray-100'
+                          ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-medium'
+                          : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
                       }`}
                     >
                       <span
@@ -236,7 +236,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                       />
                       <span className="flex-1 text-left truncate">{project.name}</span>
                       {count > 0 && (
-                        <span className="text-xs text-gray-400 min-w-[20px] text-center">
+                        <span className="text-xs text-[var(--text-tertiary)] min-w-[20px] text-center">
                           {count}
                         </span>
                       )}
@@ -253,10 +253,10 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
           {!collapsed && (
             <button
               onClick={() => setShowProjects(!showProjects)}
-              className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider hover:text-gray-700 transition-colors w-full"
+              className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] uppercase tracking-wider hover:text-[var(--text-secondary)] transition-colors w-full"
             >
               <span>我的项目</span>
-              <span className="text-gray-400 font-normal">
+              <span className="text-[var(--text-tertiary)] font-normal">
                 ({completedTasks}/{totalTasks})
               </span>
               <ChevronDown
@@ -277,8 +277,8 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                     onClick={() => onViewChange(`project-${project.id}`, project.id)}
                     className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
                       isActive
-                        ? 'bg-gray-100 text-gray-900 font-medium'
-                        : 'text-gray-600 dark:text-zinc-300 hover:bg-gray-100'
+                        ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-medium'
+                        : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
                     }`}
                     title={collapsed ? project.name : undefined}
                   >
@@ -290,7 +290,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                       <>
                         <span className="flex-1 text-left truncate">{project.name}</span>
                         {count > 0 && (
-                          <span className="text-xs text-gray-400 min-w-[20px] text-center">
+                          <span className="text-xs text-[var(--text-tertiary)] min-w-[20px] text-center">
                             {count}
                           </span>
                         )}
@@ -314,9 +314,9 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                       });
                     }
                   }}
-                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] transition-colors"
                 >
-                  <Plus size={18} className="text-gray-400" />
+                  <Plus size={18} className="text-[var(--text-tertiary)]" />
                   <span>新建项目</span>
                 </button>
               )}
@@ -326,19 +326,19 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-200 px-2 py-2">
+      <div className="border-t border-[var(--border-color)] px-2 py-2">
         {collapsed ? (
           <div className="flex flex-col items-center gap-1">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-zinc-400 hover:text-gray-700 transition-colors"
+              className="p-2 rounded-lg hover:bg-[var(--bg-active)] dark:hover:bg-[var(--bg-card)]/10 text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
               title={darkMode ? '浅色模式' : '暗色模式'}
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button
               onClick={() => onViewChange('settings')}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-zinc-400 hover:text-gray-700 transition-colors"
+              className="p-2 rounded-lg hover:bg-[var(--bg-active)] dark:hover:bg-[var(--bg-card)]/10 text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
               title="设置"
             >
               <Settings size={18} />
@@ -349,26 +349,26 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
             {/* User Status */}
             <div className="flex items-center gap-2 px-3 py-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-xs text-gray-500">在线</span>
+              <span className="text-xs text-[var(--text-tertiary)]">在线</span>
             </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => onViewChange('settings')}
-                className="flex items-center gap-2 flex-1 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-zinc-300 hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 flex-1 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] transition-colors"
               >
-                <HelpCircle size={18} className="text-gray-500" />
+                <HelpCircle size={18} className="text-[var(--text-tertiary)]" />
                 <span>帮助 & 资源</span>
               </button>
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-zinc-400 hover:text-gray-700 transition-colors"
+                className="p-2 rounded-lg hover:bg-[var(--bg-active)] dark:hover:bg-[var(--bg-card)]/10 text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
                 title={darkMode ? '浅色模式' : '暗色模式'}
               >
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
               <button
                 onClick={() => onViewChange('settings')}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-zinc-400 hover:text-gray-700 transition-colors"
+                className="p-2 rounded-lg hover:bg-[var(--bg-active)] dark:hover:bg-[var(--bg-card)]/10 text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
                 title="设置"
               >
                 <Settings size={18} />

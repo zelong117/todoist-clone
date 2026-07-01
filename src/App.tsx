@@ -179,7 +179,7 @@ export default function App() {
     }
   }, [currentView, currentProject, activeFilter.label]);
 
-  const darkClasses = darkMode ? 'bg-[var(--bg-primary)] text-[var(--text-primary)]' : 'bg-gray-50 text-gray-900';
+  const darkClasses = darkMode ? 'bg-[var(--bg-primary)] text-[var(--text-primary)]' : 'bg-[var(--bg-hover)] text-gray-900';
 
   // Whether the current view shows a task list (inbox, today, upcoming, projects)
   const isTaskListView = currentView === 'inbox' || currentView === 'today' || currentView === 'upcoming' || currentView.startsWith('project-');
@@ -197,7 +197,7 @@ export default function App() {
           <div className={`sticky top-0 z-10 border-b backdrop-blur-sm ${
             darkMode
               ? 'bg-[var(--bg-secondary)] border-[var(--border-color)]'
-              : 'bg-white/80 border-gray-200'
+              : 'bg-[var(--bg-card)]/80 border-[var(--border-color)]'
           }`}>
             {/* Main Header Row */}
             <div className="flex items-center justify-between px-6 py-4">
@@ -206,7 +206,7 @@ export default function App() {
                 {currentView === 'today' && <CalendarDays size={22} className="text-green-500" />}
                 {currentView === 'upcoming' && <CalendarClock size={22} className="text-purple-500" />}
                 {currentView === 'stats' && <LayoutDashboard size={22} className="text-amber-500" />}
-                {currentView === 'log' && <Activity size={22} className="text-gray-500" />}
+                {currentView === 'log' && <Activity size={22} className="text-[var(--text-tertiary)]" />}
                 {currentProject && (
                   <span
                     className="w-3 h-3 rounded-full"
@@ -222,7 +222,7 @@ export default function App() {
                   <>
                     {currentView.startsWith('project-') && currentProject && (
                       <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        darkMode ? 'text-gray-400 dark:text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                        darkMode ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]'
                       }`}>
                         <Users size={15} />
                         <span>共享</span>
@@ -230,7 +230,7 @@ export default function App() {
                     )}
 
                     <div className={`flex items-center rounded-lg p-0.5 ${
-                      darkMode ? 'bg-gray-800' : 'bg-gray-100'
+                      darkMode ? 'bg-gray-800' : 'bg-[var(--bg-active)]'
                     }`}>
                       {(['list', 'board', 'calendar'] as const).map((mode) => (
                         <button
@@ -242,8 +242,8 @@ export default function App() {
                                 ? 'text-white bg-gray-600'
                                 : 'text-white bg-[#DC4C3E]'
                               : darkMode
-                                ? 'text-gray-400 dark:text-gray-300 hover:text-gray-200'
-                                : 'text-gray-500 hover:text-gray-700'
+                                ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:text-gray-200'
+                                : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
                           }`}
                         >
                           {mode === 'list' && <List size={14} />}
@@ -256,7 +256,7 @@ export default function App() {
 
                     {currentView.startsWith('project-') && currentProject && (
                       <button className={`p-2 rounded-lg transition-colors ${
-                        darkMode ? 'text-gray-400 dark:text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                        darkMode ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]'
                       }`} title="评论">
                         <MessageSquare size={18} />
                       </button>
@@ -265,7 +265,7 @@ export default function App() {
                 )}
 
                 <button className={`p-2 rounded-lg transition-colors ${
-                  darkMode ? 'text-gray-400 dark:text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                  darkMode ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]'
                 }`} title="更多">
                   <MoreHorizontal size={18} />
                 </button>
@@ -282,12 +282,12 @@ export default function App() {
                       key={section.id}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                         darkMode
-                          ? 'text-gray-400 dark:text-gray-300 hover:bg-gray-700 hover:text-gray-200'
-                          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                          ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700 hover:text-gray-200'
+                          : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)] hover:text-[var(--text-secondary)]'
                       }`}
                     >
                       <span>{section.name}</span>
-                      <span className={`text-xs ${darkMode ? 'text-gray-600' : 'text-gray-400 dark:text-gray-300'}`}>
+                      <span className={`text-xs ${darkMode ? 'text-[var(--text-secondary)]' : 'text-[var(--text-tertiary)] dark:text-gray-300'}`}>
                         ({sectionTaskCount})
                       </span>
                     </button>
@@ -296,8 +296,8 @@ export default function App() {
                 <button
                   className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
                     darkMode
-                      ? 'text-gray-500 hover:bg-gray-700 hover:text-gray-300'
-                      : 'text-gray-400 dark:text-gray-300 hover:bg-gray-100 hover:text-gray-600'
+                      ? 'text-[var(--text-tertiary)] hover:bg-gray-700 hover:text-gray-300'
+                      : 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-[var(--bg-active)] hover:text-[var(--text-secondary)]'
                   }`}
                   onClick={() => {
                     useStore.getState().addSection({

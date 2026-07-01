@@ -112,16 +112,16 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
   const hasActiveFilter = activePreset || customQuery.trim();
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <div className="bg-[var(--bg-card)] rounded-xl p-4 shadow-sm border border-[var(--border-light)]">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-gray-500" />
-          <h3 className="text-sm font-semibold text-gray-700">过滤器</h3>
+          <Filter size={16} className="text-[var(--text-tertiary)]" />
+          <h3 className="text-sm font-semibold text-[var(--text-secondary)]">过滤器</h3>
         </div>
         {hasActiveFilter && (
           <button
             onClick={handleClear}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex items-center gap-1 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
           >
             <X size={12} />
             清除
@@ -145,8 +145,8 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
               }}
             >
               <span style={{ color: filter.color }}>{filter.icon}</span>
-              <span className="text-gray-700 text-xs font-medium">{filter.label}</span>
-              <span className="ml-auto text-[10px] text-gray-400 bg-white px-1.5 py-0.5 rounded-full">
+              <span className="text-[var(--text-secondary)] text-xs font-medium">{filter.label}</span>
+              <span className="ml-auto text-[10px] text-[var(--text-tertiary)] bg-[var(--bg-card)] px-1.5 py-0.5 rounded-full">
                 {count}
               </span>
             </button>
@@ -155,10 +155,10 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
       </div>
 
       <div>
-        <label className="text-xs font-medium text-gray-500 mb-1.5 block">自定义搜索</label>
+        <label className="text-xs font-medium text-[var(--text-tertiary)] mb-1.5 block">自定义搜索</label>
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-tertiary)]" />
             <input
               type="text"
               value={customQuery}
@@ -168,13 +168,13 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
                 if (e.key === 'Escape') handleClear();
               }}
               placeholder="按标题搜索..."
-              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-[#DC4C3E]/40 transition-colors"
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-[var(--border-color)] rounded-lg outline-none focus:border-[#DC4C3E]/40 transition-colors"
             />
           </div>
           <button
             onClick={handleCustomFilter}
             disabled={!customQuery.trim()}
-            className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1.5 text-sm bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-secondary)] rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             筛选
           </button>

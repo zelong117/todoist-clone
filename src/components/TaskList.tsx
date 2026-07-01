@@ -116,32 +116,32 @@ function SectionGroup({
                   setIsEditing(false);
                 }
               }}
-              className="text-[13px] font-semibold text-gray-800 bg-transparent border-b border-gray-300 focus:outline-none focus:border-gray-500 px-0.5 py-0"
+              className="text-[13px] font-semibold text-[var(--text-primary)] bg-transparent border-b border-gray-300 focus:outline-none focus:border-gray-500 px-0.5 py-0"
             />
           ) : (
             <span
-              className="text-[13px] font-semibold text-gray-800 cursor-pointer hover:text-gray-900"
+              className="text-[13px] font-semibold text-[var(--text-primary)] cursor-pointer hover:text-gray-900"
               onClick={() => setIsEditing(true)}
             >
               {section.name}
             </span>
           )}
-          <span className="text-xs text-gray-400">{sectionTasks.length}</span>
+          <span className="text-xs text-[var(--text-tertiary)]">{sectionTasks.length}</span>
           <div className="relative ml-auto opacity-0 group-hover/section:opacity-100 transition-opacity">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1 rounded hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
             >
               <MoreHorizontal size={16} />
             </button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-40 bg-[var(--bg-card)] rounded-lg shadow-lg border border-[var(--border-color)] z-50 py-1">
                 <button
                   onClick={() => {
                     setIsEditing(true);
                     setShowMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
                 >
                   重命名版块
                 </button>
@@ -164,7 +164,7 @@ function SectionGroup({
 
       {/* Section divider line */}
       {section && (
-        <div className="mx-4 mb-1 border-t border-gray-100" />
+        <div className="mx-4 mb-1 border-t border-[var(--border-light)]" />
       )}
 
       {/* Tasks */}
@@ -179,7 +179,7 @@ function SectionGroup({
       {/* Add Task Button */}
       <button
         onClick={handleAddTask}
-        className="flex items-center gap-2 px-5 py-2 mx-2 mt-1 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors w-[calc(100%-16px)]"
+        className="flex items-center gap-2 px-5 py-2 mx-2 mt-1 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] rounded-lg transition-colors w-[calc(100%-16px)]"
       >
         <Plus size={16} />
         <span>添加任务</span>
@@ -190,7 +190,7 @@ function SectionGroup({
         <div className="flex justify-center py-3">
           <button
             onClick={onAddSection}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors border border-dashed border-gray-200 hover:border-gray-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] rounded-md transition-colors border border-dashed border-[var(--border-color)] hover:border-gray-300"
           >
             <Plus size={14} />
             <span>添加版块</span>
@@ -253,7 +253,7 @@ export default function TaskList({
 
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+      <div className="flex flex-col items-center justify-center py-20 text-[var(--text-tertiary)]">
         <Inbox size={48} className="mb-4 text-gray-300" />
         <p className="text-lg font-medium mb-1">暂无任务</p>
         <p className="text-sm">点击「添加任务」开始吧</p>
@@ -266,7 +266,7 @@ export default function TaskList({
       <div className="py-2">
         {/* View Title */}
         {viewTitle && (
-          <h2 className="text-xl font-bold text-gray-800 px-4 mb-3">{viewTitle}</h2>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] px-4 mb-3">{viewTitle}</h2>
         )}
 
         {/* Sections */}
@@ -288,7 +288,7 @@ export default function TaskList({
           <div className="flex justify-center py-3">
             <button
               onClick={handleAddSection}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors border border-dashed border-gray-200 hover:border-gray-300"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] rounded-md transition-colors border border-dashed border-[var(--border-color)] hover:border-gray-300"
             >
               <Plus size={14} />
               <span>添加版块</span>
@@ -299,8 +299,8 @@ export default function TaskList({
         {/* Completed Tasks */}
         {completedTasks.length > 0 && (
           <div className="mt-6 px-4">
-            <div className="flex items-center gap-2 py-2 border-t border-gray-100">
-              <span className="text-sm font-medium text-gray-400">
+            <div className="flex items-center gap-2 py-2 border-t border-[var(--border-light)]">
+              <span className="text-sm font-medium text-[var(--text-tertiary)]">
                 已完成 ({completedTasks.length})
               </span>
             </div>

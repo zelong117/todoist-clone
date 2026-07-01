@@ -17,7 +17,7 @@ interface StatCardProps {
 
 function StatCard({ icon, label, value, bgColor }: StatCardProps) {
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+    <div className="bg-[var(--bg-card)] rounded-xl p-4 shadow-sm border border-[var(--border-light)] hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3">
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -26,8 +26,8 @@ function StatCard({ icon, label, value, bgColor }: StatCardProps) {
           {icon}
         </div>
         <div>
-          <p className="text-2xl font-bold text-gray-800">{value}</p>
-          <p className="text-xs text-gray-500">{label}</p>
+          <p className="text-2xl font-bold text-[var(--text-primary)]">{value}</p>
+          <p className="text-xs text-[var(--text-tertiary)]">{label}</p>
         </div>
       </div>
     </div>
@@ -105,7 +105,7 @@ export default function StatsView() {
 
   return (
     <div className="flex-1 overflow-y-auto px-6 py-6">
-      <h1 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+      <h1 className="text-xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
         <BarChart3 size={22} className="text-[#DC4C3E]" />
         效率统计
       </h1>
@@ -142,8 +142,8 @@ export default function StatsView() {
       </div>
 
       {/* Weekly trend chart */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h2 className="text-sm font-semibold text-gray-700 mb-6">近7天完成趋势</h2>
+      <div className="bg-[var(--bg-card)] rounded-xl p-6 shadow-sm border border-[var(--border-light)]">
+        <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-6">近7天完成趋势</h2>
         <div className="flex items-end gap-3 h-40">
           {stats.dailyData.map((day) => {
             const heightPercent =
@@ -151,7 +151,7 @@ export default function StatsView() {
             const isToday = day.date === new Date().toISOString().split('T')[0];
             return (
               <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-[10px] text-gray-400 font-medium">
+                <span className="text-[10px] text-[var(--text-tertiary)] font-medium">
                   {day.count > 0 ? day.count : ''}
                 </span>
                 <div className="w-full flex items-end justify-center" style={{ height: '120px' }}>
@@ -169,7 +169,7 @@ export default function StatsView() {
                 </div>
                 <span
                   className={`text-[10px] ${
-                    isToday ? 'text-[#DC4C3E] font-bold' : 'text-gray-400'
+                    isToday ? 'text-[#DC4C3E] font-bold' : 'text-[var(--text-tertiary)]'
                   }`}
                 >
                   {day.label}
@@ -181,24 +181,24 @@ export default function StatsView() {
       </div>
 
       {/* Summary */}
-      <div className="mt-6 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">任务概览</h2>
+      <div className="mt-6 bg-[var(--bg-card)] rounded-xl p-6 shadow-sm border border-[var(--border-light)]">
+        <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-4">任务概览</h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">总任务数</span>
-            <span className="text-sm font-medium text-gray-800">{stats.totalTasks}</span>
+            <span className="text-sm text-[var(--text-tertiary)]">总任务数</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">{stats.totalTasks}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">已完成</span>
+            <span className="text-sm text-[var(--text-tertiary)]">已完成</span>
             <span className="text-sm font-medium text-green-600">{stats.totalCompleted}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">进行中</span>
+            <span className="text-sm text-[var(--text-tertiary)]">进行中</span>
             <span className="text-sm font-medium text-blue-600">
               {stats.totalTasks - stats.totalCompleted}
             </span>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-[var(--bg-active)] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#DC4C3E] rounded-full transition-all duration-500"
               style={{
@@ -210,7 +210,7 @@ export default function StatsView() {
               }}
             />
           </div>
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-[var(--text-tertiary)] text-center">
             完成率{' '}
             {stats.totalTasks > 0
               ? Math.round((stats.totalCompleted / stats.totalTasks) * 100)

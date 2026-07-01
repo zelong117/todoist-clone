@@ -98,7 +98,7 @@ export default function PomodoroTimer() {
           🍅
         </button>
         {completedPomodoros > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-medium text-gray-400">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--bg-card)]/10 text-[10px] font-medium text-[var(--text-tertiary)]">
             <span>🍅</span>
             {completedPomodoros}
           </div>
@@ -130,12 +130,12 @@ export default function PomodoroTimer() {
               className="transition-all duration-300"
             />
           </svg>
-          <span className="absolute text-[8px] font-mono font-bold text-gray-800 dark:text-gray-200">
+          <span className="absolute text-[8px] font-mono font-bold text-[var(--text-primary)] dark:text-gray-200">
             {display}
           </span>
         </button>
         {completedPomodoros > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-medium text-gray-400">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--bg-card)]/10 text-[10px] font-medium text-[var(--text-tertiary)]">
             <span>🍅</span>
             {completedPomodoros}
           </div>
@@ -145,10 +145,10 @@ export default function PomodoroTimer() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 w-[200px] transition-all duration-300">
+    <div className="bg-[var(--bg-card)] dark:bg-gray-800 rounded-xl shadow-lg p-4 w-[200px] transition-all duration-300">
       <button
         onClick={() => setExpanded(false)}
-        className="w-full flex items-center justify-end mb-2 text-gray-400 hover:text-gray-600"
+        className="w-full flex items-center justify-end mb-2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
       >
         <ChevronUp size={16} />
       </button>
@@ -170,7 +170,7 @@ export default function PomodoroTimer() {
           />
         </svg>
         <div className="absolute flex flex-col items-center justify-center w-[176px] h-[176px]">
-          <span className="text-3xl font-mono font-bold text-gray-800 dark:text-white">
+          <span className="text-3xl font-mono font-bold text-[var(--text-primary)] dark:text-white">
             {display}
           </span>
           <span className="text-xs mt-1 font-medium" style={{ color: strokeColor }}>
@@ -180,7 +180,7 @@ export default function PomodoroTimer() {
       </div>
 
       {currentTaskName && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate mb-2 px-1">
+        <p className="text-xs text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] text-center truncate mb-2 px-1">
           {currentTaskName}
         </p>
       )}
@@ -196,41 +196,41 @@ export default function PomodoroTimer() {
         </button>
         <button
           onClick={handleSkip}
-          className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
+          className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--bg-active)] dark:bg-gray-700 text-[var(--text-secondary)] dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
           title="跳过"
         >
           <SkipForward size={14} />
         </button>
         <button
           onClick={stopTimer}
-          className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
+          className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--bg-active)] dark:bg-gray-700 text-[var(--text-secondary)] dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
           title="停止"
         >
           <Square size={14} />
         </button>
       </div>
       {/* Completed Pomodoros */}
-      <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+      <div className="mt-4 pt-3 border-t border-[var(--border-light)] dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-gray-400">今日完成</span>
+          <span className="text-[11px] text-[var(--text-tertiary)]">今日完成</span>
           <div className="flex items-center gap-1">
             {Array.from({ length: Math.min(completedPomodoros, 8) }).map((_, i) => (
               <span key={i} className="text-sm">🍅</span>
             ))}
             {completedPomodoros > 8 && (
-              <span className="text-[10px] text-gray-400">+{completedPomodoros - 8}</span>
+              <span className="text-[10px] text-[var(--text-tertiary)]">+{completedPomodoros - 8}</span>
             )}
           </div>
         </div>
         {completedPomodoros > 0 && (
           <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-[var(--bg-active)] dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#DC4C3E] to-[#F59E0B] rounded-full transition-all duration-500"
                 style={{ width: `${Math.min((completedPomodoros / pomodoroSettings.longBreakInterval) * 100, 100)}%` }}
               />
             </div>
-            <span className="text-[10px] text-gray-400 font-medium">
+            <span className="text-[10px] text-[var(--text-tertiary)] font-medium">
               {completedPomodoros}/{pomodoroSettings.longBreakInterval}
             </span>
           </div>

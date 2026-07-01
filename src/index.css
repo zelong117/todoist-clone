@@ -2,40 +2,40 @@
 
 /* CSS Variables for Light/Dark Mode - Todoist Style */
 :root {
-  /* 浅色模式 - 参考 Todoist 官方配色 */
-  --bg-primary: #fafafa;          /* 柔和的灰白，不是纯白 */
-  --bg-secondary: #f5f5f5;        /* 侧边栏背景 */
-  --bg-card: #ffffff;             /* 卡片用纯白 */
-  --bg-sidebar: #fafafa;          /* 侧边栏 */
-  --bg-hover: #f0f0f0;           /* 悬停背景 */
-  --bg-active: #e8e8e8;          /* 选中背景 */
-  --text-primary: #202020;        /* 主文字 - 深灰不是纯黑 */
-  --text-secondary: #666666;      /* 次要文字 */
-  --text-tertiary: #999999;       /* 更次要的文字 */
-  --border-color: #e0e0e0;        /* 边框 */
-  --border-light: #eeeeee;        /* 浅边框 */
-  --accent: #DC4C3E;             /* Todoist 红 */
+  /* 浅色模式 - 高对比度 */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-card: #ffffff;
+  --bg-sidebar: #f9fafb;
+  --bg-hover: #f3f4f6;
+  --bg-active: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-tertiary: #6b7280;
+  --border-color: #d1d5db;
+  --border-light: #e5e7eb;
+  --accent: #DC4C3E;
   --accent-hover: #c4403a;
-  --success: #058527;            /* Todoist 绿 */
-  --warning: #f59e0b;
-  --info: #0066FF;               /* Todoist 蓝 */
+  --success: #058527;
+  --warning: #d97706;
+  --info: #2563eb;
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
   --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .dark {
-  /* 暗色模式 - Todoist 风格 */
+  /* 暗色模式 - 高对比度 */
   --bg-primary: #1a1a1a;
   --bg-secondary: #242424;
   --bg-card: #2a2a2a;
   --bg-sidebar: #1a1a1a;
   --bg-hover: #333333;
   --bg-active: #404040;
-  --text-primary: #f0f0f0;
-  --text-secondary: #a0a0a0;
-  --text-tertiary: #707070;
-  --border-color: #3a3a3a;
-  --border-light: #2e2e2e;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-tertiary: #999999;
+  --border-color: #404040;
+  --border-light: #333333;
   --accent: #DC4C3E;
   --accent-hover: #e05548;
   --success: #4ade80;

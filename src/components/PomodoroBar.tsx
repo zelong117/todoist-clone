@@ -73,14 +73,14 @@ export default function PomodoroBar() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => (isRunning ? pauseTimer() : resumeTimer())}
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors duration-200"
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-[var(--bg-card)]/20 hover:bg-[var(--bg-card)]/30 transition-colors duration-200"
               title={isRunning ? '暂停' : '继续'}
             >
               <Pause size={14} />
             </button>
             <button
               onClick={completePomodoro}
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors duration-200"
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-[var(--bg-card)]/20 hover:bg-[var(--bg-card)]/30 transition-colors duration-200"
               title="完成"
             >
               <CheckCircle size={14} />
@@ -91,7 +91,7 @@ export default function PomodoroBar() {
 
       <div className="h-1 bg-black/10">
         <div
-          className="h-full bg-white/60 transition-all duration-300 ease-linear"
+          className="h-full bg-[var(--bg-card)]/60 transition-all duration-300 ease-linear"
           style={{ width: `${progress}%` }}
         />
       </div>

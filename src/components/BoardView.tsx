@@ -89,10 +89,10 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
       {...attributes}
       {...listeners}
       onClick={() => setSelectedTaskId(task.id)}
-      className={`relative bg-white rounded-xl p-3.5 cursor-pointer transition-all duration-200 group ${
+      className={`relative bg-[var(--bg-card)] rounded-xl p-3.5 cursor-pointer transition-all duration-200 group ${
         isDragging || isSortableDragging
           ? 'opacity-60 shadow-2xl ring-2 ring-[#DC4C3E]/20 scale-[1.03] rotate-[1deg]'
-          : 'shadow-sm hover:shadow-md border border-gray-100/80'
+          : 'shadow-sm hover:shadow-md border border-[var(--border-light)]/80'
       }`}
     >
       {/* Left priority bar */}
@@ -134,7 +134,7 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
         </button>
         <span
           className={`text-sm leading-5 flex-1 font-medium transition-all duration-200 ${
-            task.isCompleted ? 'line-through text-gray-400 opacity-60' : 'text-gray-800'
+            task.isCompleted ? 'line-through text-[var(--text-tertiary)] opacity-60' : 'text-[var(--text-primary)]'
           }`}
         >
           {task.title}
@@ -147,7 +147,7 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
           {task.labels.map((label) => (
             <span
               key={label}
-              className="px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-gray-100 text-gray-600 border border-gray-200/50"
+              className="px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-[var(--bg-active)] text-[var(--text-secondary)] border border-[var(--border-color)]/50"
             >
               {label}
             </span>
@@ -164,7 +164,7 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
                 ? 'text-red-600 bg-red-50'
                 : isToday
                 ? 'text-green-600 bg-green-50'
-                : 'text-gray-500 bg-gray-50'
+                : 'text-[var(--text-tertiary)] bg-[var(--bg-hover)]'
             }`}
           >
             <Calendar size={10} />
@@ -219,21 +219,21 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
       ref={setNodeRef}
       className={`flex-shrink-0 w-[300px] rounded-2xl flex flex-col max-h-full transition-all duration-200 ${
         isOver
-          ? 'bg-gray-100/80 ring-2 ring-[#DC4C3E]/20 shadow-inner'
-          : 'bg-gray-50/60'
+          ? 'bg-[var(--bg-active)]/80 ring-2 ring-[#DC4C3E]/20 shadow-inner'
+          : 'bg-[var(--bg-hover)]/60'
       }`}
     >
       {/* Column header */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <h3 className="text-sm font-semibold text-gray-700">{section.name}</h3>
-          <span className="text-[11px] font-medium text-gray-400 bg-white/80 px-2 py-0.5 rounded-full shadow-sm border border-gray-100">
+          <h3 className="text-sm font-semibold text-[var(--text-secondary)]">{section.name}</h3>
+          <span className="text-[11px] font-medium text-[var(--text-tertiary)] bg-[var(--bg-card)]/80 px-2 py-0.5 rounded-full shadow-sm border border-[var(--border-light)]">
             {columnTasks.length}
           </span>
         </div>
         <button
           onClick={handleAddTask}
-          className="p-1.5 rounded-lg hover:bg-white/80 text-gray-400 hover:text-gray-600 transition-all duration-150 opacity-0 group-hover:opacity-100"
+          className="p-1.5 rounded-lg hover:bg-[var(--bg-card)]/80 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-150 opacity-0 group-hover:opacity-100"
         >
           <MoreHorizontal size={16} />
         </button>
@@ -252,7 +252,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
 
         {/* Empty state */}
         {columnTasks.length === 0 && (
-          <div className="border-2 border-dashed border-gray-200 rounded-xl py-8 flex flex-col items-center justify-center text-gray-300">
+          <div className="border-2 border-dashed border-[var(--border-color)] rounded-xl py-8 flex flex-col items-center justify-center text-gray-300">
             <p className="text-xs font-medium">暂无任务</p>
             <p className="text-[10px] mt-1">拖拽任务到此处</p>
           </div>
@@ -261,7 +261,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
         {/* Add task button */}
         <button
           onClick={handleAddTask}
-          className="w-full py-2 rounded-xl border border-dashed border-gray-200 text-gray-400 hover:text-gray-500 hover:border-gray-300 hover:bg-white/50 transition-all duration-200 flex items-center justify-center gap-1.5 text-xs font-medium"
+          className="w-full py-2 rounded-xl border border-dashed border-[var(--border-color)] text-[var(--text-tertiary)] hover:text-[var(--text-tertiary)] hover:border-gray-300 hover:bg-[var(--bg-card)]/50 transition-all duration-200 flex items-center justify-center gap-1.5 text-xs font-medium"
         >
           <Plus size={14} />
           添加任务
@@ -348,7 +348,7 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
               });
             }
           }}
-          className="flex-shrink-0 w-[300px] h-12 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-500 hover:border-gray-300 hover:bg-white/50 transition-all duration-200"
+          className="flex-shrink-0 w-[300px] h-12 rounded-2xl border-2 border-dashed border-[var(--border-color)] dark:border-gray-600 flex items-center justify-center text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-tertiary)] hover:border-gray-300 hover:bg-[var(--bg-card)]/50 transition-all duration-200"
         >
           <Plus size={18} className="mr-1.5" />
           <span className="text-sm font-medium">添加列</span>

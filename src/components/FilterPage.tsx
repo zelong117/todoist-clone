@@ -159,7 +159,7 @@ export default function FilterPage({ onFilterChange, activeFilterLabel }: Filter
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         {/* Preset Filters */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-3">
             我的过滤器
           </h3>
           <div className="space-y-2">
@@ -173,15 +173,15 @@ export default function FilterPage({ onFilterChange, activeFilterLabel }: Filter
                   className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all ${
                     isActive
                       ? 'ring-2 ring-offset-1 shadow-sm'
-                      : 'hover:shadow-sm hover:bg-gray-50'
+                      : 'hover:shadow-sm hover:bg-[var(--bg-hover)]'
                   }`}
                   style={{
                     backgroundColor: isActive ? filter.bgColor : '#FAFAFA',
                   }}
                 >
                   <span style={{ color: filter.color }}>{filter.icon}</span>
-                  <span className="text-gray-700 font-medium">{filter.label}</span>
-                  <span className="ml-auto text-xs text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">
+                  <span className="text-[var(--text-secondary)] font-medium">{filter.label}</span>
+                  <span className="ml-auto text-xs text-[var(--text-tertiary)] bg-[var(--bg-card)] px-2 py-0.5 rounded-full border border-[var(--border-light)]">
                     {count}
                   </span>
                 </button>
@@ -192,11 +192,11 @@ export default function FilterPage({ onFilterChange, activeFilterLabel }: Filter
 
         {/* Labels */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-3">
             标签
           </h3>
           {labels.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-8 text-[var(--text-tertiary)]">
               <Tag size={32} className="mb-2 opacity-30" />
               <p className="text-sm">暂无标签</p>
             </div>
@@ -212,15 +212,15 @@ export default function FilterPage({ onFilterChange, activeFilterLabel }: Filter
                     className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all ${
                       isActive
                         ? 'ring-2 ring-offset-1 shadow-sm'
-                        : 'hover:shadow-sm hover:bg-gray-50'
+                        : 'hover:shadow-sm hover:bg-[var(--bg-hover)]'
                     }`}
                     style={{
                       backgroundColor: isActive ? `${label.color}15` : '#FAFAFA',
                     }}
                   >
                     <Tag size={16} style={{ color: label.color }} />
-                    <span className="text-gray-700 font-medium">{label.name}</span>
-                    <span className="ml-auto text-xs text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">
+                    <span className="text-[var(--text-secondary)] font-medium">{label.name}</span>
+                    <span className="ml-auto text-xs text-[var(--text-tertiary)] bg-[var(--bg-card)] px-2 py-0.5 rounded-full border border-[var(--border-light)]">
                       {count}
                     </span>
                   </button>
@@ -233,12 +233,12 @@ export default function FilterPage({ onFilterChange, activeFilterLabel }: Filter
 
       {/* Custom Search */}
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+        <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-3">
           自定义搜索
         </h3>
         <div className="flex gap-2">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
             <input
               type="text"
               value={customQuery}
@@ -248,13 +248,13 @@ export default function FilterPage({ onFilterChange, activeFilterLabel }: Filter
                 if (e.key === 'Escape') handleClear();
               }}
               placeholder="按标题搜索..."
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-[#DC4C3E]/40 focus:ring-2 focus:ring-[#DC4C3E]/10 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-[var(--border-color)] rounded-xl outline-none focus:border-[#DC4C3E]/40 focus:ring-2 focus:ring-[#DC4C3E]/10 transition-all"
             />
           </div>
           <button
             onClick={handleCustomFilter}
             disabled={!customQuery.trim()}
-            className="px-4 py-2.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-4 py-2.5 text-sm bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-secondary)] rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium"
           >
             筛选
           </button>
