@@ -515,7 +515,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'todoist-clone-storage',
-      // Only persist data, not UI state
+      // Persist data + UI preferences
       partialize: (state) => ({
         tasks: state.tasks,
         projects: state.projects,
@@ -525,6 +525,8 @@ export const useStore = create<AppState>()(
         pomodoroSettings: state.pomodoroSettings,
         pomodoroSessions: state.pomodoroSessions,
         completedPomodoros: state.completedPomodoros,
+        viewMode: state.viewMode,
+        darkMode: state.darkMode,
       }),
     }
   )
