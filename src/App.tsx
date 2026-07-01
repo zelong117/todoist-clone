@@ -264,11 +264,35 @@ export default function App() {
                   </>
                 )}
 
-                <button className={`p-2 rounded-lg transition-colors ${
-                  darkMode ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]'
-                }`} title="更多">
-                  <MoreHorizontal size={18} />
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => {
+                      const menu = document.getElementById('more-menu');
+                      if (menu) menu.classList.toggle('hidden');
+                    }}
+                    className={`p-2 rounded-lg transition-colors ${ 
+                      darkMode ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]'
+                    }`} title="更多">
+                    <MoreHorizontal size={18} />
+                  </button>
+                  <div id="more-menu" className="hidden absolute right-0 top-full mt-1 w-48 bg-[var(--bg-card)] rounded-lg shadow-lg border border-[var(--border-color)] z-50 py-1">
+                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      📋 排序任务
+                    </button>
+                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      🔍 过滤任务
+                    </button>
+                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      👁 隐藏已完成
+                    </button>
+                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      📤 导出任务
+                    </button>
+                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      ⚙️ 项目设置
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
