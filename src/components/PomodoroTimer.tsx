@@ -67,10 +67,7 @@ export default function PomodoroTimer() {
   const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
   // SVG circle calculations
-  const radius = expanded ? 88 : 20;
-  const circumference = 2 * Math.PI * radius;
   const progress = totalSeconds > 0 ? (totalSeconds - timerSeconds) / totalSeconds : 0;
-  const offset = circumference * (1 - progress);
   const strokeColor = MODE_COLORS[timerMode];
 
   const isRunning = timerStatus === 'running';
@@ -89,16 +86,16 @@ export default function PomodoroTimer() {
 
   if (!expanded && !isActive) {
     return (
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center gap-1.5">
         <button
           onClick={() => setExpanded(true)}
-          className="w-12 h-12 rounded-full bg-[#DC4C3E] hover:bg-[#C53727] text-white flex items-center justify-center text-xl shadow-md transition-all duration-300 hover:scale-110"
+          className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#DC4C3E] to-[#E85D4A] hover:from-[#C53727] hover:to-[#D45040] text-white flex items-center justify-center text-xl shadow-lg shadow-red-500/25 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-red-500/30"
           title="番茄钟"
         >
           🍅
         </button>
         {completedPomodoros > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--bg-card)]/10 text-[10px] font-medium text-[var(--text-tertiary)]">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--bg-card)]/10 text-[11px] font-bold text-[var(--text-tertiary)]">
             <span>🍅</span>
             {completedPomodoros}
           </div>
@@ -109,33 +106,33 @@ export default function PomodoroTimer() {
 
   if (!expanded && isActive) {
     return (
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center gap-1.5">
         <button
           onClick={() => setExpanded(true)}
-          className="relative w-12 h-12 flex items-center justify-center"
+          className="relative w-14 h-14 flex items-center justify-center"
           title={`${MODE_LABELS[timerMode]} ${display}`}
         >
-          <svg width="48" height="48" className="transform -rotate-90">
-            <circle cx="24" cy="24" r={20} fill="none" stroke="#e5e7eb" strokeWidth="3" />
+          <svg width="56" height="56" className="transform -rotate-90">
+            <circle cx="28" cy="28" r={22} fill="none" stroke="#e5e7eb" strokeWidth="3.5" />
             <circle
-              cx="24"
-              cy="24"
-              r={20}
+              cx="28"
+              cy="28"
+              r={22}
               fill="none"
               stroke={strokeColor}
-              strokeWidth="3"
+              strokeWidth="3.5"
               strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={offset}
+              strokeDasharray={2 * Math.PI * 22}
+              strokeDashoffset={2 * Math.PI * 22 * (1 - progress)}
               className="transition-all duration-300"
             />
           </svg>
-          <span className="absolute text-[8px] font-mono font-bold text-[var(--text-primary)] dark:text-gray-200">
+          <span className="absolute text-[9px] font-mono font-bold text-[var(--text-primary)]">
             {display}
           </span>
         </button>
         {completedPomodoros > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--bg-card)]/10 text-[10px] font-medium text-[var(--text-tertiary)]">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--bg-card)]/10 text-[11px] font-bold text-[var(--text-tertiary)]">
             <span>🍅</span>
             {completedPomodoros}
           </div>
@@ -147,16 +144,16 @@ export default function PomodoroTimer() {
   const statusText = isRunning ? MODE_LABELS[timerMode] : isPaused ? '已暂停' : '准备开始';
 
   return (
-    <div className="bg-[var(--bg-card)] dark:bg-gray-800 rounded-xl shadow-lg p-4 w-[220px] transition-all duration-300">
+    <div className="bg-[var(--bg-card)] dark:bg-gray-800 rounded-2xl shadow-xl p-5 w-[240px] transition-all duration-300 border border-[var(--border-color)]">
       {/* Header with collapse and mode selector */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => setExpanded(false)}
-          className="p-1 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+          className="p-1.5 rounded-xl hover:bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
         >
           <ChevronUp size={16} />
         </button>
-        <div className="flex items-center gap-1 bg-[var(--bg-active)] dark:bg-gray-700 rounded-lg p-0.5">
+        <div className="flex items-center gap-1 bg-[var(--bg-active)] dark:bg-gray-700 rounded-xl p-0.5">
           {(['focus', 'shortBreak', 'longBreak'] as const).map((mode) => (
             <button
               key={mode}
@@ -165,9 +162,9 @@ export default function PomodoroTimer() {
                 useStore.getState().stopTimer();
                 useStore.getState().startTimer('__manual__');
               }}
-              className={`px-2 py-1 rounded-md text-[10px] font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 ${
                 timerMode === mode
-                  ? 'bg-[var(--accent)] text-white shadow-sm'
+                  ? 'bg-[var(--accent)] text-white shadow-md shadow-red-500/20'
                   : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
               }`}
             >
@@ -177,82 +174,82 @@ export default function PomodoroTimer() {
         </div>
       </div>
 
-      <div className="flex justify-center mb-3 relative">
-        <svg width="176" height="176" className="transform -rotate-90">
-          <circle cx="88" cy="88" r={80} fill="none" stroke="var(--border-light)" strokeWidth="6" opacity="0.3" />
+      <div className="flex justify-center mb-4 relative">
+        <svg width="192" height="192" className="transform -rotate-90">
+          <circle cx="96" cy="96" r={84} fill="none" stroke="var(--border-light)" strokeWidth="7" opacity="0.3" />
           <circle
-            cx="88"
-            cy="88"
-            r={80}
+            cx="96"
+            cy="96"
+            r={84}
             fill="none"
             stroke={strokeColor}
-            strokeWidth="6"
+            strokeWidth="7"
             strokeLinecap="round"
-            strokeDasharray={2 * Math.PI * 80}
-            strokeDashoffset={2 * Math.PI * 80 * (1 - progress)}
+            strokeDasharray={2 * Math.PI * 84}
+            strokeDashoffset={2 * Math.PI * 84 * (1 - progress)}
             className="transition-all duration-500"
-            style={{ filter: `drop-shadow(0 0 6px ${strokeColor}50)` }}
+            style={{ filter: `drop-shadow(0 0 8px ${strokeColor}50)` }}
           />
         </svg>
-        <div className="absolute flex flex-col items-center justify-center w-[176px] h-[176px]">
-          <span className="text-3xl font-mono font-bold text-[var(--text-primary)] dark:text-white">
+        <div className="absolute flex flex-col items-center justify-center w-[192px] h-[192px]">
+          <span className="text-4xl font-mono font-black text-[var(--text-primary)] tracking-tight">
             {display}
           </span>
-          <span className="text-xs mt-1 font-medium" style={{ color: strokeColor }}>
+          <span className="text-xs mt-1.5 font-bold" style={{ color: strokeColor }}>
             {statusText}
           </span>
         </div>
       </div>
 
       {currentTaskName && (
-        <p className="text-xs text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] text-center truncate mb-2 px-1">
+        <p className="text-xs text-[var(--text-tertiary)] text-center truncate mb-2.5 px-1 font-medium">
           {currentTaskName}
         </p>
       )}
 
-      <div className="flex items-center justify-center gap-2 mt-2">
+      <div className="flex items-center justify-center gap-2.5 mt-3">
         <button
           onClick={handleToggle}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
-          style={{ backgroundColor: strokeColor }}
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 shadow-lg"
+          style={{ backgroundColor: strokeColor, boxShadow: `0 4px 14px ${strokeColor}40` }}
           title={isRunning ? '暂停' : '继续'}
         >
-          {isRunning ? <Pause size={14} /> : <Play size={14} />}
+          {isRunning ? <Pause size={16} /> : <Play size={16} />}
         </button>
         <button
           onClick={handleSkip}
-          className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--bg-active)] dark:bg-gray-700 text-[var(--text-secondary)] dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
+          className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--bg-active)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all duration-200"
           title="跳过"
         >
           <SkipForward size={14} />
         </button>
         <button
           onClick={stopTimer}
-          className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--bg-active)] dark:bg-gray-700 text-[var(--text-secondary)] dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
+          className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--bg-active)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all duration-200"
           title="停止"
         >
           <Square size={14} />
         </button>
       </div>
       {/* Completed Pomodoros */}
-      <div className="mt-4 pt-3 border-t border-[var(--border-light)] dark:border-gray-700">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] text-[var(--text-tertiary)] font-medium">今日完成</span>
-          <span className="text-[11px] text-[var(--text-secondary)] font-bold">{completedPomodoros}/{pomodoroSettings.longBreakInterval}</span>
+      <div className="mt-4 pt-3.5 border-t border-[var(--border-light)]">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] text-[var(--text-tertiary)] font-bold uppercase tracking-wider">今日完成</span>
+          <span className="text-[11px] text-[var(--text-secondary)] font-black">{completedPomodoros}/{pomodoroSettings.longBreakInterval}</span>
         </div>
         {/* Tomato icons */}
-        <div className="flex items-center gap-1 mb-2">
+        <div className="flex items-center gap-1.5 mb-2.5">
           {Array.from({ length: pomodoroSettings.longBreakInterval }).map((_, i) => (
             <span 
               key={i} 
-              className={`text-sm transition-all duration-300 ${i < completedPomodoros ? 'opacity-100 scale-110' : 'opacity-20 grayscale'}`}
+              className={`text-base transition-all duration-300 ${i < completedPomodoros ? 'opacity-100 scale-110' : 'opacity-20 grayscale'}`}
             >
               🍅
             </span>
           ))}
         </div>
         {/* Progress bar */}
-        <div className="h-1.5 bg-[var(--bg-active)] dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="h-2 bg-[var(--bg-active)] rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-[#DC4C3E] to-[#F59E0B] rounded-full transition-all duration-500"
             style={{ width: `${Math.min((completedPomodoros / pomodoroSettings.longBreakInterval) * 100, 100)}%` }}
@@ -261,7 +258,7 @@ export default function PomodoroTimer() {
       </div>
       {/* Completed Toast */}
       {showCompleted && (
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[#DC4C3E] text-white text-xs font-medium rounded-lg shadow-lg animate-bounce whitespace-nowrap">
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-2 bg-gradient-to-r from-[#DC4C3E] to-[#E85D4A] text-white text-xs font-bold rounded-xl shadow-xl animate-bounce whitespace-nowrap">
           🍅 番茄完成！
         </div>
       )}

@@ -32,7 +32,7 @@ export default function NewProjectModal({ onClose }: NewProjectModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-[var(--bg-card)] dark:bg-gray-800 rounded-2xl shadow-2xl w-[380px] max-w-[90vw] overflow-hidden">
+      <div className="bg-[var(--bg-card)] rounded-2xl shadow-2xl w-[380px] max-w-[90vw] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)]">
           <div className="flex items-center gap-2">

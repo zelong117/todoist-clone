@@ -1,53 +1,53 @@
 @import 'tailwindcss';
 
-/* CSS Variables for Light/Dark Mode - Todoist Style */
+/* CSS Variables for Light/Dark Mode - Premium Theme */
 :root {
-  /* 浅色模式 - 高对比度 */
+  /* 浅色模式 - 参考 Linear */
   --bg-primary: #ffffff;
-  --bg-secondary: #fafafa;
+  --bg-secondary: #f8fafc;
   --bg-card: #ffffff;
-  --bg-sidebar: #fafafa;
-  --bg-hover: #f5f5f5;
-  --bg-active: #ebebeb;
-  --text-primary: #202020;
-  --text-secondary: #666666;
-  --text-tertiary: #808080;
-  --border-color: #e0e0e0;
-  --border-light: #eeeeee;
+  --bg-sidebar: #f8fafc;
+  --bg-hover: #f1f5f9;
+  --bg-active: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
   --accent: #DC4C3E;
   --accent-hover: #c4403a;
-  --success: #058527;
-  --warning: #f29900;
+  --success: #16a34a;
+  --warning: #d97706;
   --info: #2563eb;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .dark {
-  /* 暗色模式 - 高对比度 */
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #242424;
-  --bg-card: #2a2a2a;
-  --bg-sidebar: #1a1a1a;
-  --bg-hover: #333333;
-  --bg-active: #404040;
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --text-tertiary: #808080;
-  --border-color: #404040;
-  --border-light: #333333;
+  /* 暗色模式 - 参考 Vercel */
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #111113;
+  --bg-card: #18181b;
+  --bg-sidebar: #0a0a0b;
+  --bg-hover: #27272a;
+  --bg-active: #3f3f46;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --border-color: #27272a;
+  --border-light: #1f1f23;
   --accent: #DC4C3E;
   --accent-hover: #e05548;
-  --success: #4ade80;
-  --warning: #facc15;
-  --info: #60a5fa;
+  --success: #22c55e;
+  --warning: #eab308;
+  --info: #3b82f6;
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.5);
 }
 
 @keyframes checkmark {
-  from { transform: scale(0); }
-  to { transform: scale(1); }
+  from { transform: scale(0) rotate(-45deg); }
+  to { transform: scale(1) rotate(0deg); }
 }
 
 @keyframes slideUp {
@@ -65,8 +65,19 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* 自定义滚动条 - 精致风格 */

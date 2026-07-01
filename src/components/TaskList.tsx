@@ -102,11 +102,11 @@ function SectionGroup({
   }, [section, editName, updateSection]);
 
   return (
-    <div className="mb-2">
+    <div className="mb-4">
       {/* Section Header */}
       {section && (
-        <div className="group/section flex items-center gap-2 px-4 py-2.5">
-          <GripVertical size={14} className="text-gray-300 cursor-grab opacity-0 group-hover/section:opacity-100 transition-opacity" />
+        <div className="group/section flex items-center gap-2.5 px-4 py-3">
+          <GripVertical size={14} className="text-gray-300 cursor-grab opacity-0 group-hover/section:opacity-100 transition-opacity duration-200" />
           {isEditing ? (
             <input
               autoFocus
@@ -120,32 +120,34 @@ function SectionGroup({
                   setIsEditing(false);
                 }
               }}
-              className="text-[13px] font-semibold text-[var(--text-primary)] bg-transparent border-b border-gray-300 focus:outline-none focus:border-gray-500 px-0.5 py-0"
+              className="text-sm font-bold text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--accent)] focus:outline-none px-1 py-0.5"
             />
           ) : (
             <span
-              className="text-[13px] font-semibold text-[var(--text-primary)] cursor-pointer hover:text-gray-900"
+              className="text-sm font-bold text-[var(--text-primary)] cursor-pointer hover:text-gray-900 transition-colors"
               onClick={() => setIsEditing(true)}
             >
               {section.name}
             </span>
           )}
-          <span className="text-xs text-[var(--text-tertiary)]">{sectionTasks.length}</span>
-          <div className="relative ml-auto opacity-0 group-hover/section:opacity-100 transition-opacity">
+          <span className="text-xs font-semibold text-[var(--text-tertiary)] bg-[var(--bg-active)] px-2 py-0.5 rounded-full">
+            {sectionTasks.length}
+          </span>
+          <div className="relative ml-auto opacity-0 group-hover/section:opacity-100 transition-opacity duration-200">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 rounded hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
             >
               <MoreHorizontal size={16} />
             </button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-1 w-40 bg-[var(--bg-card)] rounded-lg shadow-lg border border-[var(--border-color)] z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-44 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] z-50 py-1.5">
                 <button
                   onClick={() => {
                     setIsEditing(true);
                     setShowMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
+                  className="w-full text-left px-3.5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
                 >
                   重命名版块
                 </button>
@@ -156,7 +158,7 @@ function SectionGroup({
                     }
                     setShowMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  className="w-full text-left px-3.5 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
                   删除版块
                 </button>
@@ -168,12 +170,14 @@ function SectionGroup({
 
       {/* Section divider line */}
       {section && (
-        <div className="mx-4 mb-1 border-t border-[var(--border-light)]" />
+        <div className="mx-4 mb-2">
+          <div className="border-t border-[var(--border-light)]" />
+        </div>
       )}
 
       {/* Tasks */}
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-        <div className="px-2">
+        <div className="px-2.5">
           {sectionTasks.map((task) => (
             <SortableTaskItem key={task.id} task={task} />
           ))}
@@ -183,18 +187,18 @@ function SectionGroup({
       {/* Add Task Button */}
       <button
         onClick={handleAddTask}
-        className="flex items-center gap-2 px-5 py-2 mx-2 mt-1 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] rounded-lg transition-colors w-[calc(100%-16px)]"
+        className="flex items-center gap-2.5 px-5 py-2.5 mx-2.5 mt-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] rounded-xl transition-all duration-200 w-[calc(100%-20px)]"
       >
-        <Plus size={16} />
+        <Plus size={16} strokeWidth={2.5} />
         <span>添加任务</span>
       </button>
 
       {/* Add Section Button (between sections) */}
       {onAddSection && !section && (
-        <div className="flex justify-center py-3">
+        <div className="flex justify-center py-4">
           <button
             onClick={onAddSection}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] rounded-md transition-colors border border-dashed border-[var(--border-color)] hover:border-gray-300"
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] rounded-xl transition-all duration-200 border border-dashed border-[var(--border-color)] hover:border-gray-300"
           >
             <Plus size={14} />
             <span>添加版块</span>
@@ -267,10 +271,14 @@ export default function TaskList({
 
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-[var(--text-tertiary)]">
-        <Inbox size={48} className="mb-4 text-gray-300" />
-        <p className="text-lg font-medium mb-1">暂无任务</p>
-        <p className="text-sm">点击「添加任务」开始吧</p>
+      <div className="flex flex-col items-center justify-center py-28 text-[var(--text-tertiary)]">
+        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center mb-6 shadow-inner">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+            <Inbox size={32} className="text-blue-300" />
+          </div>
+        </div>
+        <p className="text-lg font-bold text-[var(--text-primary)] mb-1.5">暂无任务</p>
+        <p className="text-sm text-[var(--text-tertiary)]">点击「添加任务」开始吧</p>
       </div>
     );
   }
@@ -280,7 +288,10 @@ export default function TaskList({
       <div className="py-2">
         {/* View Title */}
         {viewTitle && (
-          <h2 className="text-xl font-bold text-[var(--text-primary)] px-4 mb-3">{viewTitle}</h2>
+          <div className="px-4 mb-4">
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">{viewTitle}</h2>
+            <div className="mt-2 h-0.5 w-12 bg-gradient-to-r from-[var(--accent)] to-transparent rounded-full" />
+          </div>
         )}
 
         {/* Sections */}
@@ -299,10 +310,10 @@ export default function TaskList({
 
         {/* Add Section button when no sections exist */}
         {showSections && sections.length === 0 && projectId && (
-          <div className="flex justify-center py-3">
+          <div className="flex justify-center py-4">
             <button
               onClick={handleAddSection}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] rounded-md transition-colors border border-dashed border-[var(--border-color)] hover:border-gray-300"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] rounded-xl transition-all duration-200 border border-dashed border-[var(--border-color)] hover:border-gray-300"
             >
               <Plus size={14} />
               <span>添加版块</span>
@@ -312,13 +323,13 @@ export default function TaskList({
 
         {/* Completed Tasks */}
         {completedTasks.length > 0 && (
-          <div className="mt-6 px-4">
-            <div className="flex items-center gap-2 py-2 border-t border-[var(--border-light)]">
-              <span className="text-sm font-medium text-[var(--text-tertiary)]">
+          <div className="mt-8 px-4">
+            <div className="flex items-center gap-3 py-2.5 border-t border-[var(--border-light)]">
+              <span className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wide">
                 已完成 ({completedTasks.length})
               </span>
             </div>
-            <div className="space-y-0 opacity-60">
+            <div className="space-y-0.5 opacity-60">
               {completedTasks.map((task) => (
                 <TaskItem key={task.id} task={task} />
               ))}

@@ -288,33 +288,35 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-md"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div
         ref={panelRef}
-        className="relative w-full max-w-[700px] max-h-[85vh] bg-[var(--bg-card)] rounded-xl shadow-2xl overflow-hidden flex flex-col mx-4"
-        style={{ animation: 'slideUp 0.2s ease-out' }}
+        className="relative w-full max-w-[740px] max-h-[88vh] bg-[var(--bg-card)] rounded-2xl shadow-2xl overflow-hidden flex flex-col mx-4"
+        style={{ animation: 'slideUp 0.25s ease-out', boxShadow: '0 25px 60px -12px rgba(0,0,0,0.25)' }}
       >
         {/* Top Bar */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-color)]">
-          <div className="flex items-center gap-2 text-sm text-[var(--text-tertiary)]">
-            <span className="text-[var(--text-tertiary)]">#</span>
-            <span>{currentProject?.name || '收件箱'}</span>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)]">
+          <div className="flex items-center gap-2.5 text-sm text-[var(--text-tertiary)]">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-active)]">
+              <span className="text-[var(--text-tertiary)] font-bold">#</span>
+              <span className="font-medium">{currentProject?.name || '收件箱'}</span>
+            </div>
             {currentSection && (
               <>
                 <span className="text-[var(--text-secondary)]">/</span>
-                <span>{currentSection.name}</span>
+                <span className="font-medium">{currentSection.name}</span>
               </>
             )}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <button
               onClick={() => navigateTask(-1)}
               disabled={currentIndex <= 0}
-              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-2 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
               title="上一个任务"
             >
               <ChevronUp size={16} />
@@ -322,20 +324,20 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <button
               onClick={() => navigateTask(1)}
               disabled={currentIndex >= siblingTasks.length - 1}
-              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-2 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
               title="下一个任务"
             >
               <ChevronDown size={16} />
             </button>
             <button
-              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              className="p-2 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
               title="更多"
             >
               <MoreHorizontal size={16} />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-md hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              className="p-2 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
               title="关闭 (Esc)"
             >
               <X size={16} />
@@ -347,9 +349,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         <div className="flex-1 overflow-y-auto">
           <div className="flex">
             {/* Left Panel - Main Content */}
-            <div className="flex-1 px-6 py-5 space-y-4 min-w-0">
+            <div className="flex-1 px-7 py-6 space-y-5 min-w-0">
               {/* Checkbox + Title */}
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3.5">
                 <button
                   onClick={() =>
                     updateTask(task.id, {
@@ -357,14 +359,14 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       completedAt: !task.isCompleted ? new Date().toISOString() : null,
                     })
                   }
-                  className={`mt-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  className={`mt-2 w-6 h-6 rounded-full border-[2.5px] flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
                     task.isCompleted
-                      ? 'bg-[#DC4C3E] border-[#DC4C3E]'
-                      : 'border-[var(--text-tertiary)] hover:border-[var(--text-secondary)]'
+                      ? 'bg-[#DC4C3E] border-[#DC4C3E] shadow-md shadow-red-500/25'
+                      : 'border-gray-300 hover:border-[var(--text-secondary)] hover:scale-110'
                   }`}
                 >
                   {task.isCompleted && (
-                    <Check size={12} className="text-white" strokeWidth={3} />
+                    <Check size={14} className="text-white" strokeWidth={3} />
                   )}
                 </button>
                 <input
@@ -385,16 +387,16 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Pomodoro Progress - only if project enables pomodoro */}
               {currentProject?.usePomodoro && task.plannedPomodoros > 0 && (
-                <div className="flex items-center gap-3 mb-4 p-3 bg-[var(--bg-secondary)] rounded-lg">
+                <div className="flex items-center gap-4 mb-4 p-4 bg-gradient-to-r from-orange-50/50 to-red-50/30 rounded-xl border border-orange-100">
                   <div className="flex items-center gap-1">
                     {Array.from({ length: task.plannedPomodoros }).map((_, i) => (
-                      <span key={i} className={`text-lg ${i < task.completedPomodoros ? '' : 'opacity-30 grayscale'}`}>🍅</span>
+                      <span key={i} className={`text-xl transition-all duration-300 ${i < task.completedPomodoros ? 'scale-110' : 'opacity-25 grayscale'}`}>🍅</span>
                     ))}
                   </div>
-                  <span className="text-sm font-medium text-[var(--text-primary)]">
+                  <span className="text-sm font-bold text-[var(--text-primary)]">
                     {task.completedPomodoros}/{task.plannedPomodoros}
                   </span>
-                  <span className="text-xs text-[var(--text-tertiary)]">
+                  <span className="text-xs text-[var(--text-tertiary)] font-medium">
                     = {task.plannedPomodoros * 25}m
                   </span>
                 </div>
@@ -403,26 +405,26 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Pomodoro Completed Celebration - only if project enables pomodoro */}
               {currentProject?.usePomodoro && task.completedPomodoros >= task.plannedPomodoros && task.plannedPomodoros > 0 && (
                 <div className="text-center py-2">
-                  <span className="text-2xl animate-bounce">🎉</span>
-                  <p className="text-xs text-green-500 font-medium">番茄任务完成！</p>
+                  <span className="text-3xl animate-bounce">🎉</span>
+                  <p className="text-xs text-green-500 font-bold mt-1">番茄任务完成！</p>
                 </div>
               )}
 
               {/* Description */}
-              <div className="pl-8">
+              <div className="pl-9">
                 {showDescription || description ? (
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     onBlur={handleDescBlur}
                     placeholder="添加描述..."
-                    className="w-full text-sm font-medium text-[var(--text-primary)] bg-transparent border border-[var(--border-color)] rounded-lg p-3 outline-none focus:border-[#DC4C3E]/40 resize-none min-h-[80px] transition-colors placeholder-[var(--text-tertiary)]"
+                    className="w-full text-sm font-medium text-[var(--text-primary)] bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-xl p-3.5 outline-none focus:border-[#DC4C3E]/40 focus:ring-2 focus:ring-[#DC4C3E]/10 resize-none min-h-[80px] transition-all duration-200 placeholder-[var(--text-tertiary)]"
                     rows={3}
                   />
                 ) : (
                   <button
                     onClick={() => setShowDescription(true)}
-                    className="flex items-center gap-2 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors py-2"
+                    className="flex items-center gap-2 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 py-2.5"
                   >
                     <span className="text-lg leading-none">≡</span>
                     <span>添加描述</span>
@@ -431,49 +433,49 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               </div>
 
               {/* Divider */}
-              <div className="border-t border-[var(--border-color)] ml-8" />
+              <div className="border-t border-[var(--border-color)] ml-9" />
 
               {/* Subtasks */}
-              <div className="pl-8">
-                <label className="text-xs font-medium text-[var(--text-tertiary)] mb-2 block uppercase tracking-wide">
+              <div className="pl-9">
+                <label className="text-[11px] font-bold text-[var(--text-tertiary)] mb-2.5 block uppercase tracking-widest">
                   子任务
                   {subtasks.length > 0 && (
-                    <span className="text-[var(--text-secondary)] ml-1 normal-case">
+                    <span className="text-[var(--text-secondary)] ml-1.5 normal-case tracking-normal font-medium">
                       ({completedSubtasks}/{subtasks.length})
                     </span>
                   )}
                 </label>
                 {/* Progress bar */}
                 {subtasks.length > 0 && (
-                  <div className="w-full bg-[var(--bg-active)] rounded-full h-1.5 mb-3">
+                  <div className="w-full bg-[var(--bg-active)] rounded-full h-2 mb-4">
                     <div
-                      className="bg-[#DC4C3E] h-1.5 rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-[#DC4C3E] to-[#E85D4A] h-2 rounded-full transition-all duration-500 shadow-sm"
                       style={{
                         width: `${subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0}%`,
                       }}
                     />
                   </div>
                 )}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {subtasks.map((sub) => (
                     <div
                       key={sub.id}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[var(--bg-hover)]/50 transition-colors group"
+                      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-hover)]/50 transition-all duration-200 group"
                     >
                       <button
                         onClick={() => handleToggleSubtask(sub.id)}
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                        className={`w-5 h-5 rounded-full border-[2px] flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                           sub.isCompleted
                             ? 'bg-[#DC4C3E] border-[#DC4C3E]'
-                            : 'border-[var(--text-tertiary)] hover:border-[var(--text-secondary)]'
+                            : 'border-gray-300 hover:border-[var(--text-secondary)] hover:scale-110'
                         }`}
                       >
                         {sub.isCompleted && (
-                          <Check size={10} className="text-white" strokeWidth={3} />
+                          <Check size={11} className="text-white" strokeWidth={3} />
                         )}
                       </button>
                       <span
-                        className={`text-sm flex-1 ${
+                        className={`text-sm font-medium flex-1 transition-all duration-200 ${
                           sub.isCompleted ? 'line-through text-[var(--text-tertiary)]' : 'text-[var(--text-primary)]'
                         }`}
                       >
@@ -481,9 +483,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       </span>
                     </div>
                   ))}
-                  <div className="flex items-center gap-3 px-3 py-2">
-                    <div className="w-4 h-4 rounded-full border-2 border-dashed border-[var(--border-color)] flex items-center justify-center flex-shrink-0">
-                      <Plus size={8} className="text-[var(--text-tertiary)]" />
+                  <div className="flex items-center gap-3 px-3.5 py-2.5">
+                    <div className="w-5 h-5 rounded-full border-2 border-dashed border-[var(--border-color)] flex items-center justify-center flex-shrink-0">
+                      <Plus size={10} className="text-[var(--text-tertiary)]" />
                     </div>
                     <input
                       type="text"
@@ -493,47 +495,47 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                         if (e.key === 'Enter') handleAddSubtask();
                       }}
                       placeholder="添加子任务..."
-                      className="flex-1 text-sm text-[var(--text-tertiary)] outline-none placeholder-[var(--text-tertiary)] bg-transparent"
+                      className="flex-1 text-sm text-[var(--text-tertiary)] outline-none placeholder-[var(--text-tertiary)] bg-transparent font-medium"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Divider */}
-              <div className="border-t border-[var(--border-color)] ml-8" />
+              <div className="border-t border-[var(--border-color)] ml-9" />
 
               {/* Comments */}
-              <div className="pl-8">
-                <label className="text-xs font-medium text-[var(--text-tertiary)] mb-3 block flex items-center gap-1.5 uppercase tracking-wide">
+              <div className="pl-9">
+                <label className="text-[11px] font-bold text-[var(--text-tertiary)] mb-3 block flex items-center gap-1.5 uppercase tracking-widest">
                   <MessageSquare size={13} />
                   评论
                 </label>
-                <div className="space-y-3 mb-3">
+                <div className="space-y-3.5 mb-3">
                   {taskComments.map((comment) => (
                     <div key={comment.id} className="flex gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 shadow-sm">
                         W
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-semibold text-[var(--text-primary)]">我</span>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs font-bold text-[var(--text-primary)]">我</span>
                           <span className="text-[10px] text-[var(--text-tertiary)]">
                             {formatCommentDate(comment.createdAt)}
                           </span>
                         </div>
-                        <div className="bg-[var(--bg-hover)] rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-sm text-[var(--text-primary)] inline-block max-w-full">
+                        <div className="bg-[var(--bg-hover)] rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-[var(--text-primary)] inline-block max-w-full font-medium">
                           {comment.content}
                         </div>
                       </div>
                     </div>
                   ))}
                   {taskComments.length === 0 && (
-                    <p className="text-xs text-[var(--text-secondary)] pl-9">暂无评论</p>
+                    <p className="text-xs text-[var(--text-secondary)] pl-10 font-medium">暂无评论</p>
                   )}
                 </div>
                 {/* New comment input */}
-                <div className="flex gap-2 items-center">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                <div className="flex gap-2.5 items-center">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 shadow-sm">
                     W
                   </div>
                   <div className="flex-1 flex gap-2">
@@ -545,16 +547,16 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                         if (e.key === 'Enter') handleAddComment();
                       }}
                       placeholder="输入评论..."
-                      className="flex-1 text-sm text-[var(--text-primary)] bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-lg px-3 py-2 outline-none focus:border-[#DC4C3E]/40 transition-colors placeholder-[var(--text-tertiary)]"
+                      className="flex-1 text-sm text-[var(--text-primary)] bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 outline-none focus:border-[#DC4C3E]/40 focus:ring-2 focus:ring-[#DC4C3E]/10 transition-all duration-200 placeholder-[var(--text-tertiary)] font-medium"
                     />
                     <button
-                      className="p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
+                      className="p-2.5 rounded-xl text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all duration-200"
                       title="添加附件"
                     >
                       <Paperclip size={16} />
                     </button>
                     <button
-                      className="p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
+                      className="p-2.5 rounded-xl text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all duration-200"
                       title="添加图片"
                     >
                       <ImageIcon size={16} />
@@ -565,13 +567,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             </div>
 
             {/* Right Panel - Properties */}
-            <div className="w-[260px] border-l border-[var(--border-color)] px-5 py-5 space-y-4 flex-shrink-0">
+            <div className="w-[280px] border-l border-[var(--border-color)] px-5 py-6 space-y-4 flex-shrink-0 bg-[var(--bg-secondary)]/30">
               {/* Project */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">项目</span>
-                <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">项目</span>
+                <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
                   <span
-                    className="w-2.5 h-2.5 rounded-full"
+                    className="w-3 h-3 rounded-md shadow-sm"
                     style={{ backgroundColor: currentProject?.color || '#6B7280' }}
                   />
                   <span className="truncate max-w-[140px] font-medium">
@@ -582,7 +584,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Date */}
               <div className="flex items-center justify-between group relative" ref={datePickerRef}>
-                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">日期</span>
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">日期</span>
                 <button
                   onClick={() => setShowDatePicker(!showDatePicker)}
                   className="flex items-center gap-1.5 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
@@ -596,25 +598,25 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 </button>
                 {showDatePicker && (
                   <div
-                    className="absolute top-full right-0 mt-1 w-64 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] p-3 z-20"
+                    className="absolute top-full right-0 mt-1.5 w-64 bg-[var(--bg-card)] rounded-2xl shadow-xl border border-[var(--border-color)] p-3.5 z-20"
                     style={{ animation: 'fadeIn 0.15s ease-out' }}
                   >
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       <button
                         onClick={() => handleSetDate(getQuickDate(0))}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-primary)] transition-colors"
+                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-primary)] transition-all duration-200"
                       >
                         今天
                       </button>
                       <button
                         onClick={() => handleSetDate(getQuickDate(1))}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-primary)] transition-colors"
+                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-primary)] transition-all duration-200"
                       >
                         明天
                       </button>
                       <button
                         onClick={() => handleSetDate(getQuickDate(7))}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-primary)] transition-colors"
+                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-primary)] transition-all duration-200"
                       >
                         下周
                       </button>
@@ -623,12 +625,12 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       type="date"
                       value={task.dueDate || ''}
                       onChange={(e) => handleSetDate(e.target.value || null)}
-                      className="w-full text-sm text-[var(--text-primary)] bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-lg px-3 py-2 outline-none focus:border-[#DC4C3E]/40 transition-colors"
+                      className="w-full text-sm text-[var(--text-primary)] bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 outline-none focus:border-[#DC4C3E]/40 focus:ring-2 focus:ring-[#DC4C3E]/10 transition-all duration-200"
                     />
                     {task.dueDate && (
                       <button
                         onClick={() => handleSetDate(null)}
-                        className="w-full mt-2 text-xs text-[var(--text-tertiary)] hover:text-red-400 transition-colors py-1"
+                        className="w-full mt-2 text-xs text-[var(--text-tertiary)] hover:text-red-500 transition-colors py-1.5 font-medium"
                       >
                         清除日期
                       </button>
@@ -639,7 +641,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Due Date */}
               <div className="flex items-center justify-between group relative">
-                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">截止</span>
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">截止</span>
                 <button
                   onClick={() => setShowDatePicker(!showDatePicker)}
                   className="flex items-center gap-1.5 text-sm font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
@@ -651,13 +653,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Priority */}
               <div className="flex items-center justify-between group relative" ref={priorityRef}>
-                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">优先级</span>
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">优先级</span>
                 <button
                   onClick={() => setShowPriorityPicker(!showPriorityPicker)}
                   className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <span
-                    className="w-3 h-3 rounded-full"
+                    className="w-3.5 h-3.5 rounded-md shadow-sm"
                     style={{ backgroundColor: PRIORITY_COLORS[task.priority] }}
                   />
                   <span>{PRIORITY_LABELS[task.priority]}</span>
@@ -665,7 +667,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 </button>
                 {showPriorityPicker && (
                   <div
-                    className="absolute top-full right-0 mt-1 w-56 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] p-3 z-20"
+                    className="absolute top-full right-0 mt-1.5 w-60 bg-[var(--bg-card)] rounded-2xl shadow-xl border border-[var(--border-color)] p-4 z-20"
                     style={{ animation: 'fadeIn 0.15s ease-out' }}
                   >
                     <div className="grid grid-cols-4 gap-2">
@@ -676,29 +678,29 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                             updateTask(task.id, { priority: p });
                             setShowPriorityPicker(false);
                           }}
-                          className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-[var(--bg-active)] transition-all"
+                          className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-[var(--bg-active)] transition-all duration-200"
                           style={{ transform: task.priority === p ? 'scale(1.05)' : undefined }}
                           onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.transform = 'scale(1.15)';
+                            (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)';
                           }}
                           onMouseLeave={(e) => {
                             (e.currentTarget as HTMLElement).style.transform = task.priority === p ? 'scale(1.05)' : 'scale(1)';
                           }}
                         >
                           <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs transition-all"
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs transition-all duration-200"
                             style={{
                               backgroundColor: PRIORITY_COLORS[p],
-                              boxShadow: task.priority === p ? `0 0 12px ${PRIORITY_COLORS[p]}60` : 'none',
+                              boxShadow: task.priority === p ? `0 0 16px ${PRIORITY_COLORS[p]}60` : 'none',
                             }}
                           >
                             {task.priority === p ? (
-                              <Check size={14} className="text-white" strokeWidth={3} />
+                              <Check size={16} className="text-white" strokeWidth={3} />
                             ) : (
-                              <span>{`P${p}`}</span>
+                              <span className="text-sm font-bold">{`P${p}`}</span>
                             )}
                           </div>
-                          <span className={`text-[10px] font-medium ${task.priority === p ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}`}>
+                          <span className={`text-[10px] font-bold ${task.priority === p ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}`}>
                             {PRIORITY_LABELS[p]}
                           </span>
                         </button>
@@ -711,7 +713,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Labels */}
               <div className="group relative" ref={tagDropdownRef}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">标签</span>
+                  <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">标签</span>
                   <button
                     onClick={() => setShowTagDropdown(!showTagDropdown)}
                     className="flex items-center gap-1 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
@@ -734,7 +736,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     return (
                       <span
                         key={label}
-                        className={`flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-full ${colors.bg} ${colors.text} border ${colors.border} font-semibold cursor-pointer hover:opacity-80 transition-opacity`}
+                        className={`flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-full ${colors.bg} ${colors.text} border ${colors.border} font-bold cursor-pointer hover:opacity-80 transition-opacity duration-200`}
                       >
                         {label}
                         <button
@@ -749,7 +751,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                   {(!task.labels || task.labels.length === 0) && !showTagDropdown && (
                     <button
                       onClick={() => setShowTagDropdown(true)}
-                      className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-tertiary)] transition-colors"
+                      className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-tertiary)] transition-colors font-medium"
                     >
                       + 添加标签
                     </button>
@@ -757,7 +759,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 </div>
                 {showTagDropdown && (
                   <div
-                    className="absolute top-full right-0 mt-1 w-52 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] py-1 z-20 max-h-48 overflow-y-auto"
+                    className="absolute top-full right-0 mt-1.5 w-52 bg-[var(--bg-card)] rounded-2xl shadow-xl border border-[var(--border-color)] py-1.5 z-20 max-h-48 overflow-y-auto"
                     style={{ animation: 'fadeIn 0.15s ease-out' }}
                   >
                     {(() => {
@@ -779,19 +781,20 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                           <button
                             key={labelName}
                             onClick={() => handleToggleLabel(labelName)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-active)] flex items-center gap-2 transition-colors"
+                            className="w-full text-left px-3.5 py-2.5 text-sm hover:bg-[var(--bg-active)] flex items-center gap-2 transition-colors duration-200"
                           >
                             <div
-                              className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
+                              className={`w-4.5 h-4.5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
                                 isSelected
                                   ? 'bg-[#DC4C3E] border-[#DC4C3E]'
                                   : 'border-[var(--border-color)]'
                               }`}
+                              style={{ width: 18, height: 18 }}
                             >
-                              {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
+                              {isSelected && <Check size={11} className="text-white" strokeWidth={3} />}
                             </div>
                             <span>{colorMap[labelName] || '🏷️'}</span>
-                            <span className={isSelected ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-tertiary)]'}>
+                            <span className={`font-medium ${isSelected ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}`}>
                               {labelName}
                             </span>
                           </button>
@@ -804,28 +807,28 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Pomodoro Settings - only if project enables pomodoro */}
               {currentProject?.usePomodoro && (
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-[var(--text-tertiary)] w-16">🍅 番茄</span>
+              <div className="flex items-center justify-between py-2.5">
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">🍅 番茄</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => updateTask(task.id, { plannedPomodoros: Math.max(1, task.plannedPomodoros - 1), estimatedMinutes: Math.max(1, task.plannedPomodoros - 1) * 25 })}
-                    className="w-6 h-6 rounded-md bg-[var(--bg-active)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] flex items-center justify-center text-sm font-bold transition-colors"
+                    className="w-7 h-7 rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] flex items-center justify-center text-sm font-bold transition-all duration-200"
                   >-</button>
-                  <span className="text-sm font-semibold text-[var(--text-primary)] min-w-[40px] text-center">
+                  <span className="text-sm font-bold text-[var(--text-primary)] min-w-[44px] text-center">
                     {task.completedPomodoros}/{task.plannedPomodoros}
                   </span>
                   <button
                     onClick={() => updateTask(task.id, { plannedPomodoros: task.plannedPomodoros + 1, estimatedMinutes: (task.plannedPomodoros + 1) * 25 })}
-                    className="w-6 h-6 rounded-md bg-[var(--bg-active)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] flex items-center justify-center text-sm font-bold transition-colors"
+                    className="w-7 h-7 rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] flex items-center justify-center text-sm font-bold transition-all duration-200"
                   >+</button>
-                  <span className="text-xs text-[var(--text-tertiary)]">= {task.plannedPomodoros * 25}m</span>
+                  <span className="text-xs text-[var(--text-tertiary)] font-medium">= {task.plannedPomodoros * 25}m</span>
                 </div>
               </div>
               )}
 
               {/* Reminders */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">提醒</span>
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">提醒</span>
                 <button
                   onClick={() => {
                     const reminder = prompt('输入提醒时间 (YYYY-MM-DD HH:MM)：');
@@ -833,7 +836,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       alert(`提醒已设置: ${reminder}`);
                     }
                   }}
-                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors font-medium"
                 >
                   <Bell size={14} />
                   <span>+ 添加提醒</span>
@@ -842,7 +845,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Location */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm font-semibold text-[var(--text-tertiary)] w-16">地点</span>
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">地点</span>
                 <button
                   onClick={() => {
                     const location = prompt('输入地点：');
@@ -850,7 +853,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       alert(`地点已设置: ${location}`);
                     }
                   }}
-                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors font-medium"
                 >
                   <MapPin size={14} />
                   <span>设置地点</span>
@@ -858,13 +861,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               </div>
 
               {/* Meta info */}
-              <div className="border-t border-[var(--border-color)] pt-3 mt-3 space-y-1.5">
-                <div className="flex items-center gap-2 text-[11px] text-[var(--text-secondary)]">
+              <div className="border-t border-[var(--border-color)] pt-3.5 mt-3 space-y-2">
+                <div className="flex items-center gap-2 text-[11px] text-[var(--text-secondary)] font-medium">
                   <Clock size={11} />
                   <span>创建于 {formatDate(task.createdAt)}</span>
                 </div>
                 {task.completedAt && (
-                  <div className="flex items-center gap-2 text-[11px] text-[var(--text-secondary)]">
+                  <div className="flex items-center gap-2 text-[11px] text-[var(--text-secondary)] font-medium">
                     <CheckCircle2 size={11} />
                     <span>完成于 {formatDate(task.completedAt)}</span>
                   </div>
@@ -872,13 +875,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               </div>
 
               {/* Delete */}
-              <div className="border-t border-[var(--border-color)] pt-3">
+              <div className="border-t border-[var(--border-color)] pt-3.5">
                 {showDeleteConfirm ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-[var(--text-tertiary)] flex-1">确认删除？</span>
+                    <span className="text-sm text-[var(--text-tertiary)] flex-1 font-medium">确认删除？</span>
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="px-2.5 py-1 text-xs text-[var(--text-tertiary)] hover:bg-[var(--bg-active)] rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium text-[var(--text-tertiary)] hover:bg-[var(--bg-active)] rounded-xl transition-colors"
                     >
                       取消
                     </button>
@@ -887,7 +890,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                         deleteTask(task.id);
                         onClose();
                       }}
-                      className="px-3 py-1.5 text-xs text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors font-semibold shadow-sm"
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-all duration-200 shadow-md shadow-red-500/20"
                     >
                       删除
                     </button>
@@ -895,7 +898,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 ) : (
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center gap-2 text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-red-500/15 px-2 py-1.5 rounded-lg w-full transition-colors"
+                    className="flex items-center gap-2 text-sm font-bold text-red-500 hover:text-red-600 hover:bg-red-500/10 px-2.5 py-2 rounded-xl w-full transition-all duration-200"
                   >
                     <Trash2 size={14} />
                     删除任务
@@ -913,7 +916,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           to { opacity: 1; }
         }
         @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px) scale(0.98); }
+          from { opacity: 0; transform: translateY(20px) scale(0.97); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>

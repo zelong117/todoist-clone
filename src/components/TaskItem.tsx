@@ -113,12 +113,12 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
   return (
     <div
-      className={`group relative flex items-start gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 cursor-pointer ${
+      className={`group relative flex items-start gap-3 px-4 py-3 rounded-2xl transition-all duration-200 cursor-pointer ${
         isDragging
-          ? 'bg-[var(--bg-card)] shadow-xl ring-2 ring-[#DC4C3E]/30 scale-[1.02]'
+          ? 'bg-[var(--bg-card)] shadow-2xl ring-2 ring-[#DC4C3E]/20 scale-[1.02]'
           : isSelected
-          ? 'bg-blue-50/80'
-          : 'hover:bg-[var(--bg-hover)]'
+          ? 'bg-blue-50/80 shadow-sm'
+          : 'hover:bg-[var(--bg-hover)] hover:shadow-sm'
       }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -132,23 +132,24 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           toggleComplete(task.id);
         }}
         className="flex-shrink-0 mt-0.5 relative group/check"
-        style={{ width: 20, height: 20 }}
+        style={{ width: 22, height: 22 }}
       >
         <div
-          className={`w-5 h-5 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${
+          className={`w-[22px] h-[22px] rounded-full border-[2.5px] transition-all duration-300 flex items-center justify-center ${
             task.isCompleted
-              ? 'border-transparent'
-              : 'border-gray-300 group-hover/check:border-current'
+              ? 'border-transparent scale-110'
+              : 'border-gray-300 group-hover/check:border-current group-hover/check:scale-110'
           }`}
           style={{
             borderColor: task.isCompleted ? 'transparent' : undefined,
             backgroundColor: task.isCompleted ? PRIORITY_COLORS[task.priority] : 'transparent',
             color: PRIORITY_COLORS[task.priority],
+            boxShadow: task.isCompleted ? `0 0 12px ${PRIORITY_COLORS[task.priority]}40` : undefined,
           }}
         >
           {task.isCompleted && (
             <svg
-              className="w-3 h-3 text-white animate-[checkmark_0.2s_ease-in-out]"
+              className="w-3 h-3 text-white animate-[checkmark_0.3s_ease-in-out]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -164,9 +165,9 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className={`text-[15px] font-medium leading-5 transition-all duration-200 ${
+            className={`text-[15px] font-semibold leading-6 transition-all duration-200 ${
               task.isCompleted
-                ? 'line-through text-[var(--text-tertiary)] opacity-60'
+                ? 'line-through text-[var(--text-tertiary)] opacity-50'
                 : 'text-[var(--text-primary)]'
             }`}
           >
@@ -176,31 +177,31 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
         {/* Timer info - show when this task's timer is active */}
         {isTimerActive && (
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-medium">
-              <Timer size={10} />
+          <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-red-50 to-red-100 text-red-600 text-[11px] font-bold shadow-sm">
+              <Timer size={11} />
               <span>{formatTimer(timerSeconds)}</span>
-              <span className="animate-pulse">●</span>
+              <span className="animate-pulse text-red-400">●</span>
             </div>
           </div>
         )}
 
         {/* Pomodoro count - show planned/completed progress only if project enables pomodoro */}
         {currentProject?.usePomodoro && task.plannedPomodoros > 0 && (
-          <div className="flex items-center gap-1 text-xs text-orange-500 mt-0.5">
-            <span>🍅</span>
-            <span>{task.completedPomodoros}/{task.plannedPomodoros}</span>
-            <span className="text-[var(--text-tertiary)]">· {task.plannedPomodoros * 25}m</span>
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-orange-500 mt-1">
+            <span className="text-sm">🍅</span>
+            <span className="bg-orange-50 px-1.5 py-0.5 rounded-md">{task.completedPomodoros}/{task.plannedPomodoros}</span>
+            <span className="text-[var(--text-tertiary)] font-normal">· {task.plannedPomodoros * 25}m</span>
           </div>
         )}
 
         {/* Labels as pills */}
         {task.labels && task.labels.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
+          <div className="flex flex-wrap gap-1.5 mt-1.5">
             {task.labels.map((label) => (
               <span
                 key={label}
-                className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                className="px-2.5 py-[3px] text-[10px] font-bold rounded-full bg-gradient-to-r from-blue-500/10 to-blue-400/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
               >
                 {label}
               </span>
@@ -210,17 +211,17 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
         {/* Subtask Progress */}
         {subtaskProgress && (
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+          <div className="flex items-center gap-2.5 mt-1.5">
+            <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{
                   width: `${subtaskProgress.percent}%`,
-                  backgroundColor: PRIORITY_COLORS[task.priority],
+                  background: `linear-gradient(90deg, ${PRIORITY_COLORS[task.priority]}, ${PRIORITY_COLORS[task.priority]}CC)`,
                 }}
               />
             </div>
-            <span className="text-[10px] text-[var(--text-tertiary)] font-medium">
+            <span className="text-[10px] text-[var(--text-tertiary)] font-bold">
               {subtaskProgress.done}/{subtaskProgress.total}
             </span>
           </div>
@@ -232,13 +233,13 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         {/* Due Date */}
         {task.dueDate && (
           <span
-            className={`flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded font-medium transition-colors ${
+            className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-lg font-semibold transition-all duration-200 ${
               isOverdue
-                ? 'text-red-700 bg-red-100 font-semibold'
+                ? 'text-red-700 bg-red-100'
                 : isToday
-                ? 'text-green-700 bg-green-100 font-semibold'
+                ? 'text-green-700 bg-green-100'
                 : isTomorrow
-                ? 'text-blue-600 bg-blue-50 font-semibold'
+                ? 'text-blue-600 bg-blue-50'
                 : task.isCompleted
                 ? 'text-[var(--text-tertiary)]'
                 : 'text-[var(--text-tertiary)] bg-[var(--bg-hover)]'
@@ -251,10 +252,10 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
         {/* Priority indicator */}
         <span
-          className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm"
+          className="text-[10px] font-black px-2 py-0.5 rounded-md"
           style={{
             color: PRIORITY_COLORS[task.priority],
-            backgroundColor: `${PRIORITY_COLORS[task.priority]}20`,
+            backgroundColor: `${PRIORITY_COLORS[task.priority]}15`,
           }}
         >
           {PRIORITY_LABELS[task.priority]}
@@ -264,7 +265,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         {currentProject?.usePomodoro && !task.isCompleted && (
           <button
             onClick={handleTimerToggle}
-            className={`p-1.5 rounded-lg transition-all duration-150 z-20 ${
+            className={`p-1.5 rounded-xl transition-all duration-200 z-20 ${
               activeTimerTaskId === task.id
                 ? 'bg-red-100 text-red-500 animate-pulse shadow-sm'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-red-100 hover:text-red-500'
@@ -277,7 +278,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
         {/* Hover actions */}
         <div
-          className={`flex items-center gap-0.5 transition-all duration-150 z-20 ${
+          className={`flex items-center gap-0.5 transition-all duration-200 z-20 ${
             hovered && !task.isCompleted
               ? 'opacity-100 translate-x-0'
               : 'opacity-0 translate-x-2 pointer-events-none'
@@ -288,7 +289,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
               e.stopPropagation();
               setSelectedTaskId(task.id);
             }}
-            className="p-1 rounded hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
             title="安排日期"
           >
             <Clock size={14} />
@@ -298,7 +299,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
               e.stopPropagation();
               setSelectedTaskId(task.id);
             }}
-            className="p-1 rounded hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
             title="编辑"
           >
             <Pencil size={14} />
@@ -308,7 +309,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
               e.stopPropagation();
               setSelectedTaskId(task.id);
             }}
-            className="p-1 rounded hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
             title="评论"
           >
             <MessageSquare size={14} />
@@ -318,7 +319,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
               e.stopPropagation();
               deleteTask(task.id);
             }}
-            className="p-1 rounded hover:bg-red-100 text-[var(--text-tertiary)] hover:text-red-500 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-red-100 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-200"
             title="删除"
           >
             <Trash2 size={14} />

@@ -195,7 +195,7 @@ export default function App() {
     }
   }, [currentView, currentProject, activeFilter.label]);
 
-  const darkClasses = darkMode ? 'bg-[var(--bg-primary)] text-[var(--text-primary)]' : 'bg-[var(--bg-hover)] text-gray-900';
+  const darkClasses = 'bg-[var(--bg-secondary)] text-[var(--text-primary)]';
 
   // Whether the current view shows a task list (inbox, today, upcoming, projects)
   const isTaskListView = currentView === 'inbox' || currentView === 'today' || currentView === 'upcoming' || currentView.startsWith('project-');
@@ -210,11 +210,7 @@ export default function App() {
         {/* Task List / View Content */}
         <div className="flex-1 overflow-y-auto">
           {/* View Header */}
-          <div className={`sticky top-0 z-10 border-b backdrop-blur-sm ${
-            darkMode
-              ? 'bg-[var(--bg-secondary)] border-[var(--border-color)]'
-              : 'bg-[var(--bg-card)]/80 border-[var(--border-color)]'
-          }`}>
+          <div className="sticky top-0 z-10 border-b backdrop-blur-sm bg-[var(--bg-secondary)] border-[var(--border-color)]">
             {/* Main Header Row */}
             <div className="flex items-center justify-between px-6 py-4">
               <div className="flex items-center gap-3">
@@ -237,9 +233,7 @@ export default function App() {
                 {isTaskListView && (
                   <>
                     {currentView.startsWith('project-') && currentProject && (
-                      <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        darkMode ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]'
-                      }`}>
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]">
                         <Users size={15} />
                         <span>共享</span>
                       </button>
@@ -268,21 +262,15 @@ export default function App() {
                       </div>
                     )}
 
-                    <div className={`flex items-center rounded-lg p-0.5 ${
-                      darkMode ? 'bg-gray-800' : 'bg-[var(--bg-active)]'
-                    }`}>
+                    <div className="flex items-center rounded-lg p-0.5 bg-[var(--bg-active)]">
                       {(['list', 'board', 'calendar'] as const).map((mode) => (
                         <button
                           key={mode}
                           onClick={() => useStore.getState().setViewMode(mode)}
                           className={`relative z-10 flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
                             viewMode === mode
-                              ? darkMode
-                                ? 'text-white bg-gray-600'
-                                : 'text-white bg-[#DC4C3E]'
-                              : darkMode
-                                ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:text-gray-200'
-                                : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+                              ? 'text-white bg-[var(--accent)]'
+                              : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
                           }`}
                         >
                           {mode === 'list' && <List size={14} />}
@@ -294,9 +282,7 @@ export default function App() {
                     </div>
 
                     {currentView.startsWith('project-') && currentProject && (
-                      <button className={`p-2 rounded-lg transition-colors ${
-                        darkMode ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]'
-                      }`} title="评论">
+                      <button className="p-2 rounded-lg transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]" title="评论">
                         <MessageSquare size={18} />
                       </button>
                     )}
@@ -309,9 +295,7 @@ export default function App() {
                       const menu = document.getElementById('more-menu');
                       if (menu) menu.classList.toggle('hidden');
                     }}
-                    className={`p-2 rounded-lg transition-colors ${ 
-                      darkMode ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)]'
-                    }`} title="更多">
+                    className="p-2 rounded-lg transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]" title="更多">
                     <MoreHorizontal size={18} />
                   </button>
                   <div id="more-menu" className="hidden absolute right-0 top-full mt-1 w-48 bg-[var(--bg-card)] rounded-lg shadow-lg border border-[var(--border-color)] z-50 py-1">
@@ -343,25 +327,17 @@ export default function App() {
                   return (
                     <button
                       key={section.id}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                        darkMode
-                          ? 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-gray-700 hover:text-gray-200'
-                          : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-active)] hover:text-[var(--text-secondary)]'
-                      }`}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)]"
                     >
                       <span>{section.name}</span>
-                      <span className={`text-xs ${darkMode ? 'text-[var(--text-secondary)]' : 'text-[var(--text-tertiary)] dark:text-gray-300'}`}>
+                      <span className="text-xs text-[var(--text-tertiary)]">
                         ({sectionTaskCount})
                       </span>
                     </button>
                   );
                 })}
                 <button
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
-                    darkMode
-                      ? 'text-[var(--text-tertiary)] hover:bg-gray-700 hover:text-gray-300'
-                      : 'text-[var(--text-tertiary)] dark:text-gray-300 hover:bg-[var(--bg-active)] hover:text-[var(--text-secondary)]'
-                  }`}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)]"
                   onClick={() => {
                     useStore.getState().addSection({
                       projectId: currentProjectId,
@@ -381,22 +357,22 @@ export default function App() {
 
           {/* Stats Bar - for task list views */}
           {isTaskListView && viewTasks.length > 0 && (
-            <div className="flex items-center gap-6 px-6 py-2 bg-[var(--bg-secondary)] border-b border-[var(--border-color)]">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[var(--text-tertiary)]">预计时间</span>
-                <span className="text-sm font-bold text-[var(--accent)]">{statsData.totalEstimated}m</span>
+            <div className="flex items-center gap-4 px-6 py-3 bg-[var(--bg-secondary)] border-b border-[var(--border-color)]">
+              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-blue-500/5">
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">预计</span>
+                <span className="text-sm font-black text-blue-600">{statsData.totalEstimated}m</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[var(--text-tertiary)]">待完成</span>
-                <span className="text-sm font-bold text-[var(--accent)]">{statsData.pendingTasks}</span>
+              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-orange-500/5">
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">待完成</span>
+                <span className="text-sm font-black text-orange-600">{statsData.pendingTasks}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[var(--text-tertiary)]">已用时间</span>
-                <span className="text-sm font-bold">{statsData.elapsedTime}m</span>
+              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-purple-500/5">
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">已用</span>
+                <span className="text-sm font-black text-purple-600">{statsData.elapsedTime}m</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[var(--text-tertiary)]">已完成</span>
-                <span className="text-sm font-bold text-green-500">{statsData.completedTasks}</span>
+              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-emerald-500/5">
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">已完成</span>
+                <span className="text-sm font-black text-emerald-600">{statsData.completedTasks}</span>
               </div>
             </div>
           )}
@@ -474,7 +450,7 @@ export default function App() {
                 ? tasks.find((t) => t.id === activeTimerTaskId)?.title || '未知任务'
                 : '';
               return (
-                <div className="flex items-center gap-3 bg-[var(--bg-card)] dark:bg-gray-800 rounded-xl shadow-xl px-5 py-3 border border-[var(--border-color)]">
+                <div className="flex items-center gap-3 bg-[var(--bg-card)] rounded-xl shadow-xl px-5 py-3 border border-[var(--border-color)]">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#DC4C3E] to-[#B83A2E] flex items-center justify-center">
                     <span className="text-white text-sm">🍅</span>
                   </div>

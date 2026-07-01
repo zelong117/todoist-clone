@@ -11,12 +11,12 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
   const updatePomodoroSettings = useStore((s) => s.updatePomodoroSettings);
 
   return (
-    <div className="bg-[var(--bg-card)] dark:bg-gray-800 rounded-xl shadow-xl w-80 p-5">
+    <div className="bg-[var(--bg-card)] rounded-xl shadow-xl w-80 p-5">
       <div className="flex items-center justify-between mb-5">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] dark:text-white">番茄钟设置</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">番茄钟设置</h3>
         <button
           onClick={onClose}
-          className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-active)] dark:hover:bg-gray-700 transition-colors duration-200"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors duration-200"
         >
           <X size={16} />
         </button>
