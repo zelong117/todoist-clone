@@ -66,7 +66,7 @@ function SectionGroup({
   const [showMenu, setShowMenu] = useState(false);
 
   const sectionTasks = useMemo(
-    () => tasks.filter((t) => (section ? t.sectionId === section.id : !t.sectionId)),
+    () => tasks.filter((t) => (section ? t.sectionId === section.id : true)),
     [tasks, section]
   );
 

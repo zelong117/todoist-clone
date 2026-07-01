@@ -327,9 +327,10 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
 
   const tasksToShow = useMemo(() => {
     if (sections.length === 0) {
+      // Non-project view: map ALL tasks to __default__ section
       return tasks.map((t) => ({
         ...t,
-        sectionId: t.sectionId || '__default__',
+        sectionId: '__default__',
       }));
     }
     return tasks;
