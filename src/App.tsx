@@ -12,7 +12,7 @@ import BoardView from './components/BoardView';
 import CalendarView from './components/CalendarView';
 import StatsView from './components/StatsView';
 import FilterPanel from './components/FilterPanel';
-import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid } from 'lucide-react';
+import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal } from 'lucide-react';
 
 export default function App() {
   const {
@@ -181,12 +181,13 @@ export default function App() {
         {/* Task List / View Content */}
         <div className="flex-1 overflow-y-auto">
           {/* View Header */}
-          <div className={`sticky top-0 z-10 px-6 py-4 border-b backdrop-blur-sm ${
+          <div className={`sticky top-0 z-10 border-b backdrop-blur-sm ${
             darkMode
               ? 'bg-gray-900/80 border-gray-700'
               : 'bg-white/80 border-gray-200'
           }`}>
-            <div className="flex items-center justify-between">
+            {/* Main Header Row */}
+            <div className="flex items-center justify-between px-6 py-4">
               <div className="flex items-center gap-3">
                 {currentView === 'inbox' && <Inbox size={22} className="text-blue-500" />}
                 {currentView === 'today' && <CalendarDays size={22} className="text-green-500" />}
@@ -198,42 +199,100 @@ export default function App() {
                     style={{ backgroundColor: currentProject.color }}
                   />
                 )}
-                <h1 className="text-xl font-bold">{viewTitle}</h1>
-                <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {currentView !== 'stats' && `${viewTasks.length} 个任务`}
-                </span>
+                <h1 className="text-2xl font-bold">{viewTitle}</h1>
               </div>
 
-              {/* View Mode Toggle */}
-              {currentView.startsWith('project-') && currentProject && (
-                <div className="relative flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 shadow-inner">
-                  {([ 'list', 'board', 'calendar'] as const).map((mode) => (
+              <div className="flex items-center gap-1">
+                {/* View Mode Toggle (for project views) */}
+                {currentView.startsWith('project-') && currentProject && (
+                  <>
+                    <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                    }`}>
+                      <Users size={15} />
+                      <span>共享</span>
+                    </button>
+
+                    <div className={`flex items-center rounded-lg p-0.5 ${
+                      darkMode ? 'bg-gray-800' : 'bg-gray-100'
+                    }`}>
+                      {(['list', 'board', 'calendar'] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          onClick={() => useStore.getState().setViewMode(mode)}
+                          className={`relative z-10 flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                            viewMode === mode
+                              ? darkMode
+                                ? 'text-white bg-gray-600'
+                                : 'text-white bg-[#DC4C3E]'
+                              : darkMode
+                                ? 'text-gray-400 hover:text-gray-200'
+                                : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          {mode === 'list' && <List size={14} />}
+                          {mode === 'board' && <LayoutGrid size={14} />}
+                          {mode === 'calendar' && <CalendarDays size={14} />}
+                          <span>{mode === 'list' ? '列表' : mode === 'board' ? '看板' : '日历'}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <button className={`p-2 rounded-lg transition-colors ${
+                      darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                    }`} title="评论">
+                      <MessageSquare size={18} />
+                    </button>
+                  </>
+                )}
+
+                <button className={`p-2 rounded-lg transition-colors ${
+                  darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                }`} title="更多">
+                  <MoreHorizontal size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Section Tabs Row (for project views) */}
+            {currentView.startsWith('project-') && currentProjectId && viewSections.length > 0 && (
+              <div className="flex items-center gap-1 px-6 pb-2 overflow-x-auto">
+                {viewSections.map((section) => {
+                  const sectionTaskCount = viewTasks.filter((t) => t.sectionId === section.id).length;
+                  return (
                     <button
-                      key={mode}
-                      onClick={() => useStore.getState().setViewMode(mode)}
-                      className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                        viewMode === mode
-                          ? 'text-white'
-                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      key={section.id}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                        darkMode
+                          ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+                          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
                       }`}
                     >
-                      {mode === 'list' && <List size={16} />}
-                      {mode === 'board' && <LayoutGrid size={16} />}
-                      {mode === 'calendar' && <CalendarDays size={16} />}
-                      <span>{mode === 'list' ? '列表' : mode === 'board' ? '看板' : '日历'}</span>
+                      <span>{section.name}</span>
+                      <span className={`text-xs ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                        ({sectionTaskCount})
+                      </span>
                     </button>
-                  ))}
-                  {/* Animated sliding background */}
-                  <div
-                    className="absolute top-1 bottom-1 bg-gradient-to-r from-[#DC4C3E] to-[#c4403a] rounded-lg shadow-md transition-all duration-300 ease-out"
-                    style={{
-                      width: 'calc(100% / 3 - 8px)',
-                      transform: `translateX(${viewMode === 'list' ? '0%' : viewMode === 'board' ? '100%' : '200%'})`,
-                    }}
-                  />
-                </div>
-              )}
-            </div>
+                  );
+                })}
+                <button
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
+                    darkMode
+                      ? 'text-gray-500 hover:bg-gray-700 hover:text-gray-300'
+                      : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                  }`}
+                  onClick={() => {
+                    useStore.getState().addSection({
+                      projectId: currentProjectId,
+                      name: '新版本块',
+                      order: viewSections.length,
+                    });
+                  }}
+                >
+                  <span>+ 添加版块</span>
+                </button>
+              </div>
+            )}
 
             {/* Filter Panel (for filter view) */}
             {currentView === 'filter' && (
@@ -274,18 +333,15 @@ export default function App() {
           </div>
         </div>
 
-        {/* Task Detail Panel (right side) */}
-        {selectedTaskId && (
-          <div className={`w-[380px] min-w-[380px] border-l overflow-y-auto ${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          }`}>
-            <TaskDetail
-              taskId={selectedTaskId}
-              onClose={() => setSelectedTaskId(null)}
-            />
-          </div>
-        )}
       </main>
+
+      {/* Task Detail Modal (centered overlay) */}
+      {selectedTaskId && (
+        <TaskDetail
+          taskId={selectedTaskId}
+          onClose={() => setSelectedTaskId(null)}
+        />
+      )}
 
       {/* Quick Add Modal */}
       {showQuickAdd && (

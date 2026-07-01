@@ -1,14 +1,21 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   X,
+  ChevronUp,
+  ChevronDown,
+  MoreHorizontal,
   Calendar,
   MessageSquare,
   Plus,
   Trash2,
   Clock,
   CheckCircle2,
-  ChevronDown,
   Check,
+  Paperclip,
+  Image as ImageIcon,
+  Bell,
+  MapPin,
+  Flag,
 } from 'lucide-react';
 import { useStore } from '../store';
 
@@ -32,8 +39,27 @@ interface TaskDetailProps {
 }
 
 export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
-  const { tasks, comments, updateTask, deleteTask, addComment, addTask, labels } = useStore();
+  const { tasks, comments, projects, sections, updateTask, deleteTask, addComment, addTask, labels, selectedTaskId, setSelectedTaskId } = useStore();
   const task = useMemo(() => tasks.find((t) => t.id === taskId), [tasks, taskId]);
+
+  // Find sibling tasks for navigation
+  const siblingTasks = useMemo(() => {
+    if (!task) return [];
+    return tasks
+      .filter(
+        (t) =>
+          !t.isCompleted &&
+          t.parentId === task.parentId &&
+          t.projectId === task.projectId &&
+          t.sectionId === task.sectionId
+      )
+      .sort((a, b) => a.order - b.order);
+  }, [tasks, task]);
+
+  const currentIndex = useMemo(() => {
+    if (!task) return -1;
+    return siblingTasks.findIndex((t) => t.id === task.id);
+  }, [siblingTasks, task]);
 
   const subtasks = useMemo(
     () => tasks.filter((t) => t.parentId === taskId),
@@ -50,21 +76,35 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     [subtasks]
   );
 
+  const currentProject = useMemo(
+    () => (task?.projectId ? projects.find((p) => p.id === task.projectId) : null),
+    [projects, task]
+  );
+
+  const currentSection = useMemo(
+    () => (task?.sectionId ? sections.find((s) => s.id === task.sectionId) : null),
+    [sections, task]
+  );
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [showDescription, setShowDescription] = useState(false);
   const [newSubtask, setNewSubtask] = useState('');
   const [newComment, setNewComment] = useState('');
   const [showTagDropdown, setShowTagDropdown] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const tagDropdownRef = useRef<HTMLDivElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
+  const priorityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title);
       setDescription(task.description || '');
+      setShowDescription(!!task.description);
     }
   }, [task]);
 
@@ -72,21 +112,19 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      // Arrow navigation
+      if (e.key === 'ArrowUp' && e.altKey) {
+        e.preventDefault();
+        navigateTask(-1);
+      }
+      if (e.key === 'ArrowDown' && e.altKey) {
+        e.preventDefault();
+        navigateTask(1);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
-  // Close on click outside
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [onClose]);
+  }, [onClose, currentIndex, siblingTasks]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -97,10 +135,24 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node)) {
         setShowDatePicker(false);
       }
+      if (priorityRef.current && !priorityRef.current.contains(e.target as Node)) {
+        setShowPriorityPicker(false);
+      }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const navigateTask = useCallback(
+    (direction: number) => {
+      if (siblingTasks.length === 0) return;
+      const newIndex = currentIndex + direction;
+      if (newIndex >= 0 && newIndex < siblingTasks.length) {
+        setSelectedTaskId(siblingTasks[newIndex].id);
+      }
+    },
+    [siblingTasks, currentIndex, setSelectedTaskId]
+  );
 
   const handleTitleBlur = useCallback(() => {
     if (task && title.trim() !== task.title) {
@@ -206,390 +258,558 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
   };
 
-  if (!task) {
-    return (
-      <div className="w-[420px] bg-white border-l border-gray-200 flex items-center justify-center text-gray-400">
-        任务未找到
-      </div>
-    );
-  }
+  const formatDateDisplay = (iso: string | null) => {
+    if (!iso) return '未设置';
+    const d = new Date(iso);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (d.toDateString() === today.toDateString()) return '今天';
+    if (d.toDateString() === tomorrow.toDateString()) return '明天';
+
+    return d.toLocaleDateString('zh-CN', {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'short',
+    });
+  };
+
+  if (!task) return null;
 
   return (
     <div
-      ref={panelRef}
-      className="w-[420px] bg-white border-l border-gray-200 flex flex-col h-full"
-      style={{ animation: 'fadeIn 0.2s ease-out' }}
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ animation: 'fadeIn 0.15s ease-out' }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: PRIORITY_COLORS[task.priority] }}
-          />
-          <span className="text-xs text-gray-400 font-medium">
-            {task.isCompleted ? '已完成' : '进行中'}
-          </span>
-        </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-          title="关闭 (Esc)"
-        >
-          <X size={18} />
-        </button>
-      </div>
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-        {/* Title */}
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onBlur={handleTitleBlur}
-          className="w-full text-lg font-semibold text-gray-900 border-none outline-none focus:ring-0 placeholder-gray-300 leading-tight"
-          placeholder="任务标题"
-        />
-
-        {/* Description */}
-        <div>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            onBlur={handleDescBlur}
-            placeholder="添加描述..."
-            className="w-full text-sm text-gray-600 border border-gray-200 rounded-xl p-3 outline-none focus:border-[#DC4C3E]/40 resize-none min-h-[80px] transition-colors bg-gray-50/50"
-            rows={3}
-          />
-        </div>
-
-        {/* Priority Selector */}
-        <div className="relative">
-          <label className="text-xs font-medium text-gray-500 mb-2 block uppercase tracking-wide">优先级</label>
-          <div className="flex items-center gap-2">
-            {([1, 2, 3, 4] as const).map((p) => (
-              <button
-                key={p}
-                onClick={() => updateTask(task.id, { priority: p })}
-                className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all group"
-                style={{
-                  backgroundColor: task.priority === p ? PRIORITY_COLORS[p] : '#F3F4F6',
-                }}
-                title={PRIORITY_LABELS[p]}
-              >
-                {task.priority === p ? (
-                  <Check size={16} className="text-white" strokeWidth={3} />
-                ) : (
-                  <span
-                    className="text-xs font-bold"
-                    style={{ color: PRIORITY_COLORS[p] }}
-                  >
-                    P{p}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Due Date */}
-        <div ref={datePickerRef} className="relative">
-          <label className="text-xs font-medium text-gray-500 mb-2 block uppercase tracking-wide">截止日期</label>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowDatePicker(!showDatePicker)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors text-sm text-gray-600 flex-1"
-            >
-              <Calendar size={16} className="text-gray-400" />
-              <span>{task.dueDate || '设置日期'}</span>
-              <ChevronDown size={14} className="text-gray-400 ml-auto" />
-            </button>
-            {task.dueDate && (
-              <button
-                onClick={() => handleSetDate(null)}
-                className="text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1"
-              >
-                清除
-              </button>
+      {/* Modal */}
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-[700px] max-h-[85vh] bg-[#1f1f1f] rounded-xl shadow-2xl overflow-hidden flex flex-col mx-4"
+        style={{ animation: 'slideUp 0.2s ease-out' }}
+      >
+        {/* Top Bar */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-700/50">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <span className="text-gray-500">#</span>
+            <span>{currentProject?.name || '收件箱'}</span>
+            {currentSection && (
+              <>
+                <span className="text-gray-600">/</span>
+                <span>{currentSection.name}</span>
+              </>
             )}
           </div>
-          {showDatePicker && (
-            <div
-              className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-gray-200 p-3 z-20"
-              style={{ animation: 'fadeIn 0.15s ease-out' }}
-            >
-              {/* Quick options */}
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                <button
-                  onClick={() => handleSetDate(getQuickDate(0))}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
-                >
-                  今天
-                </button>
-                <button
-                  onClick={() => handleSetDate(getQuickDate(1))}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
-                >
-                  明天
-                </button>
-                <button
-                  onClick={() => handleSetDate(getQuickDate(7))}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
-                >
-                  下周
-                </button>
-              </div>
-              <input
-                type="date"
-                value={task.dueDate || ''}
-                onChange={(e) => handleSetDate(e.target.value || null)}
-                className="w-full text-sm text-gray-600 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-[#DC4C3E]/40 transition-colors"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Labels */}
-        <div ref={tagDropdownRef} className="relative">
-          <label className="text-xs font-medium text-gray-500 mb-2 block uppercase tracking-wide">标签</label>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {(task.labels || []).map((label) => (
-              <span
-                key={label}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-full bg-blue-50 text-blue-600 border border-blue-100 font-medium"
-              >
-                {label}
-                <button
-                  onClick={() => handleToggleLabel(label)}
-                  className="hover:text-red-500 transition-colors ml-0.5"
-                >
-                  <X size={12} />
-                </button>
-              </span>
-            ))}
+          <div className="flex items-center gap-1">
             <button
-              onClick={() => setShowTagDropdown(!showTagDropdown)}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-full bg-gray-50 text-gray-400 hover:text-gray-600 border border-dashed border-gray-300 transition-colors"
+              onClick={() => navigateTask(-1)}
+              disabled={currentIndex <= 0}
+              className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title="上一个任务"
             >
-              <Plus size={12} />
-              添加标签
+              <ChevronUp size={16} />
+            </button>
+            <button
+              onClick={() => navigateTask(1)}
+              disabled={currentIndex >= siblingTasks.length - 1}
+              className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title="下一个任务"
+            >
+              <ChevronDown size={16} />
+            </button>
+            <button
+              className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors"
+              title="更多"
+            >
+              <MoreHorizontal size={16} />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors"
+              title="关闭 (Esc)"
+            >
+              <X size={16} />
             </button>
           </div>
-          {showTagDropdown && (
-            <div
-              className="absolute top-full left-0 mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-200 py-1 z-20 max-h-48 overflow-y-auto"
-              style={{ animation: 'fadeIn 0.15s ease-out' }}
-            >
-              {labels.length === 0 ? (
-                <p className="px-3 py-2 text-xs text-gray-400">暂无可用标签</p>
-              ) : (
-                labels.map((label) => {
-                  const isSelected = (task.labels || []).includes(label.name);
-                  return (
-                    <button
-                      key={label.id}
-                      onClick={() => handleToggleLabel(label.name)}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                    >
-                      <div
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
-                          isSelected
-                            ? 'bg-[#DC4C3E] border-[#DC4C3E]'
-                            : 'border-gray-300'
-                        }`}
-                      >
-                        {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
-                      </div>
-                      <span className={isSelected ? 'text-gray-900 font-medium' : 'text-gray-600'}>
-                        {label.name}
-                      </span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          )}
         </div>
 
-        {/* Subtasks */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 mb-2 block uppercase tracking-wide">
-            子任务
-            {subtasks.length > 0 && (
-              <span className="text-gray-400 ml-1 normal-case">
-                ({completedSubtasks}/{subtasks.length})
-              </span>
-            )}
-          </label>
-          {/* Progress bar */}
-          {subtasks.length > 0 && (
-            <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
-              <div
-                className="bg-[#DC4C3E] h-1.5 rounded-full transition-all duration-300"
-                style={{
-                  width: `${subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0}%`,
-                }}
-              />
-            </div>
-          )}
-          <div className="space-y-1">
-            {subtasks.map((sub) => (
-              <div
-                key={sub.id}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group"
-              >
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="flex">
+            {/* Left Panel - Main Content */}
+            <div className="flex-1 px-6 py-5 space-y-4 min-w-0">
+              {/* Checkbox + Title */}
+              <div className="flex items-start gap-3">
                 <button
-                  onClick={() => handleToggleSubtask(sub.id)}
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                    sub.isCompleted
+                  onClick={() =>
+                    updateTask(task.id, {
+                      isCompleted: !task.isCompleted,
+                      completedAt: !task.isCompleted ? new Date().toISOString() : null,
+                    })
+                  }
+                  className={`mt-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                    task.isCompleted
                       ? 'bg-[#DC4C3E] border-[#DC4C3E]'
-                      : 'border-gray-300 hover:border-gray-400'
+                      : 'border-gray-500 hover:border-gray-400'
                   }`}
                 >
-                  {sub.isCompleted && (
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
+                  {task.isCompleted && (
+                    <Check size={12} className="text-white" strokeWidth={3} />
                   )}
                 </button>
-                <span
-                  className={`text-sm flex-1 ${
-                    sub.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'
-                  }`}
-                >
-                  {sub.title}
-                </span>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={handleTitleBlur}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                  className="flex-1 text-lg font-medium text-gray-100 bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500 leading-tight"
+                  placeholder="任务标题"
+                />
               </div>
-            ))}
-            <div className="flex items-center gap-3 px-3 py-2">
-              <div className="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center flex-shrink-0">
-                <Plus size={10} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                value={newSubtask}
-                onChange={(e) => setNewSubtask(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddSubtask();
-                }}
-                placeholder="添加子任务..."
-                className="flex-1 text-sm text-gray-600 outline-none placeholder-gray-300"
-              />
-            </div>
-          </div>
-        </div>
 
-        {/* Comments */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 mb-3 block flex items-center gap-1.5 uppercase tracking-wide">
-            <MessageSquare size={13} />
-            评论
-          </label>
-          <div className="space-y-3 mb-3">
-            {taskComments.map((comment) => (
-              <div key={comment.id} className="flex gap-2.5">
-                {/* Avatar */}
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                  W
-                </div>
-                {/* Bubble */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold text-gray-700">我</span>
-                    <span className="text-[10px] text-gray-400">
-                      {formatCommentDate(comment.createdAt)}
+              {/* Description */}
+              <div className="pl-8">
+                {showDescription || description ? (
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    onBlur={handleDescBlur}
+                    placeholder="添加描述..."
+                    className="w-full text-sm text-gray-300 bg-transparent border border-gray-700 rounded-lg p-3 outline-none focus:border-[#DC4C3E]/40 resize-none min-h-[80px] transition-colors placeholder-gray-600"
+                    rows={3}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowDescription(true)}
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition-colors py-2"
+                  >
+                    <span className="text-lg leading-none">≡</span>
+                    <span>添加描述</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-gray-700/50 ml-8" />
+
+              {/* Subtasks */}
+              <div className="pl-8">
+                <label className="text-xs font-medium text-gray-500 mb-2 block uppercase tracking-wide">
+                  子任务
+                  {subtasks.length > 0 && (
+                    <span className="text-gray-600 ml-1 normal-case">
+                      ({completedSubtasks}/{subtasks.length})
                     </span>
+                  )}
+                </label>
+                {/* Progress bar */}
+                {subtasks.length > 0 && (
+                  <div className="w-full bg-gray-700 rounded-full h-1.5 mb-3">
+                    <div
+                      className="bg-[#DC4C3E] h-1.5 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0}%`,
+                      }}
+                    />
                   </div>
-                  <div className="bg-gray-50 rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-sm text-gray-700 inline-block max-w-full">
-                    {comment.content}
+                )}
+                <div className="space-y-1">
+                  {subtasks.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors group"
+                    >
+                      <button
+                        onClick={() => handleToggleSubtask(sub.id)}
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                          sub.isCompleted
+                            ? 'bg-[#DC4C3E] border-[#DC4C3E]'
+                            : 'border-gray-500 hover:border-gray-400'
+                        }`}
+                      >
+                        {sub.isCompleted && (
+                          <Check size={10} className="text-white" strokeWidth={3} />
+                        )}
+                      </button>
+                      <span
+                        className={`text-sm flex-1 ${
+                          sub.isCompleted ? 'line-through text-gray-500' : 'text-gray-300'
+                        }`}
+                      >
+                        {sub.title}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-3 px-3 py-2">
+                    <div className="w-4 h-4 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center flex-shrink-0">
+                      <Plus size={8} className="text-gray-500" />
+                    </div>
+                    <input
+                      type="text"
+                      value={newSubtask}
+                      onChange={(e) => setNewSubtask(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddSubtask();
+                      }}
+                      placeholder="添加子任务..."
+                      className="flex-1 text-sm text-gray-400 outline-none placeholder-gray-600 bg-transparent"
+                    />
                   </div>
                 </div>
               </div>
-            ))}
-            {taskComments.length === 0 && (
-              <p className="text-xs text-gray-300 pl-10">暂无评论</p>
-            )}
-          </div>
-          {/* New comment input */}
-          <div className="flex gap-2 items-start">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              W
+
+              {/* Divider */}
+              <div className="border-t border-gray-700/50 ml-8" />
+
+              {/* Comments */}
+              <div className="pl-8">
+                <label className="text-xs font-medium text-gray-500 mb-3 block flex items-center gap-1.5 uppercase tracking-wide">
+                  <MessageSquare size={13} />
+                  评论
+                </label>
+                <div className="space-y-3 mb-3">
+                  {taskComments.map((comment) => (
+                    <div key={comment.id} className="flex gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                        W
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-semibold text-gray-300">我</span>
+                          <span className="text-[10px] text-gray-500">
+                            {formatCommentDate(comment.createdAt)}
+                          </span>
+                        </div>
+                        <div className="bg-gray-800 rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-sm text-gray-300 inline-block max-w-full">
+                          {comment.content}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {taskComments.length === 0 && (
+                    <p className="text-xs text-gray-600 pl-9">暂无评论</p>
+                  )}
+                </div>
+                {/* New comment input */}
+                <div className="flex gap-2 items-center">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                    W
+                  </div>
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      type="text"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddComment();
+                      }}
+                      placeholder="输入评论..."
+                      className="flex-1 text-sm text-gray-300 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 outline-none focus:border-[#DC4C3E]/40 transition-colors placeholder-gray-600"
+                    />
+                    <button
+                      className="p-2 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-gray-800 transition-colors"
+                      title="添加附件"
+                    >
+                      <Paperclip size={16} />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-gray-800 transition-colors"
+                      title="添加图片"
+                    >
+                      <ImageIcon size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 flex gap-2">
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddComment();
-                }}
-                placeholder="写评论..."
-                className="flex-1 text-sm text-gray-600 border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-[#DC4C3E]/40 transition-colors"
-              />
-              <button
-                onClick={handleAddComment}
-                disabled={!newComment.trim()}
-                className="px-4 py-2 bg-[#DC4C3E] text-white text-sm font-medium rounded-xl hover:bg-[#c4403a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                发送
-              </button>
+
+            {/* Right Panel - Properties */}
+            <div className="w-[260px] border-l border-gray-700/50 px-5 py-5 space-y-4 flex-shrink-0">
+              {/* Project */}
+              <div className="flex items-center justify-between group">
+                <span className="text-sm text-gray-500 w-16">项目</span>
+                <div className="flex items-center gap-2 text-sm text-gray-300">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: currentProject?.color || '#6B7280' }}
+                  />
+                  <span className="truncate max-w-[140px]">
+                    {currentProject?.name || '收件箱'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Date */}
+              <div className="flex items-center justify-between group relative" ref={datePickerRef}>
+                <span className="text-sm text-gray-500 w-16">日期</span>
+                <button
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  <span>{formatDateDisplay(task.dueDate)}</span>
+                  {task.dueDate ? (
+                    <span className="text-gray-500">📅</span>
+                  ) : (
+                    <Plus size={14} className="text-gray-500" />
+                  )}
+                </button>
+                {showDatePicker && (
+                  <div
+                    className="absolute top-full right-0 mt-1 w-64 bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-700 p-3 z-20"
+                    style={{ animation: 'fadeIn 0.15s ease-out' }}
+                  >
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      <button
+                        onClick={() => handleSetDate(getQuickDate(0))}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors"
+                      >
+                        今天
+                      </button>
+                      <button
+                        onClick={() => handleSetDate(getQuickDate(1))}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors"
+                      >
+                        明天
+                      </button>
+                      <button
+                        onClick={() => handleSetDate(getQuickDate(7))}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors"
+                      >
+                        下周
+                      </button>
+                    </div>
+                    <input
+                      type="date"
+                      value={task.dueDate || ''}
+                      onChange={(e) => handleSetDate(e.target.value || null)}
+                      className="w-full text-sm text-gray-300 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 outline-none focus:border-[#DC4C3E]/40 transition-colors"
+                    />
+                    {task.dueDate && (
+                      <button
+                        onClick={() => handleSetDate(null)}
+                        className="w-full mt-2 text-xs text-gray-400 hover:text-red-400 transition-colors py-1"
+                      >
+                        清除日期
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Due Date */}
+              <div className="flex items-center justify-between group">
+                <span className="text-sm text-gray-500 w-16">截止</span>
+                <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-300 transition-colors">
+                  <Calendar size={14} />
+                  <span>设置截止日期</span>
+                </button>
+              </div>
+
+              {/* Priority */}
+              <div className="flex items-center justify-between group relative" ref={priorityRef}>
+                <span className="text-sm text-gray-500 w-16">优先级</span>
+                <button
+                  onClick={() => setShowPriorityPicker(!showPriorityPicker)}
+                  className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: PRIORITY_COLORS[task.priority] }}
+                  />
+                  <span>{PRIORITY_LABELS[task.priority]}</span>
+                  <Flag size={14} style={{ color: PRIORITY_COLORS[task.priority] }} />
+                </button>
+                {showPriorityPicker && (
+                  <div
+                    className="absolute top-full right-0 mt-1 w-48 bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-700 py-1 z-20"
+                    style={{ animation: 'fadeIn 0.15s ease-out' }}
+                  >
+                    {([1, 2, 3, 4] as const).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => {
+                          updateTask(task.id, { priority: p });
+                          setShowPriorityPicker(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-700 flex items-center gap-2.5 transition-colors"
+                      >
+                        <span
+                          className="w-4 h-4 rounded-full flex items-center justify-center"
+                          style={{
+                            backgroundColor: task.priority === p ? PRIORITY_COLORS[p] : 'transparent',
+                            border: `2px solid ${PRIORITY_COLORS[p]}`,
+                          }}
+                        >
+                          {task.priority === p && <Check size={10} className="text-white" strokeWidth={3} />}
+                        </span>
+                        <span className="text-gray-300">{PRIORITY_LABELS[p]}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Labels */}
+              <div className="group relative" ref={tagDropdownRef}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm text-gray-500 w-16">标签</span>
+                  <button
+                    onClick={() => setShowTagDropdown(!showTagDropdown)}
+                    className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-300 transition-colors"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(task.labels || []).map((label) => (
+                    <span
+                      key={label}
+                      className="flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium"
+                    >
+                      {label}
+                      <button
+                        onClick={() => handleToggleLabel(label)}
+                        className="hover:text-red-400 transition-colors ml-0.5"
+                      >
+                        <X size={10} />
+                      </button>
+                    </span>
+                  ))}
+                  {(!task.labels || task.labels.length === 0) && !showTagDropdown && (
+                    <button
+                      onClick={() => setShowTagDropdown(true)}
+                      className="text-xs text-gray-500 hover:text-gray-400 transition-colors"
+                    >
+                      + 添加标签
+                    </button>
+                  )}
+                </div>
+                {showTagDropdown && (
+                  <div
+                    className="absolute top-full right-0 mt-1 w-52 bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-700 py-1 z-20 max-h-48 overflow-y-auto"
+                    style={{ animation: 'fadeIn 0.15s ease-out' }}
+                  >
+                    {labels.length === 0 ? (
+                      <p className="px-3 py-2 text-xs text-gray-500">暂无可用标签</p>
+                    ) : (
+                      labels.map((label) => {
+                        const isSelected = (task.labels || []).includes(label.name);
+                        return (
+                          <button
+                            key={label.id}
+                            onClick={() => handleToggleLabel(label.name)}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-700 flex items-center gap-2 transition-colors"
+                          >
+                            <div
+                              className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
+                                isSelected
+                                  ? 'bg-[#DC4C3E] border-[#DC4C3E]'
+                                  : 'border-gray-600'
+                              }`}
+                            >
+                              {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
+                            </div>
+                            <span className={isSelected ? 'text-gray-200 font-medium' : 'text-gray-400'}>
+                              {label.name}
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Reminders */}
+              <div className="flex items-center justify-between group">
+                <span className="text-sm text-gray-500 w-16">提醒</span>
+                <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-300 transition-colors">
+                  <Bell size={14} />
+                  <span>+ 添加提醒</span>
+                </button>
+              </div>
+
+              {/* Location */}
+              <div className="flex items-center justify-between group">
+                <span className="text-sm text-gray-500 w-16">地点</span>
+                <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-300 transition-colors">
+                  <MapPin size={14} />
+                  <span>设置地点</span>
+                </button>
+              </div>
+
+              {/* Meta info */}
+              <div className="border-t border-gray-700/50 pt-3 mt-3 space-y-1.5">
+                <div className="flex items-center gap-2 text-[11px] text-gray-600">
+                  <Clock size={11} />
+                  <span>创建于 {formatDate(task.createdAt)}</span>
+                </div>
+                {task.completedAt && (
+                  <div className="flex items-center gap-2 text-[11px] text-gray-600">
+                    <CheckCircle2 size={11} />
+                    <span>完成于 {formatDate(task.completedAt)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Delete */}
+              <div className="border-t border-gray-700/50 pt-3">
+                {showDeleteConfirm ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-400 flex-1">确认删除？</span>
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="px-2.5 py-1 text-xs text-gray-500 hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      取消
+                    </button>
+                    <button
+                      onClick={() => {
+                        deleteTask(task.id);
+                        onClose();
+                      }}
+                      className="px-2.5 py-1 text-xs text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors font-medium"
+                    >
+                      删除
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2 py-1.5 rounded-lg w-full transition-colors"
+                  >
+                    <Trash2 size={14} />
+                    删除任务
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Meta info */}
-        <div className="border-t border-gray-100 pt-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <Clock size={12} />
-            <span>创建于 {formatDate(task.createdAt)}</span>
-          </div>
-          {task.completedAt && (
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <CheckCircle2 size={12} />
-              <span>完成于 {formatDate(task.completedAt)}</span>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Footer - Delete */}
-      <div className="px-5 py-3 border-t border-gray-100">
-        {showDeleteConfirm ? (
-          <div className="flex items-center gap-2 animate-fade-in">
-            <span className="text-sm text-gray-600 flex-1">确认删除此任务？</span>
-            <button
-              onClick={() => setShowDeleteConfirm(false)}
-              className="px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              取消
-            </button>
-            <button
-              onClick={() => {
-                deleteTask(task.id);
-                onClose();
-              }}
-              className="px-3 py-1.5 text-sm text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors font-medium"
-            >
-              删除
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center gap-2 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl w-full transition-colors"
-          >
-            <Trash2 size={14} />
-            删除任务
-          </button>
-        )}
-      </div>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </div>
   );
 }
