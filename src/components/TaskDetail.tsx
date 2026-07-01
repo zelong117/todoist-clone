@@ -611,7 +611,15 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Due Date */}
               <div className="flex items-center justify-between group">
                 <span className="text-sm text-[var(--text-tertiary)] w-16">截止</span>
-                <button className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors">
+                <button
+                  onClick={() => {
+                    const date = prompt('输入截止日期 (YYYY-MM-DD)：');
+                    if (date) {
+                      updateTask(task.id, { dueDate: date });
+                    }
+                  }}
+                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors"
+                >
                   <Calendar size={14} />
                   <span>设置截止日期</span>
                 </button>
@@ -633,37 +641,52 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 </button>
                 {showPriorityPicker && (
                   <div
-                    className="absolute top-full right-0 mt-1 w-48 bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-700 py-1 z-20"
+                    className="absolute top-full right-0 mt-1 w-56 bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-700 p-3 z-20"
                     style={{ animation: 'fadeIn 0.15s ease-out' }}
                   >
-                    {([1, 2, 3, 4] as const).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => {
-                          updateTask(task.id, { priority: p });
-                          setShowPriorityPicker(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-700 flex items-center gap-2.5 transition-colors"
-                      >
-                        <span
-                          className="w-4 h-4 rounded-full flex items-center justify-center"
-                          style={{
-                            backgroundColor: task.priority === p ? PRIORITY_COLORS[p] : 'transparent',
-                            border: `2px solid ${PRIORITY_COLORS[p]}`,
+                    <div className="grid grid-cols-4 gap-2">
+                      {([1, 2, 3, 4] as const).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => {
+                            updateTask(task.id, { priority: p });
+                            setShowPriorityPicker(false);
+                          }}
+                          className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-gray-700 transition-all"
+                          style={{ transform: task.priority === p ? 'scale(1.05)' : undefined }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLElement).style.transform = 'scale(1.15)';
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLElement).style.transform = task.priority === p ? 'scale(1.05)' : 'scale(1)';
                           }}
                         >
-                          {task.priority === p && <Check size={10} className="text-white" strokeWidth={3} />}
-                        </span>
-                        <span className="text-gray-300">{PRIORITY_LABELS[p]}</span>
-                      </button>
-                    ))}
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs transition-all"
+                            style={{
+                              backgroundColor: PRIORITY_COLORS[p],
+                              boxShadow: task.priority === p ? `0 0 12px ${PRIORITY_COLORS[p]}60` : 'none',
+                            }}
+                          >
+                            {task.priority === p ? (
+                              <Check size={14} className="text-white" strokeWidth={3} />
+                            ) : (
+                              <span>{`P${p}`}</span>
+                            )}
+                          </div>
+                          <span className={`text-[10px] font-medium ${task.priority === p ? 'text-gray-200' : 'text-[var(--text-tertiary)]'}`}>
+                            {PRIORITY_LABELS[p]}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Labels */}
               <div className="group relative" ref={tagDropdownRef}>
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-[var(--text-tertiary)] w-16">标签</span>
                   <button
                     onClick={() => setShowTagDropdown(!showTagDropdown)}
@@ -673,20 +696,32 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {(task.labels || []).map((label) => (
-                    <span
-                      key={label}
-                      className="flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium"
-                    >
-                      {label}
-                      <button
-                        onClick={() => handleToggleLabel(label)}
-                        className="hover:text-red-400 transition-colors ml-0.5"
+                  {(task.labels || []).map((label) => {
+                    const colorMap: Record<string, { bg: string; text: string; border: string }> = {
+                      '紧急': { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30' },
+                      '重要': { bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30' },
+                      '低优先': { bg: 'bg-gray-500/15', text: 'text-gray-400', border: 'border-gray-500/30' },
+                      '会议': { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
+                      '工作': { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
+                      '个人': { bg: 'bg-green-500/15', text: 'text-green-400', border: 'border-green-500/30' },
+                      '学习': { bg: 'bg-cyan-500/15', text: 'text-cyan-400', border: 'border-cyan-500/30' },
+                    };
+                    const colors = colorMap[label] || { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' };
+                    return (
+                      <span
+                        key={label}
+                        className={`flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-full ${colors.bg} ${colors.text} border ${colors.border} font-medium cursor-pointer hover:opacity-80 transition-opacity`}
                       >
-                        <X size={10} />
-                      </button>
-                    </span>
-                  ))}
+                        {label}
+                        <button
+                          onClick={() => handleToggleLabel(label)}
+                          className="hover:text-red-400 transition-colors ml-0.5"
+                        >
+                          <X size={10} />
+                        </button>
+                      </span>
+                    );
+                  })}
                   {(!task.labels || task.labels.length === 0) && !showTagDropdown && (
                     <button
                       onClick={() => setShowTagDropdown(true)}
@@ -701,15 +736,25 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     className="absolute top-full right-0 mt-1 w-52 bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-700 py-1 z-20 max-h-48 overflow-y-auto"
                     style={{ animation: 'fadeIn 0.15s ease-out' }}
                   >
-                    {labels.length === 0 ? (
-                      <p className="px-3 py-2 text-xs text-[var(--text-tertiary)]">暂无可用标签</p>
-                    ) : (
-                      labels.map((label) => {
-                        const isSelected = (task.labels || []).includes(label.name);
+                    {(() => {
+                      const presetLabels = ['紧急', '重要', '低优先', '会议', '工作', '个人', '学习'];
+                      const storeLabelNames = labels.map((l) => l.name);
+                      const allLabels = [...new Set([...presetLabels, ...storeLabelNames])];
+                      const colorMap: Record<string, string> = {
+                        '紧急': '🔴',
+                        '重要': '🟠',
+                        '低优先': '⚪',
+                        '会议': '🟣',
+                        '工作': '🔵',
+                        '个人': '🟢',
+                        '学习': '🔷',
+                      };
+                      return allLabels.map((labelName) => {
+                        const isSelected = (task.labels || []).includes(labelName);
                         return (
                           <button
-                            key={label.id}
-                            onClick={() => handleToggleLabel(label.name)}
+                            key={labelName}
+                            onClick={() => handleToggleLabel(labelName)}
                             className="w-full text-left px-3 py-2 text-sm hover:bg-gray-700 flex items-center gap-2 transition-colors"
                           >
                             <div
@@ -721,13 +766,14 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                             >
                               {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
                             </div>
+                            <span>{colorMap[labelName] || '🏷️'}</span>
                             <span className={isSelected ? 'text-gray-200 font-medium' : 'text-[var(--text-tertiary)]'}>
-                              {label.name}
+                              {labelName}
                             </span>
                           </button>
                         );
-                      })
-                    )}
+                      });
+                    })()}
                   </div>
                 )}
               </div>
@@ -735,7 +781,15 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Reminders */}
               <div className="flex items-center justify-between group">
                 <span className="text-sm text-[var(--text-tertiary)] w-16">提醒</span>
-                <button className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors">
+                <button
+                  onClick={() => {
+                    const reminder = prompt('输入提醒时间 (YYYY-MM-DD HH:MM)：');
+                    if (reminder) {
+                      alert(`提醒已设置: ${reminder}`);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors"
+                >
                   <Bell size={14} />
                   <span>+ 添加提醒</span>
                 </button>
@@ -744,7 +798,15 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Location */}
               <div className="flex items-center justify-between group">
                 <span className="text-sm text-[var(--text-tertiary)] w-16">地点</span>
-                <button className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors">
+                <button
+                  onClick={() => {
+                    const location = prompt('输入地点：');
+                    if (location) {
+                      alert(`地点已设置: ${location}`);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors"
+                >
                   <MapPin size={14} />
                   <span>设置地点</span>
                 </button>
