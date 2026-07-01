@@ -128,7 +128,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className={`text-[14px] leading-5 transition-all duration-200 ${
+            className={`text-[15px] font-medium leading-5 transition-all duration-200 ${
               task.isCompleted
                 ? 'line-through text-[var(--text-tertiary)] opacity-60'
                 : 'text-[var(--text-primary)]'
@@ -144,7 +144,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
             {task.labels.map((label) => (
               <span
                 key={label}
-                className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-[var(--bg-active)] text-[var(--text-secondary)]"
+                className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
               >
                 {label}
               </span>
@@ -178,11 +178,11 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           <span
             className={`flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded font-medium transition-colors ${
               isOverdue
-                ? 'text-red-600 bg-red-50'
+                ? 'text-red-700 bg-red-100 font-semibold'
                 : isToday
-                ? 'text-green-600 bg-green-50'
+                ? 'text-green-700 bg-green-100 font-semibold'
                 : isTomorrow
-                ? 'text-blue-600 bg-blue-50'
+                ? 'text-blue-600 bg-blue-50 font-semibold'
                 : task.isCompleted
                 ? 'text-[var(--text-tertiary)]'
                 : 'text-[var(--text-tertiary)] bg-[var(--bg-hover)]'
@@ -195,10 +195,10 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
         {/* Priority indicator */}
         <span
-          className="text-[10px] font-semibold px-1 py-0.5 rounded"
+          className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm"
           style={{
             color: PRIORITY_COLORS[task.priority],
-            backgroundColor: `${PRIORITY_COLORS[task.priority]}10`,
+            backgroundColor: `${PRIORITY_COLORS[task.priority]}20`,
           }}
         >
           {PRIORITY_LABELS[task.priority]}

@@ -374,7 +374,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       (e.target as HTMLInputElement).blur();
                     }
                   }}
-                  className="flex-1 text-lg font-medium text-gray-100 bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500 leading-tight"
+                  className="flex-1 text-xl font-bold text-white bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500 leading-tight"
                   placeholder="任务标题"
                 />
               </div>
@@ -387,7 +387,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     onChange={(e) => setDescription(e.target.value)}
                     onBlur={handleDescBlur}
                     placeholder="添加描述..."
-                    className="w-full text-sm text-gray-300 bg-transparent border border-gray-700 rounded-lg p-3 outline-none focus:border-[#DC4C3E]/40 resize-none min-h-[80px] transition-colors placeholder-gray-600"
+                    className="w-full text-sm font-medium text-gray-300 bg-transparent border border-gray-700 rounded-lg p-3 outline-none focus:border-[#DC4C3E]/40 resize-none min-h-[80px] transition-colors placeholder-gray-600"
                     rows={3}
                   />
                 ) : (
@@ -539,13 +539,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <div className="w-[260px] border-l border-gray-700/50 px-5 py-5 space-y-4 flex-shrink-0">
               {/* Project */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm text-[var(--text-tertiary)] w-16">项目</span>
-                <div className="flex items-center gap-2 text-sm text-gray-300">
+                <span className="text-sm font-medium text-gray-400 w-16">项目</span>
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-300">
                   <span
                     className="w-2.5 h-2.5 rounded-full"
                     style={{ backgroundColor: currentProject?.color || '#6B7280' }}
                   />
-                  <span className="truncate max-w-[140px]">
+                  <span className="truncate max-w-[140px] font-medium">
                     {currentProject?.name || '收件箱'}
                   </span>
                 </div>
@@ -553,10 +553,10 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Date */}
               <div className="flex items-center justify-between group relative" ref={datePickerRef}>
-                <span className="text-sm text-[var(--text-tertiary)] w-16">日期</span>
+                <span className="text-sm font-medium text-gray-400 w-16">日期</span>
                 <button
                   onClick={() => setShowDatePicker(!showDatePicker)}
-                  className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-medium text-gray-300 hover:text-white transition-colors"
                 >
                   <span>{formatDateDisplay(task.dueDate)}</span>
                   {task.dueDate ? (
@@ -610,7 +610,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Due Date */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm text-[var(--text-tertiary)] w-16">截止</span>
+                <span className="text-sm font-medium text-gray-400 w-16">截止</span>
                 <button
                   onClick={() => {
                     const date = prompt('输入截止日期 (YYYY-MM-DD)：');
@@ -618,7 +618,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       updateTask(task.id, { dueDate: date });
                     }
                   }}
-                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-medium text-[var(--text-tertiary)] hover:text-gray-300 transition-colors"
                 >
                   <Calendar size={14} />
                   <span>设置截止日期</span>
@@ -627,10 +627,10 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Priority */}
               <div className="flex items-center justify-between group relative" ref={priorityRef}>
-                <span className="text-sm text-[var(--text-tertiary)] w-16">优先级</span>
+                <span className="text-sm font-medium text-gray-400 w-16">优先级</span>
                 <button
                   onClick={() => setShowPriorityPicker(!showPriorityPicker)}
-                  className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
                 >
                   <span
                     className="w-3 h-3 rounded-full"
@@ -687,7 +687,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Labels */}
               <div className="group relative" ref={tagDropdownRef}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-[var(--text-tertiary)] w-16">标签</span>
+                  <span className="text-sm font-medium text-gray-400 w-16">标签</span>
                   <button
                     onClick={() => setShowTagDropdown(!showTagDropdown)}
                     className="flex items-center gap-1 text-sm text-[var(--text-tertiary)] hover:text-gray-300 transition-colors"
@@ -698,19 +698,19 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 <div className="flex flex-wrap gap-1.5">
                   {(task.labels || []).map((label) => {
                     const colorMap: Record<string, { bg: string; text: string; border: string }> = {
-                      '紧急': { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30' },
-                      '重要': { bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30' },
-                      '低优先': { bg: 'bg-gray-500/15', text: 'text-gray-400', border: 'border-gray-500/30' },
-                      '会议': { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
-                      '工作': { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
-                      '个人': { bg: 'bg-green-500/15', text: 'text-green-400', border: 'border-green-500/30' },
-                      '学习': { bg: 'bg-cyan-500/15', text: 'text-cyan-400', border: 'border-cyan-500/30' },
+                      '紧急': { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/35' },
+                      '重要': { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/35' },
+                      '低优先': { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/35' },
+                      '会议': { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/35' },
+                      '工作': { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/35' },
+                      '个人': { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/35' },
+                      '学习': { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/35' },
                     };
                     const colors = colorMap[label] || { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' };
                     return (
                       <span
                         key={label}
-                        className={`flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-full ${colors.bg} ${colors.text} border ${colors.border} font-medium cursor-pointer hover:opacity-80 transition-opacity`}
+                        className={`flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-full ${colors.bg} ${colors.text} border ${colors.border} font-semibold cursor-pointer hover:opacity-80 transition-opacity`}
                       >
                         {label}
                         <button
@@ -780,7 +780,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Reminders */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm text-[var(--text-tertiary)] w-16">提醒</span>
+                <span className="text-sm font-medium text-gray-400 w-16">提醒</span>
                 <button
                   onClick={() => {
                     const reminder = prompt('输入提醒时间 (YYYY-MM-DD HH:MM)：');
@@ -797,7 +797,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
               {/* Location */}
               <div className="flex items-center justify-between group">
-                <span className="text-sm text-[var(--text-tertiary)] w-16">地点</span>
+                <span className="text-sm font-medium text-gray-400 w-16">地点</span>
                 <button
                   onClick={() => {
                     const location = prompt('输入地点：');
@@ -842,7 +842,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                         deleteTask(task.id);
                         onClose();
                       }}
-                      className="px-2.5 py-1 text-xs text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors font-medium"
+                      className="px-3 py-1.5 text-xs text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors font-semibold shadow-sm"
                     >
                       删除
                     </button>
@@ -850,7 +850,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 ) : (
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2 py-1.5 rounded-lg w-full transition-colors"
+                    className="flex items-center gap-2 text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-red-500/15 px-2 py-1.5 rounded-lg w-full transition-colors"
                   >
                     <Trash2 size={14} />
                     删除任务

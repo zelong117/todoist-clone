@@ -147,9 +147,9 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
         {!collapsed && (
           <button
             onClick={() => onViewChange('inbox')}
-            className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
+            className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               currentView === 'search'
-                ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-medium'
+                ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold'
                 : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
             }`}
           >
@@ -174,9 +174,9 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               <button
                 key={view.id}
                 onClick={() => onViewChange(view.id)}
-                className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-medium'
+                    ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold'
                     : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
                 }`}
                 title={collapsed ? view.label : undefined}
@@ -190,7 +190,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                   <>
                     <span className="flex-1 text-left">{view.label}</span>
                     {view.count > 0 && (
-                      <span className="text-xs text-[var(--text-tertiary)] min-w-[20px] text-center">
+                      <span className="text-xs font-medium text-[var(--text-secondary)] min-w-[20px] text-center bg-[var(--bg-active)] rounded-full px-1.5">
                         {view.count}
                       </span>
                     )}
@@ -226,7 +226,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                       onClick={() => onViewChange(`project-${project.id}`, project.id)}
                       className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
                         isActive
-                          ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-medium'
+                          ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold'
                           : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
                       }`}
                     >
@@ -234,9 +234,9 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                         className="w-3 h-3 rounded-sm flex-shrink-0"
                         style={{ backgroundColor: project.color }}
                       />
-                      <span className="flex-1 text-left truncate">{project.name}</span>
+                      <span className="flex-1 text-left truncate font-medium">{project.name}</span>
                       {count > 0 && (
-                        <span className="text-xs text-[var(--text-tertiary)] min-w-[20px] text-center">
+                        <span className="text-xs font-medium text-[var(--text-secondary)] min-w-[20px] text-center bg-[var(--bg-active)] rounded-full px-1.5">
                           {count}
                         </span>
                       )}
@@ -277,7 +277,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                     onClick={() => onViewChange(`project-${project.id}`, project.id)}
                     className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors ${
                       isActive
-                        ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-medium'
+                        ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold'
                         : 'text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:bg-[var(--bg-active)]'
                     }`}
                     title={collapsed ? project.name : undefined}
@@ -288,9 +288,9 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                     />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 text-left truncate">{project.name}</span>
+                        <span className="flex-1 text-left truncate font-medium">{project.name}</span>
                         {count > 0 && (
-                          <span className="text-xs text-[var(--text-tertiary)] min-w-[20px] text-center">
+                          <span className="text-xs font-medium text-[var(--text-secondary)] min-w-[20px] text-center bg-[var(--bg-active)] rounded-full px-1.5">
                             {count}
                           </span>
                         )}
