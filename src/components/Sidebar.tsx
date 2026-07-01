@@ -12,6 +12,7 @@ import {
   Star,
   Filter,
   Activity,
+  BarChart3,
   HelpCircle,
   ChevronDown,
 } from 'lucide-react';
@@ -165,6 +166,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
             { id: 'upcoming', label: '即将到来', icon: CalendarClock, count: upcomingCount, color: '#9B59B6' },
             { id: 'filters', label: '过滤器 & 标签', icon: Filter, count: 0, color: '#6B7280' },
             { id: 'log', label: '日志', icon: Activity, count: 0, color: '#6B7280' },
+            { id: 'stats', label: '效率统计', icon: BarChart3, count: 0, color: '#F59E0B' },
           ].map((view) => {
             const Icon = view.icon;
             const isActive = currentView === view.id;
