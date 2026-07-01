@@ -31,7 +31,9 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
     deleteTask,
     setSelectedTaskId,
     tasks,
+    projects,
     selectedTaskId,
+    selectedProjectId,
     activeTimerTaskId,
     timerSeconds,
     timerStatus,
@@ -40,6 +42,12 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
     resumeTimer,
   } = useStore();
   const isSelected = selectedTaskId === task.id;
+
+  // 获取当前项目
+  const currentProject = useMemo(
+    () => (selectedProjectId ? projects.find((p) => p.id === selectedProjectId) || null : null),
+    [projects, selectedProjectId]
+  );
 
   const subtasks = useMemo(
     () => tasks.filter((t) => t.parentId === task.id),
@@ -177,8 +185,8 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           </div>
         )}
 
-        {/* Pomodoro count - show planned/completed progress */}
-        {task.plannedPomodoros > 0 && (
+        {/* Pomodoro count - show planned/completed progress only if project enables pomodoro */}
+        {currentProject?.usePomodoro && task.plannedPomodoros > 0 && (
           <div className="flex items-center gap-1 text-xs text-orange-500 mt-0.5">
             <span>🍅</span>
             <span>{task.completedPomodoros}/{task.plannedPomodoros}</span>
@@ -252,8 +260,8 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           {PRIORITY_LABELS[task.priority]}
         </span>
 
-        {/* Timer button - always visible for non-completed tasks */}
-        {!task.isCompleted && (
+        {/* Timer button - only show when project enables pomodoro */}
+        {currentProject?.usePomodoro && !task.isCompleted && (
           <button
             onClick={handleTimerToggle}
             className={`p-1.5 rounded-lg transition-all duration-150 z-20 ${

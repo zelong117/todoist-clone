@@ -11,6 +11,7 @@ export const seedProjects: Project[] = [
     color: '#dc4c3e',
     order: 0,
     isFavorite: true,
+    usePomodoro: false,
     createdAt: now,
   },
   {
@@ -19,6 +20,7 @@ export const seedProjects: Project[] = [
     color: '#ff9800',
     order: 1,
     isFavorite: true,
+    usePomodoro: false,
     createdAt: now,
   },
   {
@@ -27,6 +29,7 @@ export const seedProjects: Project[] = [
     color: '#4caf50',
     order: 2,
     isFavorite: false,
+    usePomodoro: false,
     createdAt: now,
   },
   {
@@ -35,6 +38,7 @@ export const seedProjects: Project[] = [
     color: '#2196f3',
     order: 3,
     isFavorite: false,
+    usePomodoro: false,
     createdAt: now,
   },
 ];

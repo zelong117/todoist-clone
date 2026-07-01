@@ -245,6 +245,29 @@ export default function App() {
                       </button>
                     )}
 
+                    {/* 番茄钟开关 - 仅在项目视图显示 */}
+                    {currentView.startsWith('project-') && currentProject && (
+                      <div className="flex items-center gap-2 px-2">
+                        <span className="text-xs text-[var(--text-tertiary)]">🍅 番茄钟</span>
+                        <button
+                          onClick={() => {
+                            useStore.getState().updateProject(currentProject.id, {
+                              usePomodoro: !currentProject.usePomodoro,
+                            });
+                          }}
+                          className={`relative w-10 h-5 rounded-full transition-colors ${
+                            currentProject.usePomodoro ? 'bg-[var(--accent)]' : 'bg-gray-300'
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                              currentProject.usePomodoro ? 'translate-x-5' : ''
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    )}
+
                     <div className={`flex items-center rounded-lg p-0.5 ${
                       darkMode ? 'bg-gray-800' : 'bg-[var(--bg-active)]'
                     }`}>

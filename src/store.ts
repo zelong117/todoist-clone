@@ -198,6 +198,7 @@ export const useStore = create<AppState>()(
         const project: Project = {
           ...projectData,
           id: generateId(),
+          usePomodoro: projectData.usePomodoro ?? false,
           createdAt: new Date().toISOString(),
         };
         set((state) => ({ projects: [...state.projects, project] }));

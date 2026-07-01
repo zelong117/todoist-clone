@@ -27,6 +27,7 @@ export interface Project {
   color: string;
   order: number;
   isFavorite: boolean;
+  usePomodoro: boolean; // 是否使用番茄钟
   createdAt: string;
 }
 

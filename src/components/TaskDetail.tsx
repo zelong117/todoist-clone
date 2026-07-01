@@ -383,8 +383,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 />
               </div>
 
-              {/* Pomodoro Progress */}
-              {task.plannedPomodoros > 0 && (
+              {/* Pomodoro Progress - only if project enables pomodoro */}
+              {currentProject?.usePomodoro && task.plannedPomodoros > 0 && (
                 <div className="flex items-center gap-3 mb-4 p-3 bg-[var(--bg-secondary)] rounded-lg">
                   <div className="flex items-center gap-1">
                     {Array.from({ length: task.plannedPomodoros }).map((_, i) => (
@@ -400,8 +400,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 </div>
               )}
 
-              {/* Pomodoro Completed Celebration */}
-              {task.completedPomodoros >= task.plannedPomodoros && task.plannedPomodoros > 0 && (
+              {/* Pomodoro Completed Celebration - only if project enables pomodoro */}
+              {currentProject?.usePomodoro && task.completedPomodoros >= task.plannedPomodoros && task.plannedPomodoros > 0 && (
                 <div className="text-center py-2">
                   <span className="text-2xl animate-bounce">🎉</span>
                   <p className="text-xs text-green-500 font-medium">番茄任务完成！</p>
@@ -802,7 +802,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 )}
               </div>
 
-              {/* Pomodoro Settings */}
+              {/* Pomodoro Settings - only if project enables pomodoro */}
+              {currentProject?.usePomodoro && (
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-[var(--text-tertiary)] w-16">🍅 番茄</span>
                 <div className="flex items-center gap-2">
@@ -820,6 +821,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                   <span className="text-xs text-[var(--text-tertiary)]">= {task.plannedPomodoros * 25}m</span>
                 </div>
               </div>
+              )}
 
               {/* Reminders */}
               <div className="flex items-center justify-between group">
