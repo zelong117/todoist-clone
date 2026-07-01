@@ -418,4 +418,4 @@ export const seedTasks: Task[] = [
   },
 ];
 
-export const seedComments: Comment[] = [] as Comment[];
+export const seedComments = [] as import('../types').Comment[];

@@ -41,6 +41,15 @@ export default function App() {
     label: string;
   }>({ fn: null, label: '' });
 
+  // Sync dark mode to html element for Tailwind dark: prefix
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
   // Sync currentView with store
   useEffect(() => {
     if (currentView === 'inbox') {
