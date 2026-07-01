@@ -144,7 +144,7 @@ export default function PomodoroTimer() {
   const statusText = isRunning ? MODE_LABELS[timerMode] : isPaused ? '已暂停' : '准备开始';
 
   return (
-    <div className="bg-[var(--bg-card)] dark:bg-gray-800 rounded-2xl shadow-xl p-5 w-[240px] transition-all duration-300 border border-[var(--border-color)]">
+    <div className="bg-[var(--bg-card)] rounded-2xl shadow-xl p-5 w-[240px] transition-all duration-300 border border-[var(--border-color)]">
       {/* Header with collapse and mode selector */}
       <div className="flex items-center justify-between mb-4">
         <button
@@ -153,7 +153,7 @@ export default function PomodoroTimer() {
         >
           <ChevronUp size={16} />
         </button>
-        <div className="flex items-center gap-1 bg-[var(--bg-active)] dark:bg-gray-700 rounded-xl p-0.5">
+        <div className="flex items-center gap-1 bg-[var(--bg-active)] rounded-xl p-0.5">
           {(['focus', 'shortBreak', 'longBreak'] as const).map((mode) => (
             <button
               key={mode}

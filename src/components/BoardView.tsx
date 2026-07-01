@@ -110,7 +110,7 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
           e.stopPropagation();
           deleteTask(task.id);
         }}
-        className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/30 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-150"
+        className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-50 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-150"
       >
         <Trash2 size={13} />
       </button>

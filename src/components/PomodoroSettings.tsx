@@ -25,7 +25,7 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
       {/* Focus duration */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-sm font-medium text-[var(--text-secondary)] dark:text-gray-300">专注时长</label>
+          <label className="text-sm font-medium text-[var(--text-secondary)]">专注时长</label>
           <span className="text-sm font-mono text-[#DC4C3E] font-semibold">
             {settings.focusMinutes} 分钟
           </span>
@@ -37,7 +37,7 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
           step={5}
           value={settings.focusMinutes}
           onChange={(e) => updatePomodoroSettings({ focusMinutes: Number(e.target.value) })}
-          className="w-full h-2 bg-[var(--bg-active)] dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-[#DC4C3E]"
+          className="w-full h-2 bg-[var(--bg-active)] rounded-full appearance-none cursor-pointer accent-[#DC4C3E]"
         />
         <div className="flex justify-between text-xs text-[var(--text-tertiary)] mt-0.5">
           <span>15</span>
@@ -48,7 +48,7 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
       {/* Short break duration */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-sm font-medium text-[var(--text-secondary)] dark:text-gray-300">短休息时长</label>
+          <label className="text-sm font-medium text-[var(--text-secondary)]">短休息时长</label>
           <span className="text-sm font-mono text-[#22C55E] font-semibold">
             {settings.shortBreakMinutes} 分钟
           </span>
@@ -60,7 +60,7 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
           step={1}
           value={settings.shortBreakMinutes}
           onChange={(e) => updatePomodoroSettings({ shortBreakMinutes: Number(e.target.value) })}
-          className="w-full h-2 bg-[var(--bg-active)] dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-[#22C55E]"
+          className="w-full h-2 bg-[var(--bg-active)] rounded-full appearance-none cursor-pointer accent-[#22C55E]"
         />
         <div className="flex justify-between text-xs text-[var(--text-tertiary)] mt-0.5">
           <span>3</span>
@@ -71,7 +71,7 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
       {/* Long break duration */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-sm font-medium text-[var(--text-secondary)] dark:text-gray-300">长休息时长</label>
+          <label className="text-sm font-medium text-[var(--text-secondary)]">长休息时长</label>
           <span className="text-sm font-mono text-[#3B82F6] font-semibold">
             {settings.longBreakMinutes} 分钟
           </span>
@@ -83,7 +83,7 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
           step={5}
           value={settings.longBreakMinutes}
           onChange={(e) => updatePomodoroSettings({ longBreakMinutes: Number(e.target.value) })}
-          className="w-full h-2 bg-[var(--bg-active)] dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-[#3B82F6]"
+          className="w-full h-2 bg-[var(--bg-active)] rounded-full appearance-none cursor-pointer accent-[#3B82F6]"
         />
         <div className="flex justify-between text-xs text-[var(--text-tertiary)] mt-0.5">
           <span>10</span>
@@ -91,12 +91,12 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
         </div>
       </div>
 
-      <div className="border-t border-[var(--border-color)] dark:border-gray-700 mb-4" />
+      <div className="border-t border-[var(--border-color)] mb-4" />
 
       {/* Auto-start toggles */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-[var(--text-secondary)] dark:text-gray-300">自动开始休息</span>
+          <span className="text-sm text-[var(--text-secondary)]">自动开始休息</span>
           <PomodoroToggle
             enabled={settings.autoStartBreak}
             onChange={(v) => updatePomodoroSettings({ autoStartBreak: v })}
@@ -105,7 +105,7 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-[var(--text-secondary)] dark:text-gray-300">自动开始专注</span>
+          <span className="text-sm text-[var(--text-secondary)]">自动开始专注</span>
           <PomodoroToggle
             enabled={settings.autoStartPomodoro}
             onChange={(v) => updatePomodoroSettings({ autoStartPomodoro: v })}
