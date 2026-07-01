@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useStore } from '../store';
+import PomodoroToggle from './PomodoroToggle';
 
 interface PomodoroSettingsProps {
   onClose: () => void;
@@ -96,34 +97,20 @@ export default function PomodoroSettings({ onClose }: PomodoroSettingsProps) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-[var(--text-secondary)] dark:text-gray-300">自动开始休息</span>
-          <button
-            onClick={() => updatePomodoroSettings({ autoStartBreak: !settings.autoStartBreak })}
-            className={`relative w-10 h-6 rounded-full transition-colors duration-300 ${
-              settings.autoStartBreak ? 'bg-[#DC4C3E]' : 'bg-gray-300 dark:bg-gray-600'
-            }`}
-          >
-            <span
-              className={`absolute top-1 w-4 h-4 bg-[var(--bg-card)] rounded-full shadow-sm transition-transform duration-300 ${
-                settings.autoStartBreak ? 'translate-x-5' : 'translate-x-1'
-              }`}
-            />
-          </button>
+          <PomodoroToggle
+            enabled={settings.autoStartBreak}
+            onChange={(v) => updatePomodoroSettings({ autoStartBreak: v })}
+            size="sm"
+          />
         </div>
 
         <div className="flex items-center justify-between">
           <span className="text-sm text-[var(--text-secondary)] dark:text-gray-300">自动开始专注</span>
-          <button
-            onClick={() => updatePomodoroSettings({ autoStartPomodoro: !settings.autoStartPomodoro })}
-            className={`relative w-10 h-6 rounded-full transition-colors duration-300 ${
-              settings.autoStartPomodoro ? 'bg-[#DC4C3E]' : 'bg-gray-300 dark:bg-gray-600'
-            }`}
-          >
-            <span
-              className={`absolute top-1 w-4 h-4 bg-[var(--bg-card)] rounded-full shadow-sm transition-transform duration-300 ${
-                settings.autoStartPomodoro ? 'translate-x-5' : 'translate-x-1'
-              }`}
-            />
-          </button>
+          <PomodoroToggle
+            enabled={settings.autoStartPomodoro}
+            onChange={(v) => updatePomodoroSettings({ autoStartPomodoro: v })}
+            size="sm"
+          />
         </div>
       </div>
     </div>
