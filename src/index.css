@@ -15,16 +15,16 @@
 }
 
 .dark {
-  --bg-primary: #0f0f23;
-  --bg-secondary: #1a1b2e;
-  --bg-card: #1e1f36;
-  --text-primary: #e2e8f0;
-  --text-secondary: #94a3b8;
-  --border-color: #2d2e45;
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-card: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: #374151;
   --accent: #DC4C3E;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --info: #3b82f6;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --info: #60a5fa;
 }
 
 @keyframes checkmark {

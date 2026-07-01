@@ -179,7 +179,7 @@ export default function App() {
     }
   }, [currentView, currentProject, activeFilter.label]);
 
-  const darkClasses = darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900';
+  const darkClasses = darkMode ? 'bg-[var(--bg-primary)] text-[var(--text-primary)]' : 'bg-gray-50 text-gray-900';
 
   // Whether the current view shows a task list (inbox, today, upcoming, projects)
   const isTaskListView = currentView === 'inbox' || currentView === 'today' || currentView === 'upcoming' || currentView.startsWith('project-');
@@ -196,7 +196,7 @@ export default function App() {
           {/* View Header */}
           <div className={`sticky top-0 z-10 border-b backdrop-blur-sm ${
             darkMode
-              ? 'bg-gray-900/80 border-gray-700'
+              ? 'bg-[var(--bg-secondary)] border-[var(--border-color)]'
               : 'bg-white/80 border-gray-200'
           }`}>
             {/* Main Header Row */}
@@ -222,7 +222,7 @@ export default function App() {
                   <>
                     {currentView.startsWith('project-') && currentProject && (
                       <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                        darkMode ? 'text-gray-400 dark:text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
                       }`}>
                         <Users size={15} />
                         <span>共享</span>
@@ -242,7 +242,7 @@ export default function App() {
                                 ? 'text-white bg-gray-600'
                                 : 'text-white bg-[#DC4C3E]'
                               : darkMode
-                                ? 'text-gray-400 hover:text-gray-200'
+                                ? 'text-gray-400 dark:text-gray-300 hover:text-gray-200'
                                 : 'text-gray-500 hover:text-gray-700'
                           }`}
                         >
@@ -256,7 +256,7 @@ export default function App() {
 
                     {currentView.startsWith('project-') && currentProject && (
                       <button className={`p-2 rounded-lg transition-colors ${
-                        darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                        darkMode ? 'text-gray-400 dark:text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
                       }`} title="评论">
                         <MessageSquare size={18} />
                       </button>
@@ -265,7 +265,7 @@ export default function App() {
                 )}
 
                 <button className={`p-2 rounded-lg transition-colors ${
-                  darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                  darkMode ? 'text-gray-400 dark:text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
                 }`} title="更多">
                   <MoreHorizontal size={18} />
                 </button>
@@ -282,12 +282,12 @@ export default function App() {
                       key={section.id}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                         darkMode
-                          ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+                          ? 'text-gray-400 dark:text-gray-300 hover:bg-gray-700 hover:text-gray-200'
                           : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
                       }`}
                     >
                       <span>{section.name}</span>
-                      <span className={`text-xs ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                      <span className={`text-xs ${darkMode ? 'text-gray-600' : 'text-gray-400 dark:text-gray-300'}`}>
                         ({sectionTaskCount})
                       </span>
                     </button>
@@ -297,7 +297,7 @@ export default function App() {
                   className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
                     darkMode
                       ? 'text-gray-500 hover:bg-gray-700 hover:text-gray-300'
-                      : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                      : 'text-gray-400 dark:text-gray-300 hover:bg-gray-100 hover:text-gray-600'
                   }`}
                   onClick={() => {
                     useStore.getState().addSection({
