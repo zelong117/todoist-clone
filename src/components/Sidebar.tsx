@@ -72,7 +72,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
 
   return (
     <aside
-      className="flex flex-col h-screen transition-all duration-300 ease-in-out select-none relative overflow-hidden bg-[#fafafa] dark:bg-[#1a1a2e] border-r border-gray-200 dark:border-gray-700"
+      className="flex flex-col h-screen transition-all duration-300 ease-in-out select-none relative overflow-hidden bg-[var(--bg-primary)] border-r border-[var(--border-color)]"
       style={{
         width: collapsed ? 56 : 260,
         minWidth: collapsed ? 56 : 260,

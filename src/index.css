@@ -1,5 +1,32 @@
 @import 'tailwindcss';
 
+/* CSS Variables for Light/Dark Mode */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --accent: #DC4C3E;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+}
+
+.dark {
+  --bg-primary: #0f0f23;
+  --bg-secondary: #1a1b2e;
+  --bg-card: #1e1f36;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border-color: #2d2e45;
+  --accent: #DC4C3E;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+}
+
 @keyframes checkmark {
   from { transform: scale(0); }
   to { transform: scale(1); }
