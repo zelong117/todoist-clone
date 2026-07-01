@@ -181,9 +181,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       recurrenceRule: null,
       isCompleted: false,
       pomodoroCount: 0,
-      plannedPomodoros: 0,
+      plannedPomodoros: 1,
       completedPomodoros: 0,
-      estimatedMinutes: 0,
+      estimatedMinutes: 25,
       completedAt: null,
       order: subtasks.length,
     });
