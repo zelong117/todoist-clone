@@ -220,6 +220,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
       isRecurring: false,
       recurrenceRule: null,
       isCompleted: false,
+      pomodoroCount: 0,
       completedAt: null,
       order: columnTasks.length,
     });

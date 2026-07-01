@@ -85,6 +85,7 @@ function SectionGroup({
       isRecurring: false,
       recurrenceRule: null,
       isCompleted: false,
+      pomodoroCount: 0,
       completedAt: null,
       order: 0,
     });

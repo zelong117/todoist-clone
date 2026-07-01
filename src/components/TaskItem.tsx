@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Pencil, Trash2, Clock, MessageSquare, Calendar, Play } from 'lucide-react';
+import { Pencil, Trash2, Clock, MessageSquare, Calendar, Timer, Pause } from 'lucide-react';
 import type { Task } from '../types';
 import { useStore } from '../store';
+import { formatTimer } from '../utils';
 
 const PRIORITY_COLORS: Record<number, string> = {
   1: '#DC4C3E',
@@ -25,22 +26,20 @@ interface TaskItemProps {
 
 export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItemProps) {
   const [hovered, setHovered] = useState(false);
-  const { toggleComplete, deleteTask, setSelectedTaskId, tasks, selectedTaskId, activeTimerTaskId, timerSeconds, timerMode, timerStatus, pomodoroSettings, startTimer, stopTimer } = useStore();
+  const {
+    toggleComplete,
+    deleteTask,
+    setSelectedTaskId,
+    tasks,
+    selectedTaskId,
+    activeTimerTaskId,
+    timerSeconds,
+    timerStatus,
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+  } = useStore();
   const isSelected = selectedTaskId === task.id;
-  const isTimerActive = activeTimerTaskId === task.id;
-  const isTimerRunning = isTimerActive && timerStatus === 'running';
-
-  // Calculate progress for the active timer task
-  const timerProgress = useMemo(() => {
-    if (!isTimerActive) return 0;
-    const totalSeconds = timerMode === 'focus'
-      ? pomodoroSettings.focusMinutes * 60
-      : timerMode === 'shortBreak'
-      ? pomodoroSettings.shortBreakMinutes * 60
-      : pomodoroSettings.longBreakMinutes * 60;
-    if (totalSeconds <= 0) return 0;
-    return ((totalSeconds - timerSeconds) / totalSeconds) * 100;
-  }, [isTimerActive, timerSeconds, timerMode, pomodoroSettings]);
 
   const subtasks = useMemo(
     () => tasks.filter((t) => t.parentId === task.id),
@@ -71,6 +70,21 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
     return { done, total: subtasks.length, percent: (done / subtasks.length) * 100 };
   }, [subtasks]);
 
+  const isTimerActive = activeTimerTaskId === task.id && (timerStatus === 'running' || timerStatus === 'paused');
+
+  const handleTimerToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (activeTimerTaskId === task.id) {
+      if (timerStatus === 'running') {
+        pauseTimer();
+      } else if (timerStatus === 'paused') {
+        resumeTimer();
+      }
+    } else {
+      startTimer(task.id);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00');
     const today = new Date();
@@ -91,11 +105,9 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
   return (
     <div
-      className={`group relative flex items-start gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 cursor-pointer overflow-hidden ${
+      className={`group relative flex items-start gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 cursor-pointer ${
         isDragging
           ? 'bg-[var(--bg-card)] shadow-xl ring-2 ring-[#DC4C3E]/30 scale-[1.02]'
-          : isTimerActive
-          ? 'bg-red-50/80 dark:bg-red-900/20 border-l-4 border-red-500'
           : isSelected
           ? 'bg-blue-50/80'
           : 'hover:bg-[var(--bg-hover)]'
@@ -154,6 +166,25 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           </span>
         </div>
 
+        {/* Timer info - show when this task's timer is active */}
+        {isTimerActive && (
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-medium">
+              <Timer size={10} />
+              <span>{formatTimer(timerSeconds)}</span>
+              <span className="animate-pulse">●</span>
+            </div>
+          </div>
+        )}
+
+        {/* Pomodoro count - show when task has completed pomodoros */}
+        {task.pomodoroCount > 0 && (
+          <div className="flex items-center gap-1 mt-1 text-xs text-orange-500">
+            <span>🍅</span>
+            <span>{task.pomodoroCount}</span>
+          </div>
+        )}
+
         {/* Labels as pills */}
         {task.labels && task.labels.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
@@ -187,7 +218,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         )}
       </div>
 
-      {/* Right side: Date, Priority, Hover actions */}
+      {/* Right side: Date, Priority, Timer button, Hover actions */}
       <div className="flex items-center gap-1.5 flex-shrink-0">
         {/* Due Date */}
         {task.dueDate && (
@@ -220,6 +251,21 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           {PRIORITY_LABELS[task.priority]}
         </span>
 
+        {/* Timer button - always visible for non-completed tasks */}
+        {!task.isCompleted && (
+          <button
+            onClick={handleTimerToggle}
+            className={`p-1.5 rounded-lg transition-all duration-150 ${
+              activeTimerTaskId === task.id
+                ? 'bg-red-100 text-red-500 animate-pulse'
+                : 'hover:bg-red-100 text-gray-400 hover:text-red-500'
+            }`}
+            title={activeTimerTaskId === task.id ? '暂停计时' : '开始番茄钟'}
+          >
+            {activeTimerTaskId === task.id ? <Pause size={15} /> : <Timer size={15} />}
+          </button>
+        )}
+
         {/* Hover actions */}
         <div
           className={`flex items-center gap-0.5 transition-all duration-150 ${
@@ -231,20 +277,12 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (isTimerActive) {
-                stopTimer();
-              } else {
-                startTimer(task.id);
-              }
+              setSelectedTaskId(task.id);
             }}
-            className={`p-1 rounded transition-colors ${
-              isTimerRunning
-                ? 'animate-pulse bg-red-100 text-red-500'
-                : 'hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-            }`}
-            title={isTimerActive ? '停止计时' : '开始计时'}
+            className="p-1 rounded hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+            title="安排日期"
           >
-            {isTimerRunning ? <Play size={14} className="text-red-500" /> : <Clock size={14} />}
+            <Clock size={14} />
           </button>
           <button
             onClick={(e) => {
@@ -278,16 +316,6 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           </button>
         </div>
       </div>
-
-      {/* Timer Progress Bar */}
-      {isTimerActive && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-200">
-          <div
-            className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-1000"
-            style={{ width: `${timerProgress}%` }}
-          />
-        </div>
-      )}
     </div>
   );
 }

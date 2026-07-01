@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useStore } from './store';
 import type { Task } from './types';
+import { formatTimer } from './utils';
 import Sidebar from './components/Sidebar';
 import TaskList from './components/TaskList';
 import TaskDetail from './components/TaskDetail';
@@ -31,6 +32,10 @@ export default function App() {
     getTasksByProject,
     searchQuery,
     darkMode,
+    activeTimerTaskId,
+    timerSeconds,
+    timerMode,
+    timerStatus,
   } = useStore();
 
   const [currentView, setCurrentView] = useState<string>('inbox');
@@ -398,7 +403,30 @@ export default function App() {
 
       {/* Pomodoro Timer - fixed at bottom right */}
       <div className="fixed bottom-6 right-6 z-30 max-h-[calc(100vh-48px)] overflow-visible">
-        <PomodoroTimer />
+        {activeTimerTaskId ? (
+          // Mini timer when a task timer is active
+          (() => {
+            const isRunning = timerStatus === 'running';
+            const isPaused = timerStatus === 'paused';
+            const MODE_LABELS: Record<string, string> = {
+              focus: '专注中',
+              shortBreak: '短休息',
+              longBreak: '长休息',
+            };
+            const statusText = isRunning ? MODE_LABELS[timerMode] : isPaused ? '已暂停' : '准备开始';
+            return (
+              <div className="flex items-center gap-2 bg-[var(--bg-card)] dark:bg-gray-800 rounded-full shadow-lg px-4 py-2">
+                <span className="text-sm">🍅</span>
+                <span className="text-sm font-mono font-bold text-[var(--text-primary)]">
+                  {formatTimer(timerSeconds)}
+                </span>
+                <span className="text-xs text-[var(--text-tertiary)]">{statusText}</span>
+              </div>
+            );
+          })()
+        ) : (
+          <PomodoroTimer />
+        )}
       </div>
     </div>
   );

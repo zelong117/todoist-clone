@@ -180,6 +180,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       isRecurring: false,
       recurrenceRule: null,
       isCompleted: false,
+      pomodoroCount: 0,
       completedAt: null,
       order: subtasks.length,
     });
