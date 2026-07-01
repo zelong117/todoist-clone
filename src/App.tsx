@@ -12,6 +12,8 @@ import BoardView from './components/BoardView';
 import CalendarView from './components/CalendarView';
 import StatsView from './components/StatsView';
 import FilterPanel from './components/FilterPanel';
+import FilterPage from './components/FilterPage';
+import ActivityLog from './components/ActivityLog';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal } from 'lucide-react';
 
 export default function App() {
@@ -56,6 +58,10 @@ export default function App() {
       setActiveView('project');
       setSelectedProjectId(pid);
     } else if (currentView === 'filter') {
+      setActiveView('filter');
+    } else if (currentView === 'filters') {
+      setActiveView('filter');
+    } else if (currentView === 'log') {
       setActiveView('filter');
     }
   }, [currentView, setActiveView, setSelectedProjectId]);
@@ -204,7 +210,7 @@ export default function App() {
 
               <div className="flex items-center gap-1">
                 {/* View Mode Toggle (for project views) */}
-                {currentView.startsWith('project-') && currentProject && (
+                {currentView !== 'stats' && currentView !== 'filter' && currentView !== 'activity' && currentView !== 'filters' && currentView !== 'log' && (
                   <>
                     <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                       darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
@@ -310,6 +316,13 @@ export default function App() {
           <div className="px-6 py-4">
             {currentView === 'stats' ? (
               <StatsView />
+            ) : currentView === 'filters' ? (
+              <FilterPage
+                onFilterChange={(fn, label) => setActiveFilter({ fn, label })}
+                activeFilterLabel={activeFilter.label}
+              />
+            ) : currentView === 'log' ? (
+              <ActivityLog />
             ) : currentView.startsWith('project-') && currentProjectId ? (
               viewMode === 'list' ? (
                 <TaskList
