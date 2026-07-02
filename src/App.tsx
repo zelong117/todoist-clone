@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useStore } from './store';
-import { persist } from 'zustand/middleware';
 import type { Task } from './types';
 import { formatTimer } from './utils';
 import Sidebar from './components/Sidebar';
@@ -16,7 +15,7 @@ import StatsView from './components/StatsView';
 import FilterPage from './components/FilterPage';
 import ActivityLog from './components/ActivityLog';
 import Admin from './pages/Admin';
-import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play } from 'lucide-react';
+import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings } from 'lucide-react';
 
 export default function App() {
   const {
@@ -78,6 +77,8 @@ export default function App() {
       setActiveView('filter');
     } else if (currentView === 'admin') {
       setActiveView('inbox'); // admin doesn't need active view sync
+    } else if (currentView === 'settings') {
+      setActiveView('inbox'); // settings doesn't need active view sync
     }
   }, [currentView, setActiveView, setSelectedProjectId]);
 
@@ -311,6 +312,8 @@ export default function App() {
         return []; // Activity log doesn't show task list
       case 'admin':
         return []; // Admin view manages its own data
+      case 'settings':
+        return []; // Settings view doesn't show tasks
       default:
         if (currentView.startsWith('project-')) {
           const pid = currentView.replace('project-', '');
@@ -407,6 +410,7 @@ export default function App() {
                 {currentView === 'stats' && <LayoutDashboard size={22} className="text-amber-500" />}
                 {currentView === 'log' && <Activity size={22} className="text-[var(--text-tertiary)]" />}
                 {currentView === 'admin' && <LayoutDashboard size={22} className="text-indigo-500" />}
+                {currentView === 'settings' && <Settings size={22} className="text-gray-500" />}
                 {currentProject && (
                   <span
                     className="w-3 h-3 rounded-full"
