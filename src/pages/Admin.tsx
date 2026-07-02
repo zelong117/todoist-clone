@@ -1,10 +1,10 @@
 import { useState, useMemo, useRef } from 'react';
 import { useStore } from '../store';
 import type { Task, Project } from '../types';
-import { Search, Download, Upload, Trash2, ArrowUpDown, Clock, CheckCircle, Circle } from 'lucide-react';
+import { Search, Download, Upload, Trash2, CheckCircle, Circle } from 'lucide-react';
 
 export default function Admin() {
-  const { tasks, projects, sections, labels, comments, pomodoroSessions } = useStore();
+  const { tasks, projects, labels, pomodoroSessions } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State
