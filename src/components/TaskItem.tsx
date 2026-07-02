@@ -44,7 +44,6 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
   const isSelected = selectedTaskId === task.id;
 
   // 获取当前项目
-  const currentProject = useMemo(
     () => (selectedProjectId ? projects.find((p) => p.id === selectedProjectId) || null : null),
     [projects, selectedProjectId]
   );
