@@ -187,7 +187,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         )}
 
         {/* Pomodoro count - show planned/completed progress only if project enables pomodoro */}
-        {currentProject?.usePomodoro && task.plannedPomodoros > 0 && (
+        {task.plannedPomodoros > 0 && (
           <div className="flex items-center gap-1.5 text-[11px] font-semibold text-orange-500 mt-1">
             <span className="text-sm">🍅</span>
             <span className="bg-orange-50 px-1.5 py-0.5 rounded-md">{task.completedPomodoros}/{task.plannedPomodoros}</span>
@@ -262,7 +262,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
         </span>
 
         {/* Timer button - only show when project enables pomodoro */}
-        {currentProject?.usePomodoro && !task.isCompleted && (
+        {!task.isCompleted && (
           <button
             onClick={handleTimerToggle}
             className={`p-1.5 rounded-xl transition-all duration-200 z-20 ${

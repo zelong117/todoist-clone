@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Calendar, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Trash2, Timer } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
 
@@ -152,6 +152,14 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
         </span>
       </div>
 
+      {task.plannedPomodoros > 0 && (
+        <div className="flex items-center gap-1 text-xs text-orange-500 mt-1 pl-2">
+          <span>🍅</span>
+          <span>{task.completedPomodoros}/{task.plannedPomodoros}</span>
+          <span className="text-gray-400">· {task.plannedPomodoros * 25}m</span>
+        </div>
+      )}
+
       {/* Labels */}
       {task.labels && task.labels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2.5 pl-2">
@@ -193,6 +201,16 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
         >
           {PRIORITY_LABELS[task.priority]}
         </span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            useStore.getState().startTimer(task.id);
+          }}
+          className="p-1 rounded hover:bg-red-100 text-gray-400 hover:text-red-500"
+          title="开始番茄钟"
+        >
+          <Timer size={14} />
+        </button>
       </div>
     </div>
   );
