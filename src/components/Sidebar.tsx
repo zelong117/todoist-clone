@@ -108,12 +108,14 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
             </button>
             <div className="flex items-center gap-0.5">
               <button
+                onClick={() => onViewChange('upcoming')}
                 className="p-2 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
                 title="通知"
               >
                 <Bell size={18} />
               </button>
               <button
+                onClick={() => onViewChange('upcoming')}
                 className="p-2 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
                 title="日历"
               >
