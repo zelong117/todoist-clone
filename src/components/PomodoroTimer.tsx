@@ -113,7 +113,7 @@ export default function PomodoroTimer() {
           title={`${MODE_LABELS[timerMode]} ${display}`}
         >
           <svg width="56" height="56" className="transform -rotate-90">
-            <circle cx="28" cy="28" r={22} fill="none" stroke="#e5e7eb" strokeWidth="3.5" />
+            <circle cx="28" cy="28" r={22} fill="none" stroke="#d1d5db" strokeWidth="3.5" />
             <circle
               cx="28"
               cy="28"
@@ -144,16 +144,16 @@ export default function PomodoroTimer() {
   const statusText = isRunning ? MODE_LABELS[timerMode] : isPaused ? '已暂停' : '准备开始';
 
   return (
-    <div className="bg-[var(--bg-card)] rounded-2xl shadow-xl p-5 w-[240px] transition-all duration-300 border border-[var(--border-color)]">
+    <div className="rounded-2xl shadow-xl p-5 w-[240px] transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a1a1a]">
       {/* Header with collapse and mode selector */}
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => setExpanded(false)}
-          className="p-1.5 rounded-xl hover:bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
+          className="p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-200"
         >
           <ChevronUp size={16} />
         </button>
-        <div className="flex items-center gap-1 bg-[var(--bg-active)] rounded-xl p-0.5">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/10 rounded-xl p-0.5">
           {(['focus', 'shortBreak', 'longBreak'] as const).map((mode) => (
             <button
               key={mode}
@@ -165,7 +165,7 @@ export default function PomodoroTimer() {
               className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 ${
                 timerMode === mode
                   ? 'bg-[var(--accent)] text-white shadow-md shadow-red-500/20'
-                  : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
               }`}
             >
               {mode === 'focus' ? '🍅' : mode === 'shortBreak' ? '☕' : '🌴'}
@@ -176,7 +176,7 @@ export default function PomodoroTimer() {
 
       <div className="flex justify-center mb-4 relative">
         <svg width="192" height="192" className="transform -rotate-90">
-          <circle cx="96" cy="96" r={84} fill="none" stroke="var(--border-light)" strokeWidth="7" opacity="0.3" />
+          <circle cx="96" cy="96" r={84} fill="none" stroke="#d1d5db" strokeWidth="7" opacity="0.3" />
           <circle
             cx="96"
             cy="96"
@@ -188,11 +188,11 @@ export default function PomodoroTimer() {
             strokeDasharray={2 * Math.PI * 84}
             strokeDashoffset={2 * Math.PI * 84 * (1 - progress)}
             className="transition-all duration-500"
-            style={{ filter: `drop-shadow(0 0 8px ${strokeColor}50)` }}
+            style={{ filter: `drop-shadow(0 0 12px ${strokeColor}60)` }}
           />
         </svg>
         <div className="absolute flex flex-col items-center justify-center w-[192px] h-[192px]">
-          <span className="text-4xl font-mono font-black text-[var(--text-primary)] tracking-tight">
+          <span className="text-4xl font-mono font-black text-gray-900 dark:text-white tracking-tight">
             {display}
           </span>
           <span className="text-xs mt-1.5 font-bold" style={{ color: strokeColor }}>
@@ -202,7 +202,7 @@ export default function PomodoroTimer() {
       </div>
 
       {currentTaskName && (
-        <p className="text-xs text-[var(--text-tertiary)] text-center truncate mb-2.5 px-1 font-medium">
+        <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate mb-2.5 px-1 font-medium">
           {currentTaskName}
         </p>
       )}
@@ -218,24 +218,24 @@ export default function PomodoroTimer() {
         </button>
         <button
           onClick={handleSkip}
-          className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--bg-active)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all duration-200"
+          className="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/15 transition-all duration-200"
           title="跳过"
         >
           <SkipForward size={14} />
         </button>
         <button
           onClick={stopTimer}
-          className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--bg-active)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all duration-200"
+          className="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/15 transition-all duration-200"
           title="停止"
         >
           <Square size={14} />
         </button>
       </div>
       {/* Completed Pomodoros */}
-      <div className="mt-4 pt-3.5 border-t border-[var(--border-light)]">
+      <div className="mt-4 pt-3.5 border-t border-gray-200 dark:border-white/10">
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-[11px] text-[var(--text-tertiary)] font-bold uppercase tracking-wider">今日完成</span>
-          <span className="text-[11px] text-[var(--text-secondary)] font-black">{completedPomodoros}/{pomodoroSettings.longBreakInterval}</span>
+          <span className="text-[11px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">今日完成</span>
+          <span className="text-[11px] text-gray-700 dark:text-gray-200 font-black">{completedPomodoros}/{pomodoroSettings.longBreakInterval}</span>
         </div>
         {/* Tomato icons */}
         <div className="flex items-center gap-1.5 mb-2.5">
@@ -249,7 +249,7 @@ export default function PomodoroTimer() {
           ))}
         </div>
         {/* Progress bar */}
-        <div className="h-2 bg-[var(--bg-active)] rounded-full overflow-hidden">
+        <div className="h-2 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-[#DC4C3E] to-[#F59E0B] rounded-full transition-all duration-500"
             style={{ width: `${Math.min((completedPomodoros / pomodoroSettings.longBreakInterval) * 100, 100)}%` }}

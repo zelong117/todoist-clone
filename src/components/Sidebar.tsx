@@ -33,6 +33,8 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
   const [showProjects, setShowProjects] = useState(true);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [showProjectSettings, setShowProjectSettings] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const {
     projects,
@@ -91,8 +93,8 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/8 via-purple-500/5 to-transparent backdrop-blur-xl" />
           <div className="relative flex items-center justify-between">
             <button
-              onClick={() => onViewChange('inbox')}
-              className="flex items-center gap-2.5 hover:bg-[var(--bg-active)] rounded-xl px-2.5 py-2 transition-all duration-200 group"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="relative flex items-center gap-2.5 hover:bg-[var(--bg-active)] rounded-xl px-2.5 py-2 transition-all duration-200 group"
             >
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 transition-shadow">
                 W
@@ -106,9 +108,21 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               </div>
               <ChevronDown size={14} className="text-[var(--text-tertiary)] ml-1" />
             </button>
+            {showUserMenu && (
+              <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                <div className="p-3 border-b border-gray-100 dark:border-gray-700">
+                  <p className="text-sm font-bold">ww</p>
+                  <p className="text-xs text-gray-400">ww@example.com</p>
+                </div>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">个人设置</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">账户设置</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">切换账户</button>
+                <button className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">退出登录</button>
+              </div>
+            )}
             <div className="flex items-center gap-0.5">
               <button
-                onClick={() => onViewChange('upcoming')}
+                onClick={() => onViewChange('today')}
                 className="p-2 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
                 title="通知"
               >
@@ -185,6 +199,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
             { id: 'filters', label: '过滤器 & 标签', icon: Filter, count: 0, color: '#6B7280' },
             { id: 'log', label: '日志', icon: Activity, count: 0, color: '#6B7280' },
             { id: 'stats', label: '效率统计', icon: BarChart3, count: 0, color: '#F59E0B' },
+            { id: 'admin', label: '管理后台', icon: LayoutDashboard, count: 0, color: '#6366F1' },
           ].map((view) => {
             const Icon = view.icon;
             const isActive = currentView === view.id;
@@ -376,7 +391,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
       {/* Footer */}
       <div className="border-t border-[var(--border-color)] px-2.5 py-2.5">
         {collapsed ? (
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex flex-col items-center gap-1 relative">
             <button
               onClick={toggleDarkMode}
               className="p-2.5 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
@@ -385,12 +400,24 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button
-              onClick={() => onViewChange('settings')}
+              onClick={() => setShowSettings(!showSettings)}
               className="p-2.5 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
               title="设置"
             >
               <Settings size={18} />
             </button>
+            {showSettings && (
+              <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                <div className="p-3 border-b border-gray-100 dark:border-gray-700">
+                  <h3 className="text-sm font-semibold">设置</h3>
+                </div>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">主题设置</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">通知设置</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">番茄钟设置</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">数据导出</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">数据导入</button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -422,13 +449,27 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               >
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-              <button
-                onClick={() => onViewChange('settings')}
-                className="p-2.5 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
-                title="设置"
-              >
-                <Settings size={18} />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="p-2.5 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
+                  title="设置"
+                >
+                  <Settings size={18} />
+                </button>
+                {showSettings && (
+                  <div className="absolute bottom-full right-0 mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                    <div className="p-3 border-b border-gray-100 dark:border-gray-700">
+                      <h3 className="text-sm font-semibold">设置</h3>
+                    </div>
+                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">主题设置</button>
+                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">通知设置</button>
+                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">番茄钟设置</button>
+                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">数据导出</button>
+                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">数据导入</button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
