@@ -6,6 +6,7 @@ import {
   Plus,
   Search,
   Settings,
+  LayoutDashboard,
   Moon,
   Sun,
   Bell,
@@ -16,6 +17,9 @@ import {
   HelpCircle,
   ChevronDown,
   Timer,
+  User,
+  Download,
+  Upload,
 } from 'lucide-react';
 import { useStore } from '../store';
 import type { Project } from '../types';
@@ -109,16 +113,23 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
               <ChevronDown size={14} className="text-[var(--text-tertiary)] ml-1" />
             </button>
             {showUserMenu && (
-              <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50">
-                <div className="p-3 border-b border-gray-100 dark:border-gray-700">
-                  <p className="text-sm font-bold">ww</p>
-                  <p className="text-xs text-gray-400">ww@example.com</p>
+                <div className="absolute left-0 top-full mt-2 w-56 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] z-50">
+                  <div className="p-3 border-b border-[var(--border-color)]">
+                    <p className="text-sm font-bold text-[var(--text-primary)]">ww</p>
+                    <p className="text-xs text-[var(--text-tertiary)]">ww@example.com</p>
+                  </div>
+                  <button onClick={() => { setShowUserMenu(false); onViewChange('settings'); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                    <User size={14} />
+                    <span>个人设置</span>
+                  </button>
+                  <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                    <Settings size={14} />
+                    <span>账户设置</span>
+                  </button>
+                  <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">切换账户</button>
+                  <div className="border-t border-[var(--border-color)] my-1" />
+                  <button className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">退出登录</button>
                 </div>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">个人设置</button>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">账户设置</button>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">切换账户</button>
-                <button className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">退出登录</button>
-              </div>
             )}
             <div className="flex items-center gap-0.5">
               <button
@@ -411,11 +422,27 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                 <div className="p-3 border-b border-gray-100 dark:border-gray-700">
                   <h3 className="text-sm font-semibold">设置</h3>
                 </div>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">主题设置</button>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">通知设置</button>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">番茄钟设置</button>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">数据导出</button>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">数据导入</button>
+                <button onClick={() => { toggleDarkMode(); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                  {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+                  <span>主题设置</span>
+                  <span className="ml-auto text-xs text-gray-400">{darkMode ? '暗色' : '浅色'}</span>
+                </button>
+                <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <Bell size={14} />
+                  <span>通知设置</span>
+                </button>
+                <button onClick={() => { setShowSettings(false); onViewChange('settings'); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <Timer size={14} />
+                  <span>番茄钟设置</span>
+                </button>
+                <button onClick={() => { const data = { tasks: useStore.getState().tasks, projects: useStore.getState().projects, sections: useStore.getState().sections, labels: useStore.getState().labels, comments: useStore.getState().comments, pomodoroSessions: useStore.getState().pomodoroSessions }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'todoist-backup.json'; a.click(); URL.revokeObjectURL(url); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <Download size={14} />
+                  <span>数据导出</span>
+                </button>
+                <button onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = (e: Event) => { const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const data = JSON.parse(ev.target?.result as string); if (data.tasks && data.projects) { const store = useStore.getState(); const existingTaskIds = new Set(store.tasks.map(t => t.id)); const existingProjectIds = new Set(store.projects.map(p => p.id)); useStore.setState({ tasks: [...store.tasks, ...data.tasks.filter((t: any) => !existingTaskIds.has(t.id))], projects: [...store.projects, ...data.projects.filter((p: any) => !existingProjectIds.has(p.id))], }); alert('导入成功！'); } else { alert('无效的备份文件格式'); } } catch { alert('导入失败'); } }; reader.readAsText(file); }; input.click(); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <Upload size={14} />
+                  <span>数据导入</span>
+                </button>
               </div>
             )}
           </div>
@@ -458,15 +485,31 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                   <Settings size={18} />
                 </button>
                 {showSettings && (
-                  <div className="absolute bottom-full right-0 mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50">
-                    <div className="p-3 border-b border-gray-100 dark:border-gray-700">
-                      <h3 className="text-sm font-semibold">设置</h3>
+                  <div className="absolute bottom-full right-0 mb-2 w-64 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] z-50">
+                    <div className="p-3 border-b border-[var(--border-color)]">
+                      <h3 className="text-sm font-semibold text-[var(--text-primary)]">设置</h3>
                     </div>
-                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">主题设置</button>
-                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">通知设置</button>
-                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">番茄钟设置</button>
-                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">数据导出</button>
-                    <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">数据导入</button>
+                    <button onClick={() => { toggleDarkMode(); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+                      <span>主题设置</span>
+                      <span className="ml-auto text-xs text-[var(--text-tertiary)]">{darkMode ? '暗色' : '浅色'}</span>
+                    </button>
+                    <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      <Bell size={14} />
+                      <span>通知设置</span>
+                    </button>
+                    <button onClick={() => { setShowSettings(false); onViewChange('settings'); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      <Timer size={14} />
+                      <span>番茄钟设置</span>
+                    </button>
+                    <button onClick={() => { const data = { tasks: useStore.getState().tasks, projects: useStore.getState().projects, sections: useStore.getState().sections, labels: useStore.getState().labels, comments: useStore.getState().comments, pomodoroSessions: useStore.getState().pomodoroSessions }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'todoist-backup.json'; a.click(); URL.revokeObjectURL(url); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      <Download size={14} />
+                      <span>数据导出</span>
+                    </button>
+                    <button onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = (e: Event) => { const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const data = JSON.parse(ev.target?.result as string); if (data.tasks && data.projects) { const store = useStore.getState(); const existingTaskIds = new Set(store.tasks.map(t => t.id)); const existingProjectIds = new Set(store.projects.map(p => p.id)); useStore.setState({ tasks: [...store.tasks, ...data.tasks.filter((t: any) => !existingTaskIds.has(t.id))], projects: [...store.projects, ...data.projects.filter((p: any) => !existingProjectIds.has(p.id))], }); alert('导入成功！'); } else { alert('无效的备份文件格式'); } } catch { alert('导入失败'); } }; reader.readAsText(file); }; input.click(); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      <Upload size={14} />
+                      <span>数据导入</span>
+                    </button>
                   </div>
                 )}
               </div>

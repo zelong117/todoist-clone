@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useStore } from './store';
+import { persist } from 'zustand/middleware';
 import type { Task } from './types';
 import { formatTimer } from './utils';
 import Sidebar from './components/Sidebar';
@@ -14,6 +15,7 @@ import CalendarView from './components/CalendarView';
 import StatsView from './components/StatsView';
 import FilterPage from './components/FilterPage';
 import ActivityLog from './components/ActivityLog';
+import Admin from './pages/Admin';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play } from 'lucide-react';
 
 export default function App() {
@@ -74,6 +76,8 @@ export default function App() {
       setActiveView('filter');
     } else if (currentView === 'log') {
       setActiveView('filter');
+    } else if (currentView === 'admin') {
+      setActiveView('inbox'); // admin doesn't need active view sync
     }
   }, [currentView, setActiveView, setSelectedProjectId]);
 
@@ -102,6 +106,185 @@ export default function App() {
     setSelectedTaskId(null);
     setActiveFilter({ fn: null, label: '' });
   }, [setSelectedTaskId]);
+  // Handle settings view
+  const SettingsPage = () => {
+    const { toggleDarkMode, updatePomodoroSettings, pomodoroSettings } = useStore();
+    const [notifEnabled, setNotifEnabled] = useState(() => {
+      return typeof Notification !== 'undefined' ? Notification.permission === 'granted' : false;
+    });
+    const [focusMin, setFocusMin] = useState(pomodoroSettings.focusMinutes);
+    const [shortBreakMin, setShortBreakMin] = useState(pomodoroSettings.shortBreakMinutes);
+    const [longBreakMin, setLongBreakMin] = useState(pomodoroSettings.longBreakMinutes);
+    const [longBreakInterval, setLongBreakInterval] = useState(pomodoroSettings.longBreakInterval);
+    const [autoStartBreak, setAutoStartBreak] = useState(pomodoroSettings.autoStartBreak);
+    const [autoStartPomodoro, setAutoStartPomodoro] = useState(pomodoroSettings.autoStartPomodoro);
+
+    const handleExport = () => {
+      const data = {
+        tasks: useStore.getState().tasks,
+        projects: useStore.getState().projects,
+        sections: useStore.getState().sections,
+        labels: useStore.getState().labels,
+        comments: useStore.getState().comments,
+        pomodoroSessions: useStore.getState().pomodoroSessions,
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'todoist-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    const handleImport = () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e: Event) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target?.result as string);
+            if (data.tasks && data.projects) {
+              const store = useStore.getState();
+              const existingTaskIds = new Set(store.tasks.map(t => t.id));
+              const existingProjectIds = new Set(store.projects.map(p => p.id));
+              useStore.setState({
+                tasks: [...store.tasks, ...data.tasks.filter((t: any) => !existingTaskIds.has(t.id))],
+                projects: [...store.projects, ...data.projects.filter((p: any) => !existingProjectIds.has(p.id))],
+              });
+              alert('导入成功！');
+            } else {
+              alert('无效的备份文件格式');
+            }
+          } catch {
+            alert('导入失败');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    };
+
+    return (
+      <div className="max-w-2xl mx-auto space-y-6 pb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">设置</h1>
+          <p className="text-sm text-[var(--text-tertiary)] mt-1">管理你的应用偏好</p>
+        </div>
+
+        {/* 主题设置 */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
+          <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">🎨 主题设置</h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-[var(--text-primary)]">暗色模式</p>
+              <p className="text-xs text-[var(--text-tertiary)]">切换浅色/深色主题</p>
+            </div>
+            <button
+              onClick={toggleDarkMode}
+              className={`relative w-12 h-6 rounded-full transition-colors ${darkMode ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${darkMode ? 'translate-x-6' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* 通知设置 */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
+          <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">🔔 通知设置</h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-[var(--text-primary)]">浏览器通知</p>
+              <p className="text-xs text-[var(--text-tertiary)]">在番茄钟完成时显示通知</p>
+            </div>
+            <button
+              onClick={() => {
+                if (!notifEnabled && typeof Notification !== 'undefined') {
+                  Notification.requestPermission().then(p => setNotifEnabled(p === 'granted'));
+                } else {
+                  setNotifEnabled(!notifEnabled);
+                }
+              }}
+              className={`relative w-12 h-6 rounded-full transition-colors ${notifEnabled ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${notifEnabled ? 'translate-x-6' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* 番茄钟设置 */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
+          <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">🍅 番茄钟设置</h2>
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--text-tertiary)]">专注时长（分钟）</label>
+                <input type="number" value={focusMin} onChange={(e) => setFocusMin(Number(e.target.value))} min={1} max={120} className="mt-1 w-full px-3 py-2 bg-[var(--bg-active)] border border-[var(--border-color)] rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--text-tertiary)]">短休息（分钟）</label>
+                <input type="number" value={shortBreakMin} onChange={(e) => setShortBreakMin(Number(e.target.value))} min={1} max={30} className="mt-1 w-full px-3 py-2 bg-[var(--bg-active)] border border-[var(--border-color)] rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--text-tertiary)]">长休息（分钟）</label>
+                <input type="number" value={longBreakMin} onChange={(e) => setLongBreakMin(Number(e.target.value))} min={1} max={60} className="mt-1 w-full px-3 py-2 bg-[var(--bg-active)] border border-[var(--border-color)] rounded-lg text-sm" />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-[var(--text-tertiary)]">长休息间隔（番茄数）</label>
+              <input type="number" value={longBreakInterval} onChange={(e) => setLongBreakInterval(Number(e.target.value))} min={1} max={10} className="mt-1 w-full px-3 py-2 bg-[var(--bg-active)] border border-[var(--border-color)] rounded-lg text-sm" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[var(--text-secondary)]">自动开始休息</span>
+              <button onClick={() => setAutoStartBreak(!autoStartBreak)} className={`relative w-12 h-6 rounded-full transition-colors ${autoStartBreak ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${autoStartBreak ? 'translate-x-6' : ''}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[var(--text-secondary)]">自动开始专注</span>
+              <button onClick={() => setAutoStartPomodoro(!autoStartPomodoro)} className={`relative w-12 h-6 rounded-full transition-colors ${autoStartPomodoro ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${autoStartPomodoro ? 'translate-x-6' : ''}`} />
+              </button>
+            </div>
+            <button
+              onClick={() => updatePomodoroSettings({ focusMinutes: focusMin, shortBreakMinutes: shortBreakMin, longBreakMinutes: longBreakMin, longBreakInterval, autoStartBreak, autoStartPomodoro })}
+              className="px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              保存番茄钟设置
+            </button>
+          </div>
+        </div>
+
+        {/* 数据管理 */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
+          <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">💾 数据管理</h2>
+          <div className="flex gap-3">
+            <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+              📤 导出数据
+            </button>
+            <button onClick={handleImport} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors">
+              📥 导入数据
+            </button>
+          </div>
+        </div>
+
+        {/* 关于 */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
+          <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">ℹ️ 关于</h2>
+          <div className="space-y-2 text-sm text-[var(--text-secondary)]">
+            <p>Todoist Clone — 高效任务管理工具</p>
+            <p>版本：1.0.0</p>
+            <p>技术栈：React + Zustand + Tailwind CSS</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
 
   // Get tasks for current view
   const viewTasks = useMemo(() => {
@@ -126,6 +309,8 @@ export default function App() {
         break;
       case 'log':
         return []; // Activity log doesn't show task list
+      case 'admin':
+        return []; // Admin view manages its own data
       default:
         if (currentView.startsWith('project-')) {
           const pid = currentView.replace('project-', '');
@@ -189,6 +374,8 @@ export default function App() {
       case 'filter':
       case 'filters': return activeFilter.label || '过滤器 & 标签';
       case 'log': return '日志';
+      case 'admin': return '管理后台';
+      case 'settings': return '设置';
       default:
         if (currentProject) return currentProject.name;
         return '所有任务';
@@ -219,6 +406,7 @@ export default function App() {
                 {currentView === 'upcoming' && <CalendarClock size={22} className="text-purple-500" />}
                 {currentView === 'stats' && <LayoutDashboard size={22} className="text-amber-500" />}
                 {currentView === 'log' && <Activity size={22} className="text-[var(--text-tertiary)]" />}
+                {currentView === 'admin' && <LayoutDashboard size={22} className="text-indigo-500" />}
                 {currentProject && (
                   <span
                     className="w-3 h-3 rounded-full"
@@ -388,6 +576,10 @@ export default function App() {
               />
             ) : currentView === 'log' ? (
               <ActivityLog />
+            ) : currentView === 'admin' ? (
+              <Admin />
+            ) : currentView === 'settings' ? (
+              <SettingsPage />
             ) : isTaskListView ? (
               viewMode === 'list' ? (
                 <TaskList
