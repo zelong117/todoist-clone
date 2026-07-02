@@ -31,9 +31,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
     deleteTask,
     setSelectedTaskId,
     tasks,
-    projects,
     selectedTaskId,
-    selectedProjectId,
     activeTimerTaskId,
     timerSeconds,
     timerStatus,
@@ -43,10 +41,6 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
   } = useStore();
   const isSelected = selectedTaskId === task.id;
 
-  // 获取当前项目
-    () => (selectedProjectId ? projects.find((p) => p.id === selectedProjectId) || null : null),
-    [projects, selectedProjectId]
-  );
 
   const subtasks = useMemo(
     () => tasks.filter((t) => t.parentId === task.id),
