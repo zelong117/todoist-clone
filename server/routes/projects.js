@@ -2,122 +2,51 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticate } = require('../middleware/auth');
-
-const projects = new Map();
+const { queryAll, queryOne, run } = require('../db');
+const { pick, mapProject } = require('../utils');
 
 router.get('/', authenticate, (req, res) => {
   try {
-    const userProjects = [];
-    for (const project of projects.values()) {
-      if (project.userId === req.user.id) {
-        userProjects.push(project);
-      }
-    }
-    res.json(userProjects);
-  } catch (error) {
-    console.error('Get projects error:', error);
-    res.status(500).json({ error: '获取项目列表失败' });
-  }
+    res.json(queryAll('SELECT * FROM projects WHERE user_id = ? ORDER BY sort_order', [req.user.id]).map(mapProject));
+  } catch (error) { console.error(error); res.status(500).json({ error: '获取项目列表失败' }); }
 });
 
 router.post('/', authenticate, (req, res) => {
   try {
     const { name, color, usePomodoro } = req.body;
-    
-    if (!name || !name.trim()) {
-      return res.status(400).json({ error: '项目名称不能为空' });
-    }
-
-    if (name.length > 200) {
-      return res.status(400).json({ error: '项目名称不能超过200个字符' });
-    }
-
-    if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) {
-      return res.status(400).json({ error: '颜色格式不正确，应为十六进制颜色值' });
-    }
-
-    const project = {
-      id: uuidv4(),
-      userId: req.user.id,
-      name: name.trim(),
-      color: color || '#DC4C3E',
-      isFavorite: false,
-      usePomodoro: !!usePomodoro,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    projects.set(project.id, project);
-    res.status(201).json(project);
-  } catch (error) {
-    console.error('Create project error:', error);
-    res.status(500).json({ error: '创建项目失败' });
-  }
+    if (!name || !name.trim()) return res.status(400).json({ error: '项目名称不能为空' });
+    if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) return res.status(400).json({ error: '颜色格式不正确' });
+    const id = uuidv4();
+    run('INSERT INTO projects (id, user_id, name, color, use_pomodoro) VALUES (?, ?, ?, ?, ?)', [id, req.user.id, name.trim(), color||'#DC4C3E', usePomodoro?1:0]);
+    res.status(201).json(mapProject(queryOne('SELECT * FROM projects WHERE id = ?', [id])));
+  } catch (error) { console.error(error); res.status(500).json({ error: '创建项目失败' }); }
 });
 
 router.put('/:id', authenticate, (req, res) => {
   try {
-    const project = projects.get(req.params.id);
-    
-    if (!project || project.userId !== req.user.id) {
-      return res.status(404).json({ error: '项目不存在' });
-    }
-
-    // Whitelist fields to prevent mass assignment
-    const allowedFields = ['name', 'color', 'isFavorite', 'usePomodoro'];
-    const sanitized = {};
-    for (const key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        sanitized[key] = req.body[key];
-      }
-    }
-
-    if (sanitized.name !== undefined) {
-      if (!sanitized.name.trim()) {
-        return res.status(400).json({ error: '项目名称不能为空' });
-      }
-      sanitized.name = sanitized.name.trim();
-      if (sanitized.name.length > 200) {
-        return res.status(400).json({ error: '项目名称不能超过200个字符' });
-      }
-    }
-
-    if (sanitized.color !== undefined && !/^#[0-9A-Fa-f]{6}$/.test(sanitized.color)) {
-      return res.status(400).json({ error: '颜色格式不正确，应为十六进制颜色值' });
-    }
-
-    const updatedProject = {
-      ...project,
-      ...sanitized,
-      id: project.id,
-      userId: project.userId,
-      updatedAt: new Date().toISOString()
-    };
-
-    projects.set(project.id, updatedProject);
-    res.json(updatedProject);
-  } catch (error) {
-    console.error('Update project error:', error);
-    res.status(500).json({ error: '更新项目失败' });
-  }
+    const project = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    if (!project) return res.status(404).json({ error: '项目不存在' });
+    const s = pick(req.body, ['name','color','isFavorite','usePomodoro']);
+    const sets = []; const vals = [];
+    if (s.name !== undefined) { if (!s.name.trim()) return res.status(400).json({ error: '名称不能为空' }); sets.push('name = ?'); vals.push(s.name.trim()); }
+    if (s.color !== undefined && !/^#[0-9A-Fa-f]{6}$/.test(s.color)) return res.status(400).json({ error: '颜色格式不正确' });
+    if (s.color !== undefined) { sets.push('color = ?'); vals.push(s.color); }
+    if (s.isFavorite !== undefined) { sets.push('is_favorite = ?'); vals.push(s.isFavorite?1:0); }
+    if (s.usePomodoro !== undefined) { sets.push('use_pomodoro = ?'); vals.push(s.usePomodoro?1:0); }
+    if (sets.length > 0) { vals.push(req.params.id); run(`UPDATE projects SET ${sets.join(', ')} WHERE id = ?`, vals); }
+    res.json(mapProject(queryOne('SELECT * FROM projects WHERE id = ?', [req.params.id])));
+  } catch (error) { console.error(error); res.status(500).json({ error: '更新项目失败' }); }
 });
 
 router.delete('/:id', authenticate, (req, res) => {
   try {
-    const project = projects.get(req.params.id);
-    
-    if (!project || project.userId !== req.user.id) {
-      return res.status(404).json({ error: '项目不存在' });
-    }
-
-    projects.delete(req.params.id);
+    const p = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    if (!p) return res.status(404).json({ error: '项目不存在' });
+    run('UPDATE tasks SET project_id = NULL WHERE project_id = ?', [req.params.id]);
+    run('DELETE FROM sections WHERE project_id = ?', [req.params.id]);
+    run('DELETE FROM projects WHERE id = ?', [req.params.id]);
     res.json({ success: true });
-  } catch (error) {
-    console.error('Delete project error:', error);
-    res.status(500).json({ error: '删除项目失败' });
-  }
+  } catch (error) { console.error(error); res.status(500).json({ error: '删除项目失败' }); }
 });
-
-router.projects = projects;
 
 module.exports = router;

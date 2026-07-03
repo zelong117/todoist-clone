@@ -2,118 +2,43 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticate } = require('../middleware/auth');
-
-const labels = new Map();
+const { queryAll, queryOne, run } = require('../db');
+const { pick, mapLabel } = require('../utils');
 
 router.get('/', authenticate, (req, res) => {
-  try {
-    const userLabels = [];
-    for (const label of labels.values()) {
-      if (label.userId === req.user.id) {
-        userLabels.push(label);
-      }
-    }
-    res.json(userLabels);
-  } catch (error) {
-    console.error('Get labels error:', error);
-    res.status(500).json({ error: '获取标签列表失败' });
-  }
+  try { res.json(queryAll('SELECT * FROM labels WHERE user_id = ?', [req.user.id]).map(mapLabel)); }
+  catch (e) { console.error(e); res.status(500).json({ error: '获取标签失败' }); }
 });
 
 router.post('/', authenticate, (req, res) => {
   try {
     const { name, color } = req.body;
-    
-    if (!name || !name.trim()) {
-      return res.status(400).json({ error: '标签名称不能为空' });
-    }
-
-    if (name.length > 100) {
-      return res.status(400).json({ error: '标签名称不能超过100个字符' });
-    }
-
-    if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) {
-      return res.status(400).json({ error: '颜色格式不正确，应为十六进制颜色值' });
-    }
-
-    const label = {
-      id: uuidv4(),
-      userId: req.user.id,
-      name: name.trim(),
-      color: color || '#6B7280',
-      createdAt: new Date().toISOString()
-    };
-
-    labels.set(label.id, label);
-    res.status(201).json(label);
-  } catch (error) {
-    console.error('Create label error:', error);
-    res.status(500).json({ error: '创建标签失败' });
-  }
+    if (!name || !name.trim()) return res.status(400).json({ error: '标签名称不能为空' });
+    if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) return res.status(400).json({ error: '颜色格式不正确' });
+    const id = uuidv4();
+    run('INSERT INTO labels (id, user_id, name, color) VALUES (?, ?, ?, ?)', [id, req.user.id, name.trim(), color||'#6B7280']);
+    res.status(201).json(mapLabel(queryOne('SELECT * FROM labels WHERE id = ?', [id])));
+  } catch (e) { console.error(e); res.status(500).json({ error: '创建标签失败' }); }
 });
 
 router.put('/:id', authenticate, (req, res) => {
   try {
-    const label = labels.get(req.params.id);
-    
-    if (!label || label.userId !== req.user.id) {
-      return res.status(404).json({ error: '标签不存在' });
-    }
-
-    // Whitelist fields to prevent mass assignment
-    const allowedFields = ['name', 'color'];
-    const sanitized = {};
-    for (const key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        sanitized[key] = req.body[key];
-      }
-    }
-
-    if (sanitized.name !== undefined) {
-      if (!sanitized.name.trim()) {
-        return res.status(400).json({ error: '标签名称不能为空' });
-      }
-      sanitized.name = sanitized.name.trim();
-      if (sanitized.name.length > 100) {
-        return res.status(400).json({ error: '标签名称不能超过100个字符' });
-      }
-    }
-
-    if (sanitized.color !== undefined && !/^#[0-9A-Fa-f]{6}$/.test(sanitized.color)) {
-      return res.status(400).json({ error: '颜色格式不正确，应为十六进制颜色值' });
-    }
-
-    const updatedLabel = {
-      ...label,
-      ...sanitized,
-      id: label.id,
-      userId: label.userId
-    };
-
-    labels.set(label.id, updatedLabel);
-    res.json(updatedLabel);
-  } catch (error) {
-    console.error('Update label error:', error);
-    res.status(500).json({ error: '更新标签失败' });
-  }
+    const label = queryOne('SELECT * FROM labels WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    if (!label) return res.status(404).json({ error: '标签不存在' });
+    const s = pick(req.body, ['name','color']);
+    if (s.name) { if (!s.name.trim()) return res.status(400).json({ error: '名称不能为空' }); run('UPDATE labels SET name = ? WHERE id = ?', [s.name.trim(), req.params.id]); }
+    if (s.color && /^#[0-9A-Fa-f]{6}$/.test(s.color)) run('UPDATE labels SET color = ? WHERE id = ?', [s.color, req.params.id]);
+    res.json(mapLabel(queryOne('SELECT * FROM labels WHERE id = ?', [req.params.id])));
+  } catch (e) { console.error(e); res.status(500).json({ error: '更新标签失败' }); }
 });
 
 router.delete('/:id', authenticate, (req, res) => {
   try {
-    const label = labels.get(req.params.id);
-    
-    if (!label || label.userId !== req.user.id) {
-      return res.status(404).json({ error: '标签不存在' });
-    }
-
-    labels.delete(req.params.id);
+    const l = queryOne('SELECT * FROM labels WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    if (!l) return res.status(404).json({ error: '标签不存在' });
+    run('DELETE FROM labels WHERE id = ?', [req.params.id]);
     res.json({ success: true });
-  } catch (error) {
-    console.error('Delete label error:', error);
-    res.status(500).json({ error: '删除标签失败' });
-  }
+  } catch (e) { console.error(e); res.status(500).json({ error: '删除标签失败' }); }
 });
-
-router.labels = labels;
 
 module.exports = router;

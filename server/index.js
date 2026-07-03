@@ -1,8 +1,10 @@
+// ✅ Load .env FIRST before anything else
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-
-dotenv.config();
+const path = require('path');
+const { initDB } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -20,6 +22,12 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+// Rate limiting
+try {
+  const rateLimit = require('express-rate-limit');
+  app.use('/api/auth', rateLimit({ windowMs: 15*60*1000, max: 20, message: { error: '请求过于频繁' } }));
+} catch (e) { console.warn('rate-limit not installed, skipping'); }
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/tasks', require('./routes/tasks'));
@@ -28,19 +36,22 @@ app.use('/api/comments', require('./routes/comments'));
 app.use('/api/pomodoro', require('./routes/pomodoro'));
 app.use('/api/admin', require('./routes/admin'));
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-app.use((req, res) => {
-  res.status(404).json({ error: '接口不存在' });
-});
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '..', 'dist')));
+  app.get('*', (req, res) => res.sendFile(path.join(__dirname, '..', 'dist', 'index.html')));
+}
 
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: '服务器内部错误' });
-});
+app.use((req, res) => res.status(404).json({ error: '接口不存在' }));
+app.use((err, req, res, next) => { console.error(err); res.status(500).json({ error: '服务器内部错误' }); });
 
-app.listen(PORT, () => {
-  console.log('Server running on http://localhost:' + PORT);
+// Init DB then start
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log('Server running on http://localhost:' + PORT);
+  });
+}).catch(err => {
+  console.error('Failed to init database:', err);
+  process.exit(1);
 });

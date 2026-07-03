@@ -3,18 +3,19 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error('JWT_SECRET environment variable is required!');
+  console.error('Generate one: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
   process.exit(1);
 }
 
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: '未登录' });
   }
 
   const token = authHeader.split(' ')[1];
-  
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
@@ -27,11 +28,11 @@ function authenticate(req, res, next) {
   }
 }
 
-function adminOnly(req, res, next) {
+function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ error: '需要管理员权限' });
   }
   next();
 }
 
-module.exports = { authenticate, adminOnly, JWT_SECRET };
+module.exports = { authenticate, requireAdmin, JWT_SECRET };
