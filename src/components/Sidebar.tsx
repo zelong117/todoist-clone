@@ -29,9 +29,10 @@ import ProjectSettingsModal from './ProjectSettingsModal';
 interface SidebarProps {
   currentView: string;
   onViewChange: (view: string, projectId?: string) => void;
+  onLogout?: () => void;
 }
 
-export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
+export default function Sidebar({ currentView, onViewChange, onLogout }: SidebarProps) {
   const [searchQuery] = useState('');
   const [showFavorites, setShowFavorites] = useState(true);
   const [showProjects, setShowProjects] = useState(true);
@@ -128,7 +129,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
                   </button>
                   <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">切换账户</button>
                   <div className="border-t border-[var(--border-color)] my-1" />
-                  <button className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">退出登录</button>
+                  <button onClick={onLogout} className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">退出登录</button>
                 </div>
             )}
             <div className="flex items-center gap-0.5">

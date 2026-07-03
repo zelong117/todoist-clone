@@ -2,6 +2,9 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useStore } from './store';
 import type { Task } from './types';
 import { formatTimer } from './utils';
+import { useAuth } from './contexts/AuthContext';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import Sidebar from './components/Sidebar';
 import TaskList from './components/TaskList';
 import TaskDetail from './components/TaskDetail';
@@ -18,6 +21,9 @@ import Admin from './pages/Admin';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings } from 'lucide-react';
 
 export default function App() {
+  const { user, login, register, logout } = useAuth();
+  const [authView, setAuthView] = useState<'login' | 'register'>('login');
+  
   const {
     tasks,
     sections,
@@ -390,10 +396,28 @@ export default function App() {
   // Whether the current view shows a task list (inbox, today, upcoming, projects)
   const isTaskListView = currentView === 'inbox' || currentView === 'today' || currentView === 'upcoming' || currentView.startsWith('project-');
 
+  // 认证检查：未登录显示登录/注册页
+  if (!user) {
+    if (authView === 'register') {
+      return (
+        <RegisterPage
+          onRegister={register}
+          onSwitchToLogin={() => setAuthView('login')}
+        />
+      );
+    }
+    return (
+      <LoginPage
+        onLogin={login}
+        onSwitchToRegister={() => setAuthView('register')}
+      />
+    );
+  }
+
   return (
     <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
       {/* Sidebar */}
-      <Sidebar currentView={currentView} onViewChange={handleViewChange} />
+      <Sidebar currentView={currentView} onViewChange={handleViewChange} onLogout={logout} />
 
       {/* Main Content */}
       <main className={`flex-1 flex overflow-hidden ${darkClasses} transition-colors duration-200`}>
