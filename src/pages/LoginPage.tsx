@@ -1,20 +1,29 @@
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LoginPageProps {
-  onLogin: (email: string, name: string) => void;
   onSwitchToRegister: () => void;
 }
 
-export default function LoginPage({ onLogin, onSwitchToRegister }: LoginPageProps) {
+export default function LoginPage({ onSwitchToRegister }: LoginPageProps) {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password) {
-      // 暂时直接登录，等后端完成后换成真实认证
-      onLogin(email, email.split('@')[0]);
+    setError('');
+    setLoading(true);
+
+    try {
+      await login(email, password);
+    } catch (err: any) {
+      setError(err.message || '登录失败');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,6 +43,12 @@ export default function LoginPage({ onLogin, onSwitchToRegister }: LoginPageProp
         <div className="bg-[var(--bg-card)] rounded-2xl shadow-xl p-8 border border-[var(--border-color)]">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-6">登录</h2>
           
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* 邮箱 */}
             <div>
@@ -88,9 +103,10 @@ export default function LoginPage({ onLogin, onSwitchToRegister }: LoginPageProp
             {/* 登录按钮 */}
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-[var(--accent)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-[var(--accent)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              登录
+              {loading ? '登录中...' : '登录'}
             </button>
           </form>
 

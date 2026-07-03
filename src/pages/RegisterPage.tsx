@@ -1,17 +1,19 @@
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface RegisterPageProps {
-  onRegister: (email: string, name: string) => void;
   onSwitchToLogin: () => void;
 }
 
-export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPageProps) {
+export default function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
+  const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -40,11 +42,17 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      // 暂时直接注册，等后端完成后换成真实注册
-      onRegister(email, name);
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      await register(email, name, password);
+    } catch (err: any) {
+      setErrors({ submit: err.message || '注册失败' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,6 +72,12 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
         <div className="bg-[var(--bg-card)] rounded-2xl shadow-xl p-8 border border-[var(--border-color)]">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-6">注册</h2>
           
+          {errors.submit && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
+              {errors.submit}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* 用户名 */}
             <div>
@@ -164,9 +178,10 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
             {/* 注册按钮 */}
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-[var(--accent)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-[var(--accent)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              创建账号
+              {loading ? '注册中...' : '创建账号'}
             </button>
           </form>
 

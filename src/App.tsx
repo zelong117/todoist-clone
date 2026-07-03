@@ -21,7 +21,7 @@ import Admin from './pages/Admin';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings } from 'lucide-react';
 
 export default function App() {
-  const { user, login, register, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   
   const {
@@ -396,19 +396,25 @@ export default function App() {
   // Whether the current view shows a task list (inbox, today, upcoming, projects)
   const isTaskListView = currentView === 'inbox' || currentView === 'today' || currentView === 'upcoming' || currentView.startsWith('project-');
 
-  // 认证检查：未登录显示登录/注册页
+  // 认证检查：加载中显示 loading，未登录显示登录/注册页
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center">
+        <div className="text-[var(--text-secondary)]">加载中...</div>
+      </div>
+    );
+  }
+
   if (!user) {
     if (authView === 'register') {
       return (
         <RegisterPage
-          onRegister={register}
           onSwitchToLogin={() => setAuthView('login')}
         />
       );
     }
     return (
       <LoginPage
-        onLogin={login}
         onSwitchToRegister={() => setAuthView('register')}
       />
     );
