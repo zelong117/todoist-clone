@@ -17,31 +17,47 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: '请填写所有必填字段' });
     }
 
+    // 邮箱格式验证
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: '邮箱格式无效' });
+      return res.status(400).json({ error: '邮箱格式不正确' });
     }
 
+    // 邮箱长度限制
+    if (email.length > 255) {
+      return res.status(400).json({ error: '邮箱长度不能超过255个字符' });
+    }
+
+    // 用户名长度验证
+    if (name.trim().length < 1 || name.length > 100) {
+      return res.status(400).json({ error: '用户名长度应在1-100个字符之间' });
+    }
+
+    // 密码长度验证
     if (password.length < 6) {
-      return res.status(400).json({ error: '密码长度至少为6位' });
+      return res.status(400).json({ error: '密码长度不能少于6个字符' });
+    }
+    if (password.length > 128) {
+      return res.status(400).json({ error: '密码长度不能超过128个字符' });
     }
 
     // 检查邮箱是否已存在
     for (const user of users.values()) {
-      if (user.email === email) {
+      if (user.email === email.toLowerCase()) {
         return res.status(400).json({ error: '该邮箱已被注册' });
       }
     }
 
     // 加密密码
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 12);
     
     // 创建用户
     const user = {
       id: uuidv4(),
-      email,
-      name,
+      email: email.toLowerCase().trim(),
+      name: name.trim(),
       passwordHash,
+      role: 'user',
       createdAt: new Date().toISOString()
     };
     
@@ -49,12 +65,12 @@ router.post('/register', async (req, res) => {
 
     // 生成 token
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name },
+      { id: user.id, email: user.email, name: user.name, role: user.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    res.json({
+    res.status(201).json({
       token,
       user: {
         id: user.id,
@@ -80,7 +96,7 @@ router.post('/login', async (req, res) => {
     // 查找用户
     let foundUser = null;
     for (const user of users.values()) {
-      if (user.email === email) {
+      if (user.email === email.toLowerCase().trim()) {
         foundUser = user;
         break;
       }
@@ -98,7 +114,7 @@ router.post('/login', async (req, res) => {
 
     // 生成 token
     const token = jwt.sign(
-      { id: foundUser.id, email: foundUser.email, name: foundUser.name },
+      { id: foundUser.id, email: foundUser.email, name: foundUser.name, role: foundUser.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -119,16 +135,25 @@ router.post('/login', async (req, res) => {
 
 // 获取当前用户
 router.get('/me', authenticate, (req, res) => {
-  const user = users.get(req.user.id);
-  if (!user) {
-    return res.status(404).json({ error: '用户不存在' });
+  try {
+    const user = users.get(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+    
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: '获取用户信息失败' });
   }
-  
-  res.json({
-    id: user.id,
-    email: user.email,
-    name: user.name
-  });
 });
+
+// 导出 users Map 供 admin 路由使用
+router.users = users;
 
 module.exports = router;

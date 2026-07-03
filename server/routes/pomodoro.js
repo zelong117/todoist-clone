@@ -6,56 +6,89 @@ const { authenticate } = require('../middleware/auth');
 const sessions = new Map();
 
 router.get('/sessions', authenticate, (req, res) => {
-  const userSessions = [];
-  for (const session of sessions.values()) {
-    if (session.userId === req.user.id) {
-      userSessions.push(session);
+  try {
+    const userSessions = [];
+    for (const session of sessions.values()) {
+      if (session.userId === req.user.id) {
+        userSessions.push(session);
+      }
     }
+    res.json(userSessions);
+  } catch (error) {
+    console.error('Get pomodoro sessions error:', error);
+    res.status(500).json({ error: '获取番茄会话列表失败' });
   }
-  res.json(userSessions);
 });
 
 router.post('/start', authenticate, (req, res) => {
-  const { taskId, mode } = req.body;
-  
-  const session = {
-    id: uuidv4(),
-    taskId: taskId || null,
-    userId: req.user.id,
-    startedAt: new Date().toISOString(),
-    endedAt: null,
-    durationMinutes: 0,
-    completed: false,
-    mode: mode || 'focus',
-    createdAt: new Date().toISOString()
-  };
+  try {
+    const { taskId, mode } = req.body;
+    
+    const validModes = ['focus', 'shortBreak', 'longBreak'];
+    const sessionMode = mode || 'focus';
+    
+    if (!validModes.includes(sessionMode)) {
+      return res.status(400).json({ error: '无效的番茄模式' });
+    }
 
-  sessions.set(session.id, session);
-  res.json(session);
+    const session = {
+      id: uuidv4(),
+      taskId: taskId || null,
+      userId: req.user.id,
+      startedAt: new Date().toISOString(),
+      endedAt: null,
+      durationMinutes: 0,
+      completed: false,
+      mode: sessionMode,
+      createdAt: new Date().toISOString()
+    };
+
+    sessions.set(session.id, session);
+    res.status(201).json(session);
+  } catch (error) {
+    console.error('Start pomodoro error:', error);
+    res.status(500).json({ error: '开始番茄会话失败' });
+  }
 });
 
 router.post('/stop', authenticate, (req, res) => {
-  const { sessionId, completed } = req.body;
-  
-  const session = sessions.get(sessionId);
-  
-  if (!session || session.userId !== req.user.id) {
-    return res.status(404).json({ error: '会话不存在' });
+  try {
+    const { sessionId, completed } = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: '会话ID不能为空' });
+    }
+
+    const session = sessions.get(sessionId);
+    
+    if (!session || session.userId !== req.user.id) {
+      return res.status(404).json({ error: '会话不存在' });
+    }
+
+    if (session.endedAt) {
+      return res.status(400).json({ error: '会话已经结束' });
+    }
+
+    const endedAt = new Date();
+    const startedAt = new Date(session.startedAt);
+    const durationMinutes = (endedAt - startedAt) / (1000 * 60);
+
+    const updatedSession = {
+      ...session,
+      endedAt: endedAt.toISOString(),
+      durationMinutes: Math.round(durationMinutes * 100) / 100,
+      completed: !!completed
+    };
+
+    sessions.set(session.id, updatedSession);
+    res.json(updatedSession);
+  } catch (error) {
+    console.error('Stop pomodoro error:', error);
+    res.status(500).json({ error: '停止番茄会话失败' });
   }
-
-  const endedAt = new Date();
-  const startedAt = new Date(session.startedAt);
-  const durationMinutes = (endedAt - startedAt) / (1000 * 60);
-
-  const updatedSession = {
-    ...session,
-    endedAt: endedAt.toISOString(),
-    durationMinutes: Math.round(durationMinutes * 100) / 100,
-    completed: completed || false
-  };
-
-  sessions.set(session.id, updatedSession);
-  res.json(updatedSession);
 });
+
+// 导出 sessions Map 供 admin 路由使用
+router.sessions = sessions;
 
 module.exports = router;

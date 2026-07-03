@@ -2,7 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
 
-router.get('/stats', authenticate, (req, res) => {
+function requireAdmin(req, res, next) {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  next();
+}
+
+router.get('/stats', authenticate, requireAdmin, (req, res) => {
   // 这里应该从数据库查询真实数据
   // 现在返回模拟数据
   res.json({
@@ -15,9 +23,7 @@ router.get('/stats', authenticate, (req, res) => {
   });
 });
 
-router.get('/users', authenticate, (req, res) => {
-  // 管理员才能访问
-  // 这里应该检查用户角色
+router.get('/users', authenticate, requireAdmin, (req, res) => {
   res.json([]);
 });
 
