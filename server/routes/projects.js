@@ -63,7 +63,7 @@ router.put('/:id', authenticate, (req, res) => {
       return res.status(404).json({ error: '项目不存在' });
     }
 
-    // 字段白名单 - 防止批量赋值攻击
+    // Whitelist fields to prevent mass assignment
     const allowedFields = ['name', 'color', 'isFavorite', 'usePomodoro'];
     const sanitized = {};
     for (const key of allowedFields) {
@@ -72,7 +72,6 @@ router.put('/:id', authenticate, (req, res) => {
       }
     }
 
-    // 验证字段
     if (sanitized.name !== undefined) {
       if (!sanitized.name.trim()) {
         return res.status(400).json({ error: '项目名称不能为空' });
@@ -119,7 +118,6 @@ router.delete('/:id', authenticate, (req, res) => {
   }
 });
 
-// 导出 projects Map 供 admin 路由使用
 router.projects = projects;
 
 module.exports = router;

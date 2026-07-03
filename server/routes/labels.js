@@ -60,7 +60,7 @@ router.put('/:id', authenticate, (req, res) => {
       return res.status(404).json({ error: '标签不存在' });
     }
 
-    // 字段白名单 - 防止批量赋值攻击
+    // Whitelist fields to prevent mass assignment
     const allowedFields = ['name', 'color'];
     const sanitized = {};
     for (const key of allowedFields) {
@@ -69,7 +69,6 @@ router.put('/:id', authenticate, (req, res) => {
       }
     }
 
-    // 验证字段
     if (sanitized.name !== undefined) {
       if (!sanitized.name.trim()) {
         return res.status(400).json({ error: '标签名称不能为空' });
@@ -115,7 +114,6 @@ router.delete('/:id', authenticate, (req, res) => {
   }
 });
 
-// 导出 labels Map 供 admin 路由使用
 router.labels = labels;
 
 module.exports = router;

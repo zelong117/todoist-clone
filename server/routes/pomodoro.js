@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticate } = require('../middleware/auth');
+const tasksRouter = require('./tasks');
 
 const sessions = new Map();
 
@@ -29,6 +30,13 @@ router.post('/start', authenticate, (req, res) => {
     
     if (!validModes.includes(sessionMode)) {
       return res.status(400).json({ error: '无效的番茄模式' });
+    }
+
+    if (taskId) {
+      const task = tasksRouter.tasks.get(taskId);
+      if (!task || task.userId !== req.user.id) {
+        return res.status(404).json({ error: '任务不存在' });
+      }
     }
 
     const session = {
@@ -88,7 +96,6 @@ router.post('/stop', authenticate, (req, res) => {
   }
 });
 
-// 导出 sessions Map 供 admin 路由使用
 router.sessions = sessions;
 
 module.exports = router;

@@ -3,10 +3,9 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticate } = require('../middleware/auth');
 
-// 内存存储（生产环境用数据库）
 const tasks = new Map();
 
-// 获取所有任务
+// Get all tasks
 router.get('/', authenticate, (req, res) => {
   try {
     const userTasks = [];
@@ -22,7 +21,7 @@ router.get('/', authenticate, (req, res) => {
   }
 });
 
-// 创建任务
+// Create task
 router.post('/', authenticate, (req, res) => {
   try {
     const { title, projectId, sectionId, parentId, priority, dueDate, labels, plannedPomodoros } = req.body;
@@ -70,7 +69,7 @@ router.post('/', authenticate, (req, res) => {
   }
 });
 
-// 更新任务
+// Update task
 router.put('/:id', authenticate, (req, res) => {
   try {
     const task = tasks.get(req.params.id);
@@ -87,7 +86,6 @@ router.put('/:id', authenticate, (req, res) => {
       }
     }
 
-    // 验证字段
     if (sanitized.title !== undefined) {
       if (!sanitized.title.trim()) {
         return res.status(400).json({ error: '任务标题不能为空' });
@@ -122,7 +120,7 @@ router.put('/:id', authenticate, (req, res) => {
   }
 });
 
-// 删除任务
+// Delete task
 router.delete('/:id', authenticate, (req, res) => {
   try {
     const task = tasks.get(req.params.id);
@@ -139,7 +137,7 @@ router.delete('/:id', authenticate, (req, res) => {
   }
 });
 
-// 完成任务
+// Toggle complete
 router.post('/:id/complete', authenticate, (req, res) => {
   try {
     const task = tasks.get(req.params.id);
@@ -162,7 +160,6 @@ router.post('/:id/complete', authenticate, (req, res) => {
   }
 });
 
-// 导出 tasks Map 供其他路由使用
 router.tasks = tasks;
 
 module.exports = router;

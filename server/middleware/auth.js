@@ -2,14 +2,15 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
+  console.error('JWT_SECRET environment variable is required!');
+  process.exit(1);
 }
 
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: '未登�? });
+    return res.status(401).json({ error: '未登录' });
   }
 
   const token = authHeader.split(' ')[1];
@@ -20,9 +21,9 @@ function authenticate(req, res, next) {
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: '登录已过期，请重新登�? });
+      return res.status(401).json({ error: '登录已过期，请重新登录' });
     }
-    return res.status(401).json({ error: '无效的认证令�? });
+    return res.status(401).json({ error: '无效的认证令牌' });
   }
 }
 
