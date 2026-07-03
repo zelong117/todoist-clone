@@ -41,9 +41,17 @@ router.put('/:id', authenticate, (req, res) => {
     return res.status(404).json({ error: '标签不存在' });
   }
 
+  const allowedFields = ['name', 'color'];
+  const sanitized = {};
+  for (const key of allowedFields) {
+    if (req.body[key] !== undefined) {
+      sanitized[key] = req.body[key];
+    }
+  }
+
   const updatedLabel = {
     ...label,
-    ...req.body,
+    ...sanitized,
     id: label.id,
     userId: label.userId
   };

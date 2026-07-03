@@ -44,9 +44,17 @@ router.put('/:id', authenticate, (req, res) => {
     return res.status(404).json({ error: '项目不存在' });
   }
 
+  const allowedFields = ['name', 'color', 'isFavorite', 'usePomodoro'];
+  const sanitized = {};
+  for (const key of allowedFields) {
+    if (req.body[key] !== undefined) {
+      sanitized[key] = req.body[key];
+    }
+  }
+
   const updatedProject = {
     ...project,
-    ...req.body,
+    ...sanitized,
     id: project.id,
     userId: project.userId,
     updatedAt: new Date().toISOString()

@@ -56,9 +56,17 @@ router.put('/:id', authenticate, (req, res) => {
     return res.status(404).json({ error: '任务不存在' });
   }
 
+  const allowedFields = ['title', 'description', 'isCompleted', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'sortOrder', 'projectId', 'sectionId', 'parentId'];
+  const sanitized = {};
+  for (const key of allowedFields) {
+    if (req.body[key] !== undefined) {
+      sanitized[key] = req.body[key];
+    }
+  }
+
   const updatedTask = {
     ...task,
-    ...req.body,
+    ...sanitized,
     id: task.id,
     userId: task.userId,
     updatedAt: new Date().toISOString()

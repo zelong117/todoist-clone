@@ -17,6 +17,15 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: '请填写所有必填字段' });
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: '邮箱格式无效' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: '密码长度至少为6位' });
+    }
+
     // 检查邮箱是否已存在
     for (const user of users.values()) {
       if (user.email === email) {
