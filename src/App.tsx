@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useStore } from './store';
 import type { Task } from './types';
-import { formatTimer } from './utils';
+import { formatTimer, isOverdue } from './utils';
 import { useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -358,7 +358,8 @@ export default function App() {
     const completedTasks = allTasks.filter((t) => t.isCompleted).length;
     const elapsedPomodoros = allTasks.reduce((sum, t) => sum + (t.completedPomodoros || 0), 0);
     const elapsedTime = elapsedPomodoros * 25;
-    return { totalEstimated, pendingTasks, completedTasks, elapsedTime };
+    const overdueTasks = allTasks.filter((t) => isOverdue(t)).length;
+    return { totalEstimated, pendingTasks, completedTasks, elapsedTime, overdueTasks };
   }, [viewTasks]);
 
   const currentProjectId = useMemo(() => {
@@ -596,6 +597,18 @@ export default function App() {
                 <span className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">已完成</span>
                 <span className="text-sm font-black text-emerald-600">{statsData.completedTasks}</span>
               </div>
+              {statsData.overdueTasks > 0 && (
+                <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <span className="text-[11px] font-bold text-red-600 uppercase tracking-wider">已过期</span>
+                  <span className="text-sm font-black text-red-600">{statsData.overdueTasks}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isTaskListView && statsData.overdueTasks > 0 && (
+            <div className="mx-6 mt-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+              ⚠️ 有 {statsData.overdueTasks} 个任务已过期。已在今天视图中保留显示，请尽快重新安排日期或完成任务。
             </div>
           )}
 

@@ -109,6 +109,25 @@ export function formatDate(date: string): string {
 }
 
 /**
+ * Format due date with overdue status, e.g. "已过期 2 天".
+ */
+export function formatDueDateStatus(date: string): string {
+  try {
+    const due = startOfDay(parseISO(date));
+    const today = startOfDay(new Date());
+    if (isToday(due)) return '今天';
+    if (isTomorrow(due)) return '明天';
+    if (isBefore(due, today)) {
+      const days = Math.max(1, Math.round((today.getTime() - due.getTime()) / 86400000));
+      return `已过期 ${days} 天`;
+    }
+    return format(due, 'M月d日', { locale: zhCN });
+  } catch {
+    return date;
+  }
+}
+
+/**
  * Check if a task is overdue (past due and not completed).
  */
 export function isOverdue(task: Task): boolean {

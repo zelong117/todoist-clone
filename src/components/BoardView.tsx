@@ -19,6 +19,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Plus, Calendar, Trash2, Timer } from 'lucide-react';
 import { useStore } from '../store';
+import { formatDueDateStatus } from '../utils';
 import type { Task, Section } from '../types';
 
 const PRIORITY_COLORS: Record<number, string> = {
@@ -66,21 +67,6 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
     if (!task.dueDate) return false;
     return task.dueDate === new Date().toISOString().split('T')[0];
   }, [task.dueDate]);
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    if (date.getTime() === today.getTime()) return '今天';
-    if (date.getTime() === tomorrow.getTime()) return '明天';
-
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${month}月${day}日`;
-  };
 
   return (
     <div
@@ -187,7 +173,7 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
             }`}
           >
             <Calendar size={10} />
-            {formatDate(task.dueDate)}
+            {formatDueDateStatus(task.dueDate)}
           </span>
         ) : (
           <div />

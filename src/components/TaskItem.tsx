@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Pencil, Trash2, Clock, MessageSquare, Calendar, Timer, Pause } from 'lucide-react';
 import type { Task } from '../types';
 import { useStore } from '../store';
-import { formatTimer } from '../utils';
+import { formatTimer, formatDueDateStatus } from '../utils';
 
 const PRIORITY_COLORS: Record<number, string> = {
   1: '#DC4C3E',
@@ -84,24 +84,6 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
     } else {
       startTimer(task.id);
     }
-  };
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.getTime() === today.getTime()) return '今天';
-    if (date.getTime() === tomorrow.getTime()) return '明天';
-    if (date.getTime() === yesterday.getTime()) return '昨天';
-
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${month}月${day}日`;
   };
 
   return (
@@ -239,7 +221,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
             }`}
           >
             <Calendar size={10} />
-            {formatDate(task.dueDate)}
+            {formatDueDateStatus(task.dueDate)}
           </span>
         )}
 
