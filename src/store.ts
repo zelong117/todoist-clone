@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { isToday, parseISO, isBefore, startOfDay, addDays } from 'date-fns';
 import type { Task, Project, Section, Label, Comment, ViewMode, ActiveView, TimerMode, TimerStatus, PomodoroSettings, PomodoroSession } from './types';
 import { generateId } from './utils';
-import { seedTasks, seedProjects, seedSections, seedLabels, seedComments } from './data/seed';
+import { tasksAPI, projectsAPI, labelsAPI } from './api';
 
 // Helper to load from localStorage or use seed data
 function loadState<T>(key: string, fallback: T): T {
@@ -43,16 +43,16 @@ interface AppState {
   pomodoroSessions: PomodoroSession[];
 
   // Task actions
-  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateTask: (id: string, updates: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
-  toggleComplete: (id: string) => void;
+  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  toggleComplete: (id: string) => Promise<void>;
   reorderTasks: (taskIds: string[]) => void;
 
   // Project actions
-  addProject: (project: Omit<Project, 'id' | 'createdAt'>) => void;
-  updateProject: (id: string, updates: Partial<Project>) => void;
-  deleteProject: (id: string) => void;
+  addProject: (project: Omit<Project, 'id' | 'createdAt'>) => Promise<void>;
+  updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
   reorderProjects: (projectIds: string[]) => void;
 
   // Section actions
@@ -61,9 +61,9 @@ interface AppState {
   deleteSection: (id: string) => void;
 
   // Label actions
-  addLabel: (label: Omit<Label, 'id'>) => void;
-  updateLabel: (id: string, updates: Partial<Label>) => void;
-  deleteLabel: (id: string) => void;
+  addLabel: (label: Omit<Label, 'id'>) => Promise<void>;
+  updateLabel: (id: string, updates: Partial<Label>) => Promise<void>;
+  deleteLabel: (id: string) => Promise<void>;
 
   // Comment actions
   addComment: (comment: Omit<Comment, 'id' | 'createdAt'>) => void;
@@ -100,12 +100,12 @@ interface AppState {
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
-      // Initial data (loaded from localStorage or seed)
-      tasks: loadState('todoist-tasks', seedTasks),
-      projects: loadState('todoist-projects', seedProjects),
-      sections: loadState('todoist-sections', seedSections),
-      labels: loadState('todoist-labels', seedLabels),
-      comments: loadState('todoist-comments', seedComments),
+      // Initial data (loaded from localStorage or empty)
+      tasks: loadState('todoist-tasks', []),
+      projects: loadState('todoist-projects', []),
+      sections: loadState('todoist-sections', []),
+      labels: loadState('todoist-labels', []),
+      comments: loadState('todoist-comments', []),
 
       // UI state
       activeView: 'inbox',
@@ -133,22 +133,49 @@ export const useStore = create<AppState>()(
       pomodoroSessions: [],
 
       // ===== Task actions =====
-      addTask: (taskData) => {
-        const now = new Date().toISOString();
-        const task: Task = {
-          ...taskData,
-          id: generateId(),
-          pomodoroCount: taskData.pomodoroCount ?? 0,
-          plannedPomodoros: taskData.plannedPomodoros ?? 1,
-          completedPomodoros: taskData.completedPomodoros ?? 0,
-          estimatedMinutes: taskData.estimatedMinutes ?? (taskData.plannedPomodoros ?? 1) * 25,
-          createdAt: now,
-          updatedAt: now,
-        };
-        set((state) => ({ tasks: [...state.tasks, task] }));
+      addTask: async (taskData) => {
+        try {
+          const apiTask = await tasksAPI.create({
+            title: taskData.title,
+            projectId: taskData.projectId,
+            sectionId: taskData.sectionId,
+            parentId: taskData.parentId,
+            priority: taskData.priority,
+            dueDate: taskData.dueDate,
+            labels: taskData.labels,
+            plannedPomodoros: taskData.plannedPomodoros,
+          });
+          const task: Task = {
+            ...apiTask,
+            description: apiTask.description || '',
+            pomodoroCount: apiTask.pomodoroCount ?? 0,
+            estimatedMinutes: apiTask.estimatedMinutes ?? (apiTask.plannedPomodoros ?? 1) * 25,
+          };
+          set((state) => ({ tasks: [...state.tasks, task] }));
+        } catch (error) {
+          console.error('Failed to create task:', error);
+          // Fallback to local creation
+          const now = new Date().toISOString();
+          const task: Task = {
+            ...taskData,
+            id: generateId(),
+            pomodoroCount: taskData.pomodoroCount ?? 0,
+            plannedPomodoros: taskData.plannedPomodoros ?? 1,
+            completedPomodoros: taskData.completedPomodoros ?? 0,
+            estimatedMinutes: taskData.estimatedMinutes ?? (taskData.plannedPomodoros ?? 1) * 25,
+            createdAt: now,
+            updatedAt: now,
+          };
+          set((state) => ({ tasks: [...state.tasks, task] }));
+        }
       },
 
-      updateTask: (id, updates) => {
+      updateTask: async (id, updates) => {
+        try {
+          await tasksAPI.update(id, updates);
+        } catch (error) {
+          console.error('Failed to update task:', error);
+        }
         set((state) => ({
           tasks: state.tasks.map((t) =>
             t.id === id
@@ -158,7 +185,12 @@ export const useStore = create<AppState>()(
         }));
       },
 
-      deleteTask: (id) => {
+      deleteTask: async (id) => {
+        try {
+          await tasksAPI.delete(id);
+        } catch (error) {
+          console.error('Failed to delete task:', error);
+        }
         set((state) => ({
           tasks: state.tasks.filter((t) => t.id !== id && t.parentId !== id),
           comments: state.comments.filter((c) => c.taskId !== id),
@@ -166,7 +198,12 @@ export const useStore = create<AppState>()(
         }));
       },
 
-      toggleComplete: (id) => {
+      toggleComplete: async (id) => {
+        try {
+          await tasksAPI.complete(id);
+        } catch (error) {
+          console.error('Failed to complete task:', error);
+        }
         set((state) => ({
           tasks: state.tasks.map((t) =>
             t.id === id
@@ -194,17 +231,36 @@ export const useStore = create<AppState>()(
       },
 
       // ===== Project actions =====
-      addProject: (projectData) => {
-        const project: Project = {
-          ...projectData,
-          id: generateId(),
-          usePomodoro: projectData.usePomodoro ?? false,
-          createdAt: new Date().toISOString(),
-        };
-        set((state) => ({ projects: [...state.projects, project] }));
+      addProject: async (projectData) => {
+        try {
+          const apiProject = await projectsAPI.create({
+            name: projectData.name,
+            color: projectData.color,
+            usePomodoro: projectData.usePomodoro,
+          });
+          const project: Project = {
+            ...apiProject,
+            isFavorite: apiProject.isFavorite ?? false,
+          };
+          set((state) => ({ projects: [...state.projects, project] }));
+        } catch (error) {
+          console.error('Failed to create project:', error);
+          const project: Project = {
+            ...projectData,
+            id: generateId(),
+            usePomodoro: projectData.usePomodoro ?? false,
+            createdAt: new Date().toISOString(),
+          };
+          set((state) => ({ projects: [...state.projects, project] }));
+        }
       },
 
-      updateProject: (id, updates) => {
+      updateProject: async (id, updates) => {
+        try {
+          await projectsAPI.update(id, updates);
+        } catch (error) {
+          console.error('Failed to update project:', error);
+        }
         set((state) => ({
           projects: state.projects.map((p) =>
             p.id === id ? { ...p, ...updates } : p
@@ -212,7 +268,12 @@ export const useStore = create<AppState>()(
         }));
       },
 
-      deleteProject: (id) => {
+      deleteProject: async (id) => {
+        try {
+          await projectsAPI.delete(id);
+        } catch (error) {
+          console.error('Failed to delete project:', error);
+        }
         set((state) => ({
           projects: state.projects.filter((p) => p.id !== id),
           sections: state.sections.filter((s) => s.projectId !== id),
@@ -260,15 +321,32 @@ export const useStore = create<AppState>()(
       },
 
       // ===== Label actions =====
-      addLabel: (labelData) => {
-        const label: Label = {
-          ...labelData,
-          id: generateId(),
-        };
-        set((state) => ({ labels: [...state.labels, label] }));
+      addLabel: async (labelData) => {
+        try {
+          const apiLabel = await labelsAPI.create({
+            name: labelData.name,
+            color: labelData.color,
+          });
+          const label: Label = {
+            ...apiLabel,
+          };
+          set((state) => ({ labels: [...state.labels, label] }));
+        } catch (error) {
+          console.error('Failed to create label:', error);
+          const label: Label = {
+            ...labelData,
+            id: generateId(),
+          };
+          set((state) => ({ labels: [...state.labels, label] }));
+        }
       },
 
-      updateLabel: (id, updates) => {
+      updateLabel: async (id, updates) => {
+        try {
+          await labelsAPI.update(id, updates);
+        } catch (error) {
+          console.error('Failed to update label:', error);
+        }
         set((state) => ({
           labels: state.labels.map((l) =>
             l.id === id ? { ...l, ...updates } : l
@@ -276,7 +354,12 @@ export const useStore = create<AppState>()(
         }));
       },
 
-      deleteLabel: (id) => {
+      deleteLabel: async (id) => {
+        try {
+          await labelsAPI.delete(id);
+        } catch (error) {
+          console.error('Failed to delete label:', error);
+        }
         const label = get().labels.find((l) => l.id === id);
         if (!label) return;
         set((state) => ({
