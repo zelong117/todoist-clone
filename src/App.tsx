@@ -18,6 +18,7 @@ import StatsView from './components/StatsView';
 import FilterPage from './components/FilterPage';
 import ActivityLog from './components/ActivityLog';
 import Admin from './pages/Admin';
+import AIAssistant from './components/AIAssistant';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings } from 'lucide-react';
 
 export default function App() {
@@ -644,6 +645,9 @@ export default function App() {
             ) : null}
           </div>
         </div>
+
+        {/* AI Assistant Panel */}
+        <AIAssistant />
 
       </main>
 
