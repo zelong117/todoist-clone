@@ -1,52 +1,89 @@
+/**
+ * 项目路由
+ * 处理项目的 CRUD 操作
+ * 
+ * 安全措施：
+ * - 所有查询都通过 user_id 过滤，确保数据隔离
+ * - 使用 Joi 进行输入验证（名称长度、颜色格式等）
+ * - 使用 pick() 防止批量赋值攻击
+ * - 级联删除时限定在同一用户的数据范围内
+ */
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticate } = require('../middleware/auth');
 const { queryAll, queryOne, run } = require('../db');
 const { pick, mapProject } = require('../utils');
+const validate = require('../middleware/validate');
+const { createProjectSchema, updateProjectSchema, projectIdParamSchema } = require('../validations/projectSchemas');
+const { asyncHandler } = require('../middleware/errorHandler');
 
-router.get('/', authenticate, (req, res) => {
-  try {
-    res.json(queryAll('SELECT * FROM projects WHERE user_id = ? ORDER BY sort_order', [req.user.id]).map(mapProject));
-  } catch (error) { console.error(error); res.status(500).json({ error: '获取项目列表失败' }); }
-});
+/**
+ * GET /
+ * 获取当前用户的所有项目
+ */
+router.get('/', authenticate, asyncHandler(async (req, res) => {
+  res.json(queryAll('SELECT * FROM projects WHERE user_id = ? ORDER BY sort_order', [req.user.id]).map(mapProject));
+}));
 
-router.post('/', authenticate, (req, res) => {
-  try {
-    const { name, color, usePomodoro } = req.body;
-    if (!name || !name.trim()) return res.status(400).json({ error: '项目名称不能为空' });
-    if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) return res.status(400).json({ error: '颜色格式不正确' });
-    const id = uuidv4();
-    run('INSERT INTO projects (id, user_id, name, color, use_pomodoro) VALUES (?, ?, ?, ?, ?)', [id, req.user.id, name.trim(), color||'#DC4C3E', usePomodoro?1:0]);
-    res.status(201).json(mapProject(queryOne('SELECT * FROM projects WHERE id = ?', [id])));
-  } catch (error) { console.error(error); res.status(500).json({ error: '创建项目失败' }); }
-});
+/**
+ * POST /
+ * 创建新项目
+ */
+router.post('/', authenticate, validate({ body: createProjectSchema }), asyncHandler(async (req, res) => {
+  const { name, color, usePomodoro } = req.body;
+  const id = uuidv4();
+  run('INSERT INTO projects (id, user_id, name, color, use_pomodoro) VALUES (?, ?, ?, ?, ?)', [id, req.user.id, name.trim(), color || '#DC4C3E', usePomodoro ? 1 : 0]);
+  res.status(201).json(mapProject(queryOne('SELECT * FROM projects WHERE id = ?', [id])));
+}));
 
-router.put('/:id', authenticate, (req, res) => {
-  try {
-    const project = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    if (!project) return res.status(404).json({ error: '项目不存在' });
-    const s = pick(req.body, ['name','color','isFavorite','usePomodoro']);
-    const sets = []; const vals = [];
-    if (s.name !== undefined) { if (!s.name.trim()) return res.status(400).json({ error: '名称不能为空' }); sets.push('name = ?'); vals.push(s.name.trim()); }
-    if (s.color !== undefined && !/^#[0-9A-Fa-f]{6}$/.test(s.color)) return res.status(400).json({ error: '颜色格式不正确' });
-    if (s.color !== undefined) { sets.push('color = ?'); vals.push(s.color); }
-    if (s.isFavorite !== undefined) { sets.push('is_favorite = ?'); vals.push(s.isFavorite?1:0); }
-    if (s.usePomodoro !== undefined) { sets.push('use_pomodoro = ?'); vals.push(s.usePomodoro?1:0); }
-    if (sets.length > 0) { vals.push(req.params.id); run(`UPDATE projects SET ${sets.join(', ')} WHERE id = ?`, vals); }
-    res.json(mapProject(queryOne('SELECT * FROM projects WHERE id = ?', [req.params.id])));
-  } catch (error) { console.error(error); res.status(500).json({ error: '更新项目失败' }); }
-});
+/**
+ * PUT /:id
+ * 更新项目 - 验证项目所有权
+ */
+router.put('/:id', authenticate, validate({ params: projectIdParamSchema, body: updateProjectSchema }), asyncHandler(async (req, res) => {
+  const project = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  if (!project) return res.status(404).json({ error: '项目不存在' });
 
-router.delete('/:id', authenticate, (req, res) => {
-  try {
-    const p = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    if (!p) return res.status(404).json({ error: '项目不存在' });
-    run('UPDATE tasks SET project_id = NULL WHERE project_id = ?', [req.params.id]);
-    run('DELETE FROM sections WHERE project_id = ?', [req.params.id]);
-    run('DELETE FROM projects WHERE id = ?', [req.params.id]);
-    res.json({ success: true });
-  } catch (error) { console.error(error); res.status(500).json({ error: '删除项目失败' }); }
-});
+  const s = pick(req.body, ['name', 'color', 'isFavorite', 'usePomodoro']);
+  const sets = [];
+  const vals = [];
+  if (s.name !== undefined) {
+    if (!s.name.trim()) return res.status(400).json({ error: '名称不能为空' });
+    sets.push('name = ?');
+    vals.push(s.name.trim());
+  }
+  if (s.color !== undefined) {
+    sets.push('color = ?');
+    vals.push(s.color);
+  }
+  if (s.isFavorite !== undefined) {
+    sets.push('is_favorite = ?');
+    vals.push(s.isFavorite ? 1 : 0);
+  }
+  if (s.usePomodoro !== undefined) {
+    sets.push('use_pomodoro = ?');
+    vals.push(s.usePomodoro ? 1 : 0);
+  }
+  if (sets.length > 0) {
+    vals.push(req.params.id);
+    run(`UPDATE projects SET ${sets.join(', ')} WHERE id = ?`, vals);
+  }
+  res.json(mapProject(queryOne('SELECT * FROM projects WHERE id = ?', [req.params.id])));
+}));
+
+/**
+ * DELETE /:id
+ * 删除项目 - 级联解除关联任务的项目引用（限定当前用户）
+ */
+router.delete('/:id', authenticate, validate({ params: projectIdParamSchema }), asyncHandler(async (req, res) => {
+  const p = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  if (!p) return res.status(404).json({ error: '项目不存在' });
+
+  // 【数据隔离】级联更新限定在同一用户的任务范围内
+  run('UPDATE tasks SET project_id = NULL WHERE project_id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  run('DELETE FROM projects WHERE id = ?', [req.params.id]);
+  res.json({ success: true });
+}));
 
 module.exports = router;

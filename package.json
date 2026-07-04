@@ -16,11 +16,14 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "helmet": "^8.2.0",
     "lucide-react": "^1.22.0",
+    "node-cache": "^5.1.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwind-merge": "^3.6.0",
     "uuid": "^14.0.1",
+    "ws": "^8.21.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

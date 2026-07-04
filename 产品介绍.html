@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todoist Clone — AI 智能任务管理</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#e2e8f0;line-height:1.6}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;background:linear-gradient(135deg,#0a0a1a 0%,#1a1040 50%,#0a0a1a 100%);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(99,102,241,.12) 0%,transparent 50%),radial-gradient(circle at 70% 60%,rgba(168,85,247,.1) 0%,transparent 50%);animation:pulse 8s ease-in-out infinite alternate}
+@keyframes pulse{from{transform:scale(1) rotate(0deg)}to{transform:scale(1.1) rotate(3deg)}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);padding:6px 16px;border-radius:20px;font-size:.85rem;color:#a5b4fc;margin-bottom:24px;position:relative;z-index:1}
+.hero-badge .dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:800;background:linear-gradient(135deg,#fff 0%,#a5b4fc 40%,#c084fc 70%,#f472b6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;position:relative;z-index:1}
+.hero p{color:#94a3b8;font-size:1.2rem;max-width:600px;margin:0 auto 32px;position:relative;z-index:1}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.btn{padding:14px 32px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .3s;border:none;text-decoration:none}
+.btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.4)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.5)}
+.btn-secondary{background:rgba(255,255,255,.08);color:#e2e8f0;border:1px solid rgba(255,255,255,.15)}
+.btn-secondary:hover{background:rgba(255,255,255,.12)}
+.hero-img{margin-top:48px;position:relative;z-index:1;max-width:900px;width:100%}
+.hero-img img{width:100%;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+section{padding:80px 20px;max-width:1100px;margin:0 auto}
+.section-title{text-align:center;margin-bottom:48px}
+.section-title h2{font-size:2.2rem;font-weight:700;margin-bottom:12px}
+.section-title p{color:#94a3b8;font-size:1.05rem}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.feature-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:28px;transition:all .3s}
+.feature-card:hover{border-color:rgba(99,102,241,.4);transform:translateY(-4px);box-shadow:0 12px 40px rgba(99,102,241,.1)}
+.feature-icon{font-size:2.2rem;margin-bottom:12px}
+.feature-card h3{font-size:1.15rem;font-weight:700;margin-bottom:8px}
+.feature-card p{color:#94a3b8;font-size:.92rem}
+.feature-img{margin:40px auto;max-width:800px;text-align:center}
+.feature-img img{width:100%;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.tech-stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.tech-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;text-align:center}
+.tech-item .icon{font-size:2rem;margin-bottom:8px}
+.tech-item h4{font-size:1rem;font-weight:600;margin-bottom:4px}
+.tech-item p{color:#94a3b8;font-size:.82rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px;text-align:center;margin:40px 0}
+.stat{padding:24px}
+.stat .num{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,#6366f1,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat .label{color:#94a3b8;font-size:.9rem;margin-top:4px}
+.cta{text-align:center;padding:80px 20px;background:linear-gradient(135deg,#1a1040 0%,#0a0a1a 100%)}
+.cta h2{font-size:2rem;margin-bottom:16px}
+.cta p{color:#94a3b8;margin-bottom:32px}
+.footer{text-align:center;padding:32px;color:#475569;font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge"><span class="dot"></span> AI 驱动 · 免费开源</div>
+  <h1>让 AI 管理你的每一天</h1>
+  <p>Todoist Clone 不只是待办清单，它是一个懂你的 AI 工作助手。智能分析、优先推荐、效率洞察，让每一分钟都有价值。</p>
+  <div class="hero-btns">
+    <a href="https://github.com/zelong117/todoist-clone" class="btn btn-primary">⭐ GitHub Star</a>
+    <a href="#features" class="btn btn-secondary">了解更多 ↓</a>
+  </div>
+  <div class="hero-img"><img src="docs/images/hero-banner.png" alt="Todoist Clone Hero"></div>
+</div>
+
+<section id="features">
+  <div class="section-title">
+    <h2>✨ 核心功能</h2>
+    <p>不只是记录任务，更是理解任务</p>
+  </div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>AI 智能助手</h3>
+      <p>实时分析你的任务数据，提供每日简报、过期预警、下一步建议、效率洞察。打开 app 就知道今天该做什么。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🍅</div>
+      <h3>番茄钟 × 任务</h3>
+      <p>专注计时与任务管理合二为一。每个任务绑定番茄钟，专注时长自动记录，完成番茄后进度自动更新。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3>三种视图模式</h3>
+      <p>列表视图高效简洁，看板视图可视化流程，日历视图直观规划。一键切换，随心选择。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>四级优先级</h3>
+      <p>P1 紧急到 P4 低优，颜色直观区分。AI 助手会根据优先级推荐最该先做的任务。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📁</div>
+      <h3>项目管理</h3>
+      <p>创建项目并自定义颜色，支持分组、收藏、项目级番茄钟。让复杂工作井井有条。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>安全可靠</h3>
+      <p>JWT 认证、密码加密、API 限流、数据隔离。你的数据安全有保障。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-title">
+    <h2>🤖 AI 助手深度展示</h2>
+    <p>它不只是提醒，它会思考</p>
+  </div>
+  <div class="feature-img"><img src="docs/images/ai-assistant-feature.png" alt="AI Assistant"></div>
+</section>
+
+<section>
+  <div class="section-title">
+    <h2>🍅 番茄钟系统</h2>
+    <p>专注 × 任务 = 高效</p>
+  </div>
+  <div class="feature-img"><img src="docs/images/pomodoro-feature.png" alt="Pomodoro Timer"></div>
+</section>
+
+<section>
+  <div class="section-title">
+    <h2>📋 多视图体验</h2>
+    <p>选择最适合你的方式</p>
+  </div>
+  <div class="features" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+    <div class="feature-img" style="margin:0"><img src="docs/images/kanban-feature.png" alt="Kanban"></div>
+    <div class="feature-img" style="margin:0"><img src="docs/images/calendar-feature.png" alt="Calendar"></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-title">
+    <h2>⚡ 技术栈</h2>
+    <p>现代化全栈架构</p>
+  </div>
+  <div class="feature-img"><img src="docs/images/architecture-diagram.png" alt="Architecture"></div>
+  <div class="tech-stack" style="margin-top:32px">
+    <div class="tech-item"><div class="icon">⚛️</div><h4>React 19</h4><p>最新 UI 框架</p></div>
+    <div class="tech-item"><div class="icon">🔷</div><h4>TypeScript</h4><p>类型安全</p></div>
+    <div class="tech-item"><div class="icon">🎨</div><h4>Tailwind CSS</h4><p>原子化样式</p></div>
+    <div class="tech-item"><div class="icon">🐻</div><h4>Zustand</h4><p>轻量状态管理</p></div>
+    <div class="tech-item"><div class="icon">🚀</div><h4>Vite</h4><p>极速构建</p></div>
+    <div class="tech-item"><div class="icon">🟢</div><h4>Express.js</h4><p>后端框架</p></div>
+    <div class="tech-item"><div class="icon">🗄️</div><h4>SQLite</h4><p>零配置数据库</p></div>
+    <div class="tech-item"><div class="icon">🔐</div><h4>JWT</h4><p>安全认证</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-title">
+    <h2>📊 产品数据</h2>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="num">10+</div><div class="label">核心功能</div></div>
+    <div class="stat"><div class="num">7</div><div class="label">数据表</div></div>
+    <div class="stat"><div class="num">20+</div><div class="label">API 接口</div></div>
+    <div class="stat"><div class="num">9</div><div class="label">产品图片</div></div>
+  </div>
+</section>
+
+<div class="cta">
+  <h2>🚀 开始使用</h2>
+  <p>开源免费，立即体验 AI 驱动的任务管理</p>
+  <div class="hero-btns">
+    <a href="https://github.com/zelong117/todoist-clone" class="btn btn-primary">⭐ GitHub Star</a>
+    <a href="https://github.com/zelong117/todoist-clone#readme" class="btn btn-secondary">📖 阅读文档</a>
+  </div>
+</div>
+
+<div class="footer">
+  <p>Todoist Clone · AI 智能任务管理 · 2026</p>
+</div>
+
+</body>
+</html>
