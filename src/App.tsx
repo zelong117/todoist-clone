@@ -105,6 +105,47 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, [showQuickAdd, selectedTaskId, setSelectedTaskId]);
 
+  // Pomodoro timer - runs in App.tsx so it never unmounts
+  useEffect(() => {
+    const id = setInterval(() => {
+      const state = useStore.getState();
+      if (state.timerStatus === 'running') {
+        state.tick();
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Recalculate timer when tab becomes visible again
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        const state = useStore.getState();
+        if (state.timerStatus === 'running' && state.timerStartedAt) {
+          const elapsed = Math.floor(
+            (Date.now() - new Date(state.timerStartedAt).getTime()) / 1000
+          );
+          const settings = state.pomodoroSettings;
+          const totalSeconds =
+            state.timerMode === 'focus'
+              ? settings.focusMinutes * 60
+              : state.timerMode === 'shortBreak'
+              ? settings.shortBreakMinutes * 60
+              : settings.longBreakMinutes * 60;
+          const remaining = Math.max(0, totalSeconds - elapsed);
+          if (remaining <= 0) {
+            useStore.setState({ timerSeconds: 0, timerStartedAt: null });
+            state.completePomodoro();
+          } else {
+            useStore.setState({ timerSeconds: remaining, timerStartedAt: new Date().toISOString() });
+          }
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   const handleViewChange = useCallback((view: string, _projectId?: string) => {
     if (view === 'quick-add') {
       setShowQuickAdd(true);

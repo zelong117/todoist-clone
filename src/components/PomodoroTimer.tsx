@@ -26,7 +26,6 @@ export default function PomodoroTimer() {
   const resumeTimer = useStore((s) => s.resumeTimer);
   const stopTimer = useStore((s) => s.stopTimer);
   const skipToBreak = useStore((s) => s.skipToBreak);
-  const tick = useStore((s) => s.tick);
 
   const [expanded, setExpanded] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -42,13 +41,6 @@ export default function PomodoroTimer() {
     }
     prevTimerStatus.current = timerStatus;
   }, [timerStatus]);
-
-  // Tick every second when running
-  useEffect(() => {
-    if (timerStatus !== 'running') return;
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [timerStatus, tick]);
 
   const currentTaskName = activeTimerTaskId
     ? tasks.find((t) => t.id === activeTimerTaskId)?.title ?? null

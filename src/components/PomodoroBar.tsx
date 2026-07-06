@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Pause, CheckCircle } from 'lucide-react';
 import { useStore } from '../store';
 
@@ -24,13 +23,6 @@ export default function PomodoroBar() {
   const pauseTimer = useStore((s) => s.pauseTimer);
   const resumeTimer = useStore((s) => s.resumeTimer);
   const completePomodoro = useStore((s) => s.completePomodoro);
-  const tick = useStore((s) => s.tick);
-
-  useEffect(() => {
-    if (timerStatus !== 'running') return;
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [timerStatus, tick]);
 
   const isActive = timerStatus === 'running' || timerStatus === 'paused';
   if (!isActive) return null;
