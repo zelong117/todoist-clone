@@ -316,20 +316,16 @@ export default function Admin() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[var(--bg-active)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
-                <th className="px-4 py-2.5 text-left w-16">ID</th>
                 <th className="px-4 py-2.5 text-left">标题</th>
                 <th className="px-4 py-2.5 text-left">项目</th>
-                <th className="px-4 py-2.5 text-left w-16">优先级</th>
-                <th className="px-4 py-2.5 text-left w-16">状态</th>
+                <th className="px-4 py-2.5 text-center w-16">优先级</th>
+                <th className="px-4 py-2.5 text-center w-20">状态</th>
                 <th className="px-4 py-2.5 text-center w-20">番茄</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)]">
               {filteredTasks.map((task) => (
                 <tr key={task.id} className="hover:bg-[var(--bg-hover)] transition-colors">
-                  <td className="px-4 py-3 text-[var(--text-tertiary)] font-mono text-xs">
-                    {task.id.slice(0, 8)}...
-                  </td>
                   <td className="px-4 py-3">
                     <span className="text-[var(--text-primary)] font-medium">{task.title}</span>
                     {task.description && (
@@ -396,9 +392,7 @@ export default function Admin() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[var(--bg-active)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
-                <th className="px-4 py-2.5 text-left w-16">ID</th>
                 <th className="px-4 py-2.5 text-left">名称</th>
-                <th className="px-4 py-2.5 text-left w-24">颜色</th>
                 <th className="px-4 py-2.5 text-center w-20">任务数</th>
                 <th className="px-4 py-2.5 text-center w-24">番茄开关</th>
               </tr>
@@ -406,9 +400,6 @@ export default function Admin() {
             <tbody className="divide-y divide-[var(--border-color)]">
               {projects.map((project) => (
                 <tr key={project.id} className="hover:bg-[var(--bg-hover)] transition-colors">
-                  <td className="px-4 py-3 text-[var(--text-tertiary)] font-mono text-xs">
-                    {project.id.slice(0, 8)}...
-                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <span
@@ -416,15 +407,6 @@ export default function Admin() {
                         style={{ backgroundColor: project.color }}
                       />
                       <span className="text-[var(--text-primary)] font-medium">{project.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-5 h-5 rounded border border-[var(--border-color)]"
-                        style={{ backgroundColor: project.color }}
-                      />
-                      <span className="text-xs text-[var(--text-tertiary)]">{project.color}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">

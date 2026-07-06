@@ -33,7 +33,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ currentView, onViewChange, onLogout }: SidebarProps) {
-  const [searchQuery] = useState('');
+  const [searchQuery, setLocalSearchQuery] = useState('');
   const [showFavorites, setShowFavorites] = useState(true);
   const [showProjects, setShowProjects] = useState(true);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -50,6 +50,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
     getInboxTasks,
     getTodayTasks,
     getUpcomingTasks,
+    setSearchQuery,
   } = useStore();
 
   const inboxCount = useMemo(() => getInboxTasks().length, [tasks]);
@@ -189,8 +190,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
       <nav className="flex-1 overflow-y-auto px-2.5 py-1 scrollbar-thin">
         {/* Search */}
         {!collapsed && (
-          <button
-            onClick={() => onViewChange('inbox')}
+          <div
             className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
               currentView === 'search'
                 ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold shadow-sm'
@@ -198,8 +198,18 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
             }`}
           >
             <Search size={18} className="text-[var(--text-tertiary)] flex-shrink-0" />
-            <span>搜索</span>
-          </button>
+            <input
+              value={searchQuery}
+              onChange={(e) => {
+                const q = e.target.value;
+                setLocalSearchQuery(q);
+                setSearchQuery(q);
+                onViewChange('inbox');
+              }}
+              placeholder="搜索"
+              className="w-full bg-transparent outline-none text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+            />
+          </div>
         )}
 
         {/* Smart Views */}
