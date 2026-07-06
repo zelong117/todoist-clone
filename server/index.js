@@ -1,4 +1,4 @@
-// ✅ Load .env FIRST before anything else
+﻿// 鉁?Load .env FIRST before anything else
 require('dotenv').config();
 
 const express = require('express');
@@ -8,15 +8,15 @@ const http = require('http');
 const { initDB } = require('./db');
 
 // ============================================================
-// 导入中间件
+// 瀵煎叆涓棿浠?
 // ============================================================
 const { helmetConfig, corsOptions, extraSecurityHeaders, requestBodyGuard } = require('./middleware/security');
 const { ipFilter, apiLimiter, authLimiter, writeLimiter, adminLimiter } = require('./middleware/rateLimiter');
 const { cacheMiddleware, getCacheStats, invalidateByUser } = require('./middleware/cache');
-const { requestTimer, createSlowQueryWrapper, collectMetrics, getMetrics, getMemoryUsage, startMemoryMonitor } = require('./middleware/performance');
+      res.json({ success: true, message: `Invalidated cache for user "${userId}"` });
 
 // ============================================================
-// WebSocket 模块
+// WebSocket 妯″潡
 // ============================================================
 const WebSocketManager = require('./websocket');
 const NotificationService = require('./websocket/notificationService');
@@ -26,23 +26,23 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ============================================================
-// 安全中间件（最外层）
+// 瀹夊叏涓棿浠讹紙鏈€澶栧眰锛?
 // ============================================================
-app.use(helmetConfig);                    // Helmet 安全头
-app.use(cors(corsOptions));               // CORS 配置
-app.use(extraSecurityHeaders);            // 额外安全头 + Request ID
-app.use(express.json({ limit: '512kb' })); // 请求体大小限制（从 1MB 降到 512KB）
-app.use(requestBodyGuard(512 * 1024));    // 双重检查请求体大小
-app.use(ipFilter);                        // IP 黑名单过滤
+app.use(helmetConfig);                    // Helmet 瀹夊叏澶?
+app.use(cors(corsOptions));               // CORS 閰嶇疆
+app.use(extraSecurityHeaders);            // 棰濆瀹夊叏澶?+ Request ID
+app.use(express.json({ limit: '512kb' })); // 璇锋眰浣撳ぇ灏忛檺鍒讹紙浠?1MB 闄嶅埌 512KB锛?
+app.use(requestBodyGuard(512 * 1024));    // 鍙岄噸妫€鏌ヨ姹備綋澶у皬
+app.use(ipFilter);                        // IP 榛戝悕鍗曡繃婊?
 
 // ============================================================
-// 性能监控
+// 鎬ц兘鐩戞帶
 // ============================================================
-app.use(requestTimer);                    // 请求耗时统计
-app.use(collectMetrics);                  // 请求指标收集
+app.use(requestTimer);                    // 璇锋眰鑰楁椂缁熻
+app.use(collectMetrics);                  // 璇锋眰鎸囨爣鏀堕泦
 
 // ============================================================
-// WebSocket 单例注入到 app.locals（供路由使用）
+// WebSocket 鍗曚緥娉ㄥ叆鍒?app.locals锛堜緵璺敱浣跨敤锛?
 // ============================================================
 const notificationService = new NotificationService();
 const messageQueue = new MessageQueue();
@@ -53,18 +53,18 @@ app.locals.notificationService = notificationService;
 app.locals.messageQueue = messageQueue;
 
 // ============================================================
-// 通用 API 限流
+// 閫氱敤 API 闄愭祦
 // ============================================================
 app.use('/api', apiLimiter);
 
 // ============================================================
-// 路由注册（带独立限流和缓存）
+// 璺敱娉ㄥ唽锛堝甫鐙珛闄愭祦鍜岀紦瀛橈級
 // ============================================================
 
-// 认证路由 - 严格限流，无缓存
+// 璁よ瘉璺敱 - 涓ユ牸闄愭祦锛屾棤缂撳瓨
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 
-// 项目路由 - 写操作限流 + 读缓存
+// 椤圭洰璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛?
 app.use('/api/projects',
   (req, res, next) => {
     if (req.method === 'GET') {
@@ -79,7 +79,7 @@ app.use('/api/projects',
   require('./routes/projects')
 );
 
-// 任务路由 - 写操作限流 + 读缓存（更短 TTL，因为任务变化频繁）
+// 浠诲姟璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛橈紙鏇寸煭 TTL锛屽洜涓轰换鍔″彉鍖栭绻侊級
 app.use('/api/tasks',
   (req, res, next) => {
     if (req.method === 'GET') {
@@ -94,7 +94,7 @@ app.use('/api/tasks',
   require('./routes/tasks')
 );
 
-// 标签路由 - 写操作限流 + 读缓存
+// 鏍囩璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛?
 app.use('/api/labels',
   (req, res, next) => {
     if (req.method === 'GET') {
@@ -109,17 +109,22 @@ app.use('/api/labels',
   require('./routes/labels')
 );
 
-// 评论路由 - 写操作限流
+app.use('/api/filters', writeLimiter, require('./routes/filters'));
+app.use('/api/notifications', writeLimiter, require('./routes/notifications'));
+app.use('/api/insights', require('./routes/insights'));
+
+
+// 璇勮璺敱 - 鍐欐搷浣滈檺娴?
 app.use('/api/comments', writeLimiter, require('./routes/comments'));
 
-// 番茄钟路由 - 写操作限流
+// 鐣寗閽熻矾鐢?- 鍐欐搷浣滈檺娴?
 app.use('/api/pomodoro', writeLimiter, require('./routes/pomodoro'));
 
-// 管理员路由 - 管理员限流
+// 绠＄悊鍛樿矾鐢?- 绠＄悊鍛橀檺娴?
 app.use('/api/admin', adminLimiter, require('./routes/admin'));
 
 // ============================================================
-// 健康检查和监控端点
+// 鍋ュ悍妫€鏌ュ拰鐩戞帶绔偣
 // ============================================================
 app.get('/api/health', (req, res) => {
   const memory = getMemoryUsage();
@@ -133,7 +138,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// WebSocket 状态端点
+// WebSocket 鐘舵€佺鐐?
 app.get('/api/ws/stats',
   require('./middleware/auth').authenticate,
   (req, res) => {
@@ -141,7 +146,7 @@ app.get('/api/ws/stats',
   }
 );
 
-// 性能指标端点（仅管理员）
+// 鎬ц兘鎸囨爣绔偣锛堜粎绠＄悊鍛橈級
 app.get('/api/admin/metrics',
   require('./middleware/auth').authenticate,
   require('./middleware/auth').requireAdmin,
@@ -153,7 +158,7 @@ app.get('/api/admin/metrics',
   }
 );
 
-// 缓存管理端点（仅管理员）
+// 缂撳瓨绠＄悊绔偣锛堜粎绠＄悊鍛橈級
 app.post('/api/admin/cache/invalidate',
   require('./middleware/auth').authenticate,
   require('./middleware/auth').requireAdmin,
@@ -161,34 +166,32 @@ app.post('/api/admin/cache/invalidate',
     const { tag, userId } = req.body;
     if (tag) {
       const { invalidateByTag } = require('./middleware/cache');
-      invalidateByTag(tag);
-      res.json({ success: true, message: `已清除标签 "${tag}" 的缓存` });
+      res.json({ success: true, message: `Invalidated cache tag "${tag}"` });
     } else if (userId) {
       invalidateByUser(userId);
-      res.json({ success: true, message: `已清除用户 "${userId}" 的缓存` });
+      res.json({ success: true, message: `Invalidated cache for user "${userId}"` });
     } else {
       const { invalidateAll } = require('./middleware/cache');
-      invalidateAll();
-      res.json({ success: true, message: '已清除所有缓存' });
+      res.json({ success: true, message: 'Invalidated all cache' });
     }
   }
 );
 
 // ============================================================
-// 静态文件和 404
+// 闈欐€佹枃浠跺拰 404
 // ============================================================
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '..', 'dist')));
   app.get('*', (req, res) => res.sendFile(path.join(__dirname, '..', 'dist', 'index.html')));
 }
 
-// 统一的 404 和错误处理中间件
+// 缁熶竴鐨?404 鍜岄敊璇鐞嗕腑闂翠欢
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 app.use(notFoundHandler);
 app.use(errorHandler);
 
 // ============================================================
-// 截止日期提醒检查（每 5 分钟）
+// 鎴鏃ユ湡鎻愰啋妫€鏌ワ紙姣?5 鍒嗛挓锛?
 // ============================================================
 const DEADLINE_CHECK_INTERVAL = 5 * 60 * 1000;
 
@@ -199,7 +202,7 @@ function checkDeadlines() {
     const in30Min = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
     const nowISO = now.toISOString();
 
-    // 查找 30 分钟内到期且未完成的任务
+    // 鏌ユ壘 30 鍒嗛挓鍐呭埌鏈熶笖鏈畬鎴愮殑浠诲姟
     const dueSoon = queryAll(
       'SELECT * FROM tasks WHERE is_completed = 0 AND due_date IS NOT NULL AND due_date <= ? AND due_date >= ?',
       [in30Min, nowISO]
@@ -215,7 +218,7 @@ function checkDeadlines() {
           dueDate: task.due_date,
           projectId: task.project_id,
           priority: task.priority,
-          message: `任务 "${task.title}" 将在30分钟内到期`,
+          message: `Task "${task.title}" is due within 30 minutes`,
         },
         wsManager,
         messageQueue
@@ -227,43 +230,43 @@ function checkDeadlines() {
 }
 
 // ============================================================
-// 启动服务器
+// 鍚姩鏈嶅姟鍣?
 // ============================================================
 initDB().then(() => {
-  // 包装数据库模块以添加慢查询日志
+  // 鍖呰鏁版嵁搴撴ā鍧椾互娣诲姞鎱㈡煡璇㈡棩蹇?
   createSlowQueryWrapper(require('./db'));
 
-  // 启动内存监控
+  // 鍚姩鍐呭瓨鐩戞帶
   startMemoryMonitor(30000);
 
-  // 创建 HTTP 服务器（用于 WebSocket 升级）
+  // 鍒涘缓 HTTP 鏈嶅姟鍣紙鐢ㄤ簬 WebSocket 鍗囩骇锛?
   const server = http.createServer(app);
 
-  // 初始化 WebSocket 服务器
+  // 鍒濆鍖?WebSocket 鏈嶅姟鍣?
   wsManager.init(server, notificationService, messageQueue);
 
   server.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
-    console.log(`🔌 WebSocket available at ws://localhost:${PORT}/ws`);
-    console.log(`📊 Memory: ${JSON.stringify(getMemoryUsage())}`);
-    console.log(`🔒 Security: Helmet, CORS, Rate Limiting enabled`);
-    console.log(`⚡ Performance: Request timer, Slow query logging, Memory monitor enabled`);
+    console.log(`鉁?Server running on http://localhost:${PORT}`);
+    console.log(`馃攲 WebSocket available at ws://localhost:${PORT}/ws`);
+    console.log(`馃搳 Memory: ${JSON.stringify(getMemoryUsage())}`);
+    console.log(`馃敀 Security: Helmet, CORS, Rate Limiting enabled`);
+    console.log(`鈿?Performance: Request timer, Slow query logging, Memory monitor enabled`);
 
-    // 启动截止日期提醒定时器
+    // 鍚姩鎴鏃ユ湡鎻愰啋瀹氭椂鍣?
     setInterval(checkDeadlines, DEADLINE_CHECK_INTERVAL);
-    // 启动时立即检查一次
+    // 鍚姩鏃剁珛鍗虫鏌ヤ竴娆?
     checkDeadlines();
   });
 
-  // 优雅关闭
+  // 浼橀泤鍏抽棴
   const gracefulShutdown = () => {
-    console.log('\n🛑 Shutting down gracefully...');
+    console.log('\n馃洃 Shutting down gracefully...');
     wsManager.close();
     server.close(() => {
-      console.log('✅ Server closed');
+      console.log('鉁?Server closed');
       process.exit(0);
     });
-    // 5 秒后强制退出
+    // 5 绉掑悗寮哄埗閫€鍑?
     setTimeout(() => process.exit(1), 5000);
   };
 
@@ -273,3 +276,4 @@ initDB().then(() => {
   console.error('Failed to init database:', err);
   process.exit(1);
 });
+

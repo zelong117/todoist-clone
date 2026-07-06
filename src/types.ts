@@ -1,4 +1,4 @@
-export interface Task {
+﻿export interface Task {
   id: string;
   title: string;
   description: string;
@@ -27,7 +27,7 @@ export interface Project {
   color: string;
   order: number;
   isFavorite: boolean;
-  usePomodoro: boolean; // 是否使用番茄钟
+  usePomodoro: boolean; // 鏄惁浣跨敤鐣寗閽?
   createdAt: string;
 }
 
@@ -49,6 +49,46 @@ export interface Comment {
   taskId: string;
   content: string;
   createdAt: string;
+}
+export interface FilterDefinition {
+  id: string;
+  name: string;
+  description: string;
+  query: string;
+  order: number;
+  isBuiltIn: boolean;
+}
+
+export interface ActivityLog {
+  id: string;
+  type: 'task_created' | 'task_updated' | 'task_completed' | 'task_deleted' | 'comment_added';
+  entityType: 'task' | 'comment';
+  entityId: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  type: 'overdue' | 'due_today' | 'high_priority' | 'inbox_triage';
+  severity: 'info' | 'warning' | 'critical';
+  taskId: string;
+  title: string;
+  message: string;
+  createdAt: string;
+  readAt: string | null;
+}
+
+export interface StatsSnapshot {
+  loggedAt: string;
+  openTasks: number;
+  completedTasks: number;
+  overdueTasks: number;
+  dueTodayTasks: number;
+  upcomingTasks: number;
+  inboxTasks: number;
+  unlabeledTasks: number;
+  highPriorityTasks: number;
 }
 
 export type ViewMode = 'list' | 'board' | 'calendar';
@@ -77,3 +117,4 @@ export interface PomodoroSession {
   durationMinutes: number;
   completed: boolean;
 }
+

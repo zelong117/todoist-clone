@@ -1,12 +1,12 @@
-/**
- * 任务路由
- * 处理任务�?CRUD 操作和完成状态切�?
+﻿/**
+ * 浠诲姟璺敱
+ * 澶勭悊浠诲姟鐨?CRUD 鎿嶄綔鍜屽畬鎴愮姸鎬佸垏鎹?
  * 
- * 安全措施�?
- * - 所有查询都通过 user_id 过滤，确保数据隔�?
- * - 创建/更新时验证关联实体（项目、父任务）属于当前用�?
- * - 使用 Joi 进行输入验证
- * - 使用 pick() 防止批量赋值攻�?
+ * 瀹夊叏鎺柦锛?
+ * - 鎵€鏈夋煡璇㈤兘閫氳繃 user_id 杩囨护锛岀‘淇濇暟鎹殧绂?
+ * - 鍒涘缓/鏇存柊鏃堕獙璇佸叧鑱斿疄浣擄紙椤圭洰銆佺埗浠诲姟锛夊睘浜庡綋鍓嶇敤鎴?
+ * - 浣跨敤 Joi 杩涜杈撳叆楠岃瘉
+ * - 浣跨敤 pick() 闃叉鎵归噺璧嬪€兼敾鍑?
  */
 const express = require('express');
 const router = express.Router();
@@ -17,6 +17,7 @@ const { pick, mapTask } = require('../utils');
 const validate = require('../middleware/validate');
 const { createTaskSchema, updateTaskSchema, taskIdParamSchema } = require('../validations/taskSchemas');
 const { asyncHandler } = require('../middleware/errorHandler');
+const { logActivity, refreshNotifications } = require('../domain');
 
 // Helper: get WebSocket services from app.locals
 function getWsServices(req) {
@@ -28,25 +29,25 @@ function getWsServices(req) {
 }
 
 /**
- * 验证关联实体是否属于当前用户
- * @param {string} entityType - 实体类型（projects/tasks�?
- * @param {string} entityId - 实体 ID
- * @param {string} userId - 当前用户 ID
- * @returns {boolean} 是否属于当前用户
+ * 楠岃瘉鍏宠仈瀹炰綋鏄惁灞炰簬褰撳墠鐢ㄦ埛
+ * @param {string} entityType - 瀹炰綋绫诲瀷锛坧rojects/tasks锛?
+ * @param {string} entityId - 瀹炰綋 ID
+ * @param {string} userId - 褰撳墠鐢ㄦ埛 ID
+ * @returns {boolean} 鏄惁灞炰簬褰撳墠鐢ㄦ埛
  */
 function nullableId(value) {
   return value === '' || value === undefined ? null : value;
 }
 
 function verifyOwnership(entityType, entityId, userId) {
-  if (!entityId) return true; // null/undefined 不需要验�?
+  if (!entityId) return true; // null/undefined 涓嶉渶瑕侀獙璇?
   const entity = queryOne(`SELECT id FROM ${entityType} WHERE id = ? AND user_id = ?`, [entityId, userId]);
   return !!entity;
 }
 
 /**
  * GET /
- * 获取当前用户的所有任�?
+ * 鑾峰彇褰撳墠鐢ㄦ埛鐨勬墍鏈変换鍔?
  */
 router.get('/', authenticate, asyncHandler(async (req, res) => {
   const rows = queryAll('SELECT * FROM tasks WHERE user_id = ? ORDER BY sort_order', [req.user.id]);
@@ -55,19 +56,19 @@ router.get('/', authenticate, asyncHandler(async (req, res) => {
 
 /**
  * POST /
- * 创建新任�?- 验证关联实体所有权
+ * 鍒涘缓鏂颁换鍔?- 楠岃瘉鍏宠仈瀹炰綋鎵€鏈夋潈
  */
 router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandler(async (req, res) => {
   const { title, projectId, sectionId, parentId, priority, dueDate, labels, plannedPomodoros } = req.body;
 
-  // 【数据隔离】验�?projectId 属于当前用户
+  // 銆愭暟鎹殧绂汇€戦獙璇?projectId 灞炰簬褰撳墠鐢ㄦ埛
   if (projectId && !verifyOwnership('projects', projectId, req.user.id)) {
     return res.status(400).json({ error: 'Invalid request' });
   }
 
-  // 【数据隔离】验�?parentId 属于当前用户（父任务必须是自己的�?
+  // 銆愭暟鎹殧绂汇€戦獙璇?parentId 灞炰簬褰撳墠鐢ㄦ埛锛堢埗浠诲姟蹇呴』鏄嚜宸辩殑锛?
   if (parentId && !verifyOwnership('tasks', parentId, req.user.id)) {
-    return res.status(400).json({ error: 'Parent task not found' });
+    return res.status(400).json({ error: 'Invalid request' });
   }
 
   // sections table is not part of the current schema; reject instead of crashing on write.
@@ -82,25 +83,27 @@ router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandle
   const task = queryOne('SELECT * FROM tasks WHERE id = ?', [id]);
   const mapped = mapTask(task);
 
-  // 🔔 WebSocket: 广播任务创建通知
+  // 馃敂 WebSocket: 骞挎挱浠诲姟鍒涘缓閫氱煡
   const { notificationService, messageQueue, wsManager } = getWsServices(req);
   notificationService.broadcast('task:create', { task: mapped, userId: req.user.id }, wsManager, messageQueue);
+  logActivity(req.user.id, 'task_created', 'task', id, 'Created task: ' + mapped.title);
+  refreshNotifications(req.user.id);
 
   res.status(201).json(mapped);
 }));
 
 /**
  * PUT /:id
- * 更新任务 - 验证任务存在性、所有权和关联实�?
+ * 鏇存柊浠诲姟 - 楠岃瘉浠诲姟瀛樺湪鎬с€佹墍鏈夋潈鍜屽叧鑱斿疄浣?
  */
 router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: updateTaskSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!task) return res.status(404).json({ error: '任务不存�? });
+  if (!task) return res.status(404).json({ error: 'Task not found' });
 
   const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId'];
   const sanitized = pick(req.body, allowed);
 
-  // 【数据隔离】如果更新了 projectId，验证新项目属于当前用户
+  // 銆愭暟鎹殧绂汇€戝鏋滄洿鏂颁簡 projectId锛岄獙璇佹柊椤圭洰灞炰簬褰撳墠鐢ㄦ埛
   if (sanitized.projectId !== undefined && sanitized.projectId !== null && sanitized.projectId !== '') {
     if (!verifyOwnership('projects', sanitized.projectId, req.user.id)) {
       return res.status(400).json({ error: 'Invalid request' });
@@ -109,14 +112,14 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
 
   if (sanitized.sectionId) return res.status(400).json({ error: 'Invalid request' });
 
-  // 【数据隔离】如果更新了 parentId，验证新父任务属于当前用�?
+  // 銆愭暟鎹殧绂汇€戝鏋滄洿鏂颁簡 parentId锛岄獙璇佹柊鐖朵换鍔″睘浜庡綋鍓嶇敤鎴?
   if (sanitized.parentId !== undefined && sanitized.parentId !== null && sanitized.parentId !== '') {
     if (!verifyOwnership('tasks', sanitized.parentId, req.user.id)) {
-      return res.status(400).json({ error: '指定的父任务不存�? });
+      return res.status(400).json({ error: 'Parent task not found' });
     }
-    // 防止循环引用：不能将任务设为自身的子任务
+    // 闃叉寰幆寮曠敤锛氫笉鑳藉皢浠诲姟璁句负鑷韩鐨勫瓙浠诲姟
     if (sanitized.parentId === req.params.id) {
-      return res.status(400).json({ error: '不能将任务设为自身的子任�? });
+      return res.status(400).json({ error: 'Task cannot be its own parent' });
     }
   }
 
@@ -151,20 +154,22 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
   const updated = queryOne('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
   const mapped = mapTask(updated);
 
-  // 🔔 WebSocket: 广播任务更新通知
+  // 馃敂 WebSocket: 骞挎挱浠诲姟鏇存柊閫氱煡
   const { notificationService: ns, messageQueue: mq, wsManager: wm } = getWsServices(req);
   ns.broadcast('task:update', { task: mapped, changes: Object.keys(sanitized), userId: req.user.id }, wm, mq);
+  logActivity(req.user.id, 'task_updated', 'task', req.params.id, 'Updated task: ' + mapped.title);
+  refreshNotifications(req.user.id);
 
   res.json(mapped);
 }));
 
 /**
  * DELETE /:id
- * 删除任务 - 同时删除关联的子任务、评论和番茄钟记�?
+ * 鍒犻櫎浠诲姟 - 鍚屾椂鍒犻櫎鍏宠仈鐨勫瓙浠诲姟銆佽瘎璁哄拰鐣寗閽熻褰?
  */
 router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!task) return res.status(404).json({ error: '任务不存�? });
+  if (!task) return res.status(404).json({ error: 'Task not found' });
 
   transaction(() => {
     const childIds = queryAll('SELECT id FROM tasks WHERE parent_id = ? AND user_id = ?', [req.params.id, req.user.id]).map(row => row.id);
@@ -176,31 +181,39 @@ router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asy
     run('DELETE FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   });
 
-  // 🔔 WebSocket: 广播任务删除通知
+  // 馃敂 WebSocket: 骞挎挱浠诲姟鍒犻櫎閫氱煡
   const { notificationService, messageQueue, wsManager } = getWsServices(req);
   notificationService.broadcast('task:delete', { taskId: req.params.id, userId: req.user.id }, wsManager, messageQueue);
+  logActivity(req.user.id, 'task_deleted', 'task', req.params.id, 'Deleted task: ' + task.title);
+  refreshNotifications(req.user.id);
 
   res.json({ success: true });
 }));
 
 /**
  * POST /:id/complete
- * 切换任务完成状�?
+ * 鍒囨崲浠诲姟瀹屾垚鐘舵€?
  */
 router.post('/:id/complete', authenticate, validate({ params: taskIdParamSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!task) return res.status(404).json({ error: '任务不存�? });
+  if (!task) return res.status(404).json({ error: 'Task not found' });
 
   const newStatus = task.is_completed ? 0 : 1;
   run('UPDATE tasks SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?', [newStatus, newStatus ? new Date().toISOString() : null, new Date().toISOString(), req.params.id]);
   const updated = queryOne('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
   const mapped = mapTask(updated);
 
-  // 🔔 WebSocket: 广播任务完成状态变更通知
+  // 馃敂 WebSocket: 骞挎挱浠诲姟瀹屾垚鐘舵€佸彉鏇撮€氱煡
   const { notificationService: ns2, messageQueue: mq2, wsManager: wm2 } = getWsServices(req);
   ns2.broadcast('task:complete', { task: mapped, completed: !!newStatus, userId: req.user.id }, wm2, mq2);
+  logActivity(req.user.id, newStatus ? 'task_completed' : 'task_updated', 'task', req.params.id, (newStatus ? 'Completed task: ' : 'Reopened task: ') + mapped.title);
+  refreshNotifications(req.user.id);
 
   res.json(mapped);
 }));
 
 module.exports = router;
+
+
+
+

@@ -1,4 +1,4 @@
-// Pick only allowed fields from an object (prevents mass assignment)
+﻿// Pick only allowed fields from an object (prevents mass assignment)
 function pick(obj, allowedFields) {
   const result = {};
   for (const key of allowedFields) {
@@ -77,4 +77,46 @@ function mapSession(row) {
   };
 }
 
-module.exports = { pick, mapTask, mapProject, mapLabel, mapComment, mapSession };
+function mapFilter(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    description: row.description || '',
+    query: row.query,
+    order: row.sort_order || 0,
+    isBuiltIn: !!row.is_builtin,
+    createdAt: row.created_at,
+  };
+}
+
+function mapNotification(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    userId: row.user_id,
+    taskId: row.task_id,
+    type: row.type,
+    severity: row.severity || 'info',
+    title: row.title,
+    message: row.message,
+    readAt: row.read_at,
+    createdAt: row.created_at,
+  };
+}
+
+function mapActivityLog(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    userId: row.user_id,
+    type: row.type,
+    entityType: row.entity_type,
+    entityId: row.entity_id,
+    message: row.message,
+    createdAt: row.created_at,
+  };
+}
+module.exports = { pick, mapTask, mapProject, mapLabel, mapComment, mapSession, mapFilter, mapNotification, mapActivityLog };
+

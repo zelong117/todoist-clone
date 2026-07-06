@@ -1,4 +1,4 @@
-const initSqlJs = require('sql.js');
+﻿const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -97,15 +97,55 @@ async function initDB() {
     );
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS filters (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      query TEXT NOT NULL,
+      is_builtin INTEGER DEFAULT 0,
+      sort_order INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      task_id TEXT,
+      type TEXT NOT NULL,
+      severity TEXT DEFAULT 'info',
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      read_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(user_id, task_id, type)
+    );
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS activity_logs (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
   db.run('CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id, sort_order)');
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id, sort_order)');
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(user_id, project_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(user_id, parent_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_pomodoro_user_open ON pomodoro_sessions(user_id, ended_at)');
   db.run('CREATE INDEX IF NOT EXISTS idx_pomodoro_task ON pomodoro_sessions(user_id, task_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_filters_user ON filters(user_id, sort_order)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read_at, created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id, created_at)');
 
   saveDB();
-  console.log('�?Database initialized:', DB_PATH);
+  console.log('鉁?Database initialized:', DB_PATH);
   return db;
 }
 
@@ -166,3 +206,5 @@ function getLastInsertId() {
 }
 
 module.exports = { initDB, queryAll, queryOne, run, transaction, saveDB, getLastInsertId };
+
+
