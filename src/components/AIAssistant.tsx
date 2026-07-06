@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useStore } from '../store';
 import type { Task } from '../types';
-import { isToday, isBefore, startOfDay, addDays, format, parseISO, differenceInDays } from 'date-fns';
-import { Sparkles, ChevronRight, ChevronLeft } from 'lucide-react';
+import { isToday, isBefore, startOfDay, format, parseISO, differenceInDays } from 'date-fns';
+import { Sparkles, ChevronRight } from 'lucide-react';
 
 interface Message {
   id: string;
