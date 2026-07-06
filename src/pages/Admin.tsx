@@ -350,14 +350,14 @@ export default function Admin() {
                       {priorityLabels[task.priority]}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-center">
                     {task.isCompleted ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                      <span className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                         <CheckCircle size={12} />
                         已完成
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/10 text-orange-500">
+                      <span className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-500/10 text-orange-600 border border-orange-500/20">
                         <Circle size={12} />
                         待完成
                       </span>
@@ -415,8 +415,8 @@ export default function Admin() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                      project.usePomodoro ? 'bg-red-500/10 text-red-500' : 'bg-gray-500/10 text-gray-500'
+                    <span className={`inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                      project.usePomodoro ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
                     }`}>
                       {project.usePomodoro ? '✅ 已启用' : '❌ 未启用'}
                     </span>

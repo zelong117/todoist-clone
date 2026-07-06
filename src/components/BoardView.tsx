@@ -294,6 +294,8 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
 export default function BoardView({ tasks, sections }: BoardViewProps) {
   const { updateTask } = useStore();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [showAddSection, setShowAddSection] = useState(false);
+  const [newSectionName, setNewSectionName] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -358,22 +360,62 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
         ))}
 
         {/* Add column button */}
-        <button
-          onClick={() => {
-            const name = prompt('输入版块名称：');
-            if (name?.trim()) {
-              useStore.getState().addSection({
-                projectId: sections[0]?.projectId || '',
-                name: name.trim(),
-                order: sections.length,
-              });
-            }
-          }}
-          className="flex-shrink-0 w-[300px] h-12 rounded-2xl border-2 border-dashed border-[var(--border-color)] dark:border-gray-600 flex items-center justify-center text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-tertiary)] hover:border-gray-300 hover:bg-[var(--bg-card)]/50 transition-all duration-200"
-        >
-          <Plus size={18} className="mr-1.5" />
-          <span className="text-sm font-medium">添加列</span>
-        </button>
+        {showAddSection ? (
+          <div className="flex-shrink-0 w-[300px] bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-3">
+            <input
+              autoFocus
+              value={newSectionName}
+              onChange={(e) => setNewSectionName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newSectionName.trim()) {
+                  useStore.getState().addSection({
+                    projectId: sections[0]?.projectId || '',
+                    name: newSectionName.trim(),
+                    order: sections.length,
+                  });
+                  setNewSectionName('');
+                  setShowAddSection(false);
+                } else if (e.key === 'Escape') {
+                  setShowAddSection(false);
+                }
+              }}
+              placeholder="输入版块名称..."
+              className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+            />
+            <div className="flex justify-end gap-2 mt-2">
+              <button
+                onClick={() => { setShowAddSection(false); setNewSectionName(''); }}
+                className="px-3 py-1.5 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => {
+                  if (newSectionName.trim()) {
+                    useStore.getState().addSection({
+                      projectId: sections[0]?.projectId || '',
+                      name: newSectionName.trim(),
+                      order: sections.length,
+                    });
+                    setNewSectionName('');
+                    setShowAddSection(false);
+                  }
+                }}
+                className="px-3 py-1.5 text-xs text-white bg-[var(--accent)] rounded-lg hover:opacity-90"
+              >
+                添加
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAddSection(true)}
+            className="flex-shrink-0 w-[300px] h-12 rounded-2xl border-2 border-dashed border-[var(--border-color)] dark:border-gray-600 flex items-center justify-center text-[var(--text-tertiary)] dark:text-[var(--text-tertiary)] hover:text-[var(--text-tertiary)] hover:border-gray-300 hover:bg-[var(--bg-card)]/50 transition-all duration-200"
+          >
+            <Plus size={18} className="mr-1.5" />
+            <span className="text-sm font-medium">添加列</span>
+          </button>
+        )}
       </div>
 
       <DragOverlay>
