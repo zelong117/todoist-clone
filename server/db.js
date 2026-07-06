@@ -6,6 +6,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 const DB_PATH = path.join(DATA_DIR, 'todoist.db');
 
 let db = null;
+let inTransaction = false;
 
 async function initDB() {
   const SQL = await initSqlJs();
@@ -17,6 +18,8 @@ async function initDB() {
   } else {
     db = new SQL.Database();
   }
+
+  db.run('PRAGMA foreign_keys = ON');
 
   // Create tables
   db.run(`
@@ -94,8 +97,15 @@ async function initDB() {
     );
   `);
 
+  db.run('CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id, sort_order)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id, sort_order)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(user_id, project_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(user_id, parent_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_pomodoro_user_open ON pomodoro_sessions(user_id, ended_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_pomodoro_task ON pomodoro_sessions(user_id, task_id)');
+
   saveDB();
-  console.log('âœ… Database initialized:', DB_PATH);
+  console.log('âœ?Database initialized:', DB_PATH);
   return db;
 }
 
@@ -103,7 +113,9 @@ function saveDB() {
   if (!db) return;
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   const data = db.export();
-  fs.writeFileSync(DB_PATH, Buffer.from(data));
+  const tmpPath = `${DB_PATH}.tmp`;
+  fs.writeFileSync(tmpPath, Buffer.from(data));
+  fs.renameSync(tmpPath, DB_PATH);
 }
 
 // Wrapper: run a query and return all rows
@@ -127,7 +139,24 @@ function queryOne(sql, params = []) {
 // Wrapper: run INSERT/UPDATE/DELETE
 function run(sql, params = []) {
   db.run(sql, params);
-  saveDB();
+  if (!inTransaction) saveDB();
+}
+
+function transaction(fn) {
+  if (inTransaction) return fn();
+  inTransaction = true;
+  db.run('BEGIN');
+  try {
+    const result = fn();
+    db.run('COMMIT');
+    saveDB();
+    return result;
+  } catch (err) {
+    db.run('ROLLBACK');
+    throw err;
+  } finally {
+    inTransaction = false;
+  }
 }
 
 // Wrapper: get last insert rowid
@@ -136,4 +165,4 @@ function getLastInsertId() {
   return row ? row.id : null;
 }
 
-module.exports = { initDB, queryAll, queryOne, run, saveDB, getLastInsertId };
+module.exports = { initDB, queryAll, queryOne, run, transaction, saveDB, getLastInsertId };

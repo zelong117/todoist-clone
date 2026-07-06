@@ -125,14 +125,7 @@ export default function App() {
           const elapsed = Math.floor(
             (Date.now() - new Date(state.timerStartedAt).getTime()) / 1000
           );
-          const settings = state.pomodoroSettings;
-          const totalSeconds =
-            state.timerMode === 'focus'
-              ? settings.focusMinutes * 60
-              : state.timerMode === 'shortBreak'
-              ? settings.shortBreakMinutes * 60
-              : settings.longBreakMinutes * 60;
-          const remaining = Math.max(0, totalSeconds - elapsed);
+          const remaining = Math.max(0, state.timerSeconds - elapsed);
           if (remaining <= 0) {
             useStore.setState({ timerSeconds: 0, timerStartedAt: null });
             state.completePomodoro();

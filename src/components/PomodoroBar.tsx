@@ -1,5 +1,6 @@
-import { Pause, CheckCircle } from 'lucide-react';
+import { Pause, Play, CheckCircle } from 'lucide-react';
 import { useStore } from '../store';
+import { useState } from 'react';
 
 const MODE_GRADIENTS = {
   focus: 'from-[#DC4C3E] to-[#B83A2E]',
@@ -23,6 +24,7 @@ export default function PomodoroBar() {
   const pauseTimer = useStore((s) => s.pauseTimer);
   const resumeTimer = useStore((s) => s.resumeTimer);
   const completePomodoro = useStore((s) => s.completePomodoro);
+  const [pressing, setPressing] = useState<string | null>(null);
 
   const isActive = timerStatus === 'running' || timerStatus === 'paused';
   if (!isActive) return null;
@@ -65,14 +67,24 @@ export default function PomodoroBar() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => (isRunning ? pauseTimer() : resumeTimer())}
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-[var(--bg-card)]/20 hover:bg-[var(--bg-card)]/30 transition-colors duration-200"
+              onMouseDown={() => setPressing('play')}
+              onMouseUp={() => setPressing(null)}
+              onMouseLeave={() => setPressing(null)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center bg-[var(--bg-card)]/20 hover:bg-[var(--bg-card)]/30 transition-all duration-100 ${
+                pressing === 'play' ? 'scale-90 bg-[var(--bg-card)]/40' : ''
+              }`}
               title={isRunning ? '暂停' : '继续'}
             >
-              <Pause size={14} />
+              {isRunning ? <Pause size={14} /> : <Play size={14} />}
             </button>
             <button
               onClick={completePomodoro}
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-[var(--bg-card)]/20 hover:bg-[var(--bg-card)]/30 transition-colors duration-200"
+              onMouseDown={() => setPressing('done')}
+              onMouseUp={() => setPressing(null)}
+              onMouseLeave={() => setPressing(null)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center bg-[var(--bg-card)]/20 hover:bg-[var(--bg-card)]/30 transition-all duration-100 ${
+                pressing === 'done' ? 'scale-90 bg-[var(--bg-card)]/40' : ''
+              }`}
               title="完成"
             >
               <CheckCircle size={14} />
@@ -83,7 +95,7 @@ export default function PomodoroBar() {
 
       <div className="h-1 bg-black/10">
         <div
-          className="h-full bg-[var(--bg-card)]/60 transition-all duration-300 ease-linear"
+          className="h-full bg-[var(--bg-card)]/60 transition-all duration-1000 ease-linear"
           style={{ width: `${progress}%` }}
         />
       </div>

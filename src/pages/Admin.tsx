@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { useStore } from '../store';
 import type { Task, Project } from '../types';
-import { Search, Download, Upload, Trash2, CheckCircle, Circle } from 'lucide-react';
+import { Search, Download, Upload, Trash2, CheckCircle, Circle, XCircle } from 'lucide-react';
 
 export default function Admin() {
   const { tasks, projects, labels, pomodoroSessions } = useStore();
@@ -415,10 +415,11 @@ export default function Admin() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                    <span className={`inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
                       project.usePomodoro ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
                     }`}>
-                      {project.usePomodoro ? '✅ 已启用' : '❌ 未启用'}
+                      {project.usePomodoro ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                      {project.usePomodoro ? '已启用' : '未启用'}
                     </span>
                   </td>
                 </tr>

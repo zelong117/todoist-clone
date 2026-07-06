@@ -58,7 +58,7 @@ const helmetConfig = helmet({
  */
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173')
       .split(',')
       .map(s => s.trim());
 

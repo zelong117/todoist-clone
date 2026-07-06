@@ -1,18 +1,18 @@
 /**
  * 任务路由
- * 处理任务的 CRUD 操作和完成状态切换
+ * 处理任务�?CRUD 操作和完成状态切�?
  * 
- * 安全措施：
- * - 所有查询都通过 user_id 过滤，确保数据隔离
- * - 创建/更新时验证关联实体（项目、父任务）属于当前用户
+ * 安全措施�?
+ * - 所有查询都通过 user_id 过滤，确保数据隔�?
+ * - 创建/更新时验证关联实体（项目、父任务）属于当前用�?
  * - 使用 Joi 进行输入验证
- * - 使用 pick() 防止批量赋值攻击
+ * - 使用 pick() 防止批量赋值攻�?
  */
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticate } = require('../middleware/auth');
-const { queryAll, queryOne, run } = require('../db');
+const { queryAll, queryOne, run, transaction } = require('../db');
 const { pick, mapTask } = require('../utils');
 const validate = require('../middleware/validate');
 const { createTaskSchema, updateTaskSchema, taskIdParamSchema } = require('../validations/taskSchemas');
@@ -29,20 +29,20 @@ function getWsServices(req) {
 
 /**
  * 验证关联实体是否属于当前用户
- * @param {string} entityType - 实体类型（projects/tasks）
+ * @param {string} entityType - 实体类型（projects/tasks�?
  * @param {string} entityId - 实体 ID
  * @param {string} userId - 当前用户 ID
  * @returns {boolean} 是否属于当前用户
  */
 function verifyOwnership(entityType, entityId, userId) {
-  if (!entityId) return true; // null/undefined 不需要验证
+  if (!entityId) return true; // null/undefined 不需要验�?
   const entity = queryOne(`SELECT id FROM ${entityType} WHERE id = ? AND user_id = ?`, [entityId, userId]);
   return !!entity;
 }
 
 /**
  * GET /
- * 获取当前用户的所有任务
+ * 获取当前用户的所有任�?
  */
 router.get('/', authenticate, asyncHandler(async (req, res) => {
   const rows = queryAll('SELECT * FROM tasks WHERE user_id = ? ORDER BY sort_order', [req.user.id]);
@@ -51,32 +51,29 @@ router.get('/', authenticate, asyncHandler(async (req, res) => {
 
 /**
  * POST /
- * 创建新任务 - 验证关联实体所有权
+ * 创建新任�?- 验证关联实体所有权
  */
 router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandler(async (req, res) => {
   const { title, projectId, sectionId, parentId, priority, dueDate, labels, plannedPomodoros } = req.body;
 
-  // 【数据隔离】验证 projectId 属于当前用户
+  // 【数据隔离】验�?projectId 属于当前用户
   if (projectId && !verifyOwnership('projects', projectId, req.user.id)) {
     return res.status(400).json({ error: '指定的项目不存在' });
   }
 
-  // 【数据隔离】验证 parentId 属于当前用户（父任务必须是自己的）
+  // 【数据隔离】验�?parentId 属于当前用户（父任务必须是自己的�?
   if (parentId && !verifyOwnership('tasks', parentId, req.user.id)) {
-    return res.status(400).json({ error: '指定的父任务不存在' });
+    return res.status(400).json({ error: '指定的父任务不存�? });
   }
 
-  // 【数据隔离】验证 sectionId 属于当前用户（如果存在 sections 表）
-  if (sectionId) {
-    const section = queryOne('SELECT id FROM sections WHERE id = ? AND project_id IN (SELECT id FROM projects WHERE user_id = ?)', [sectionId, req.user.id]);
-    if (!section) return res.status(400).json({ error: '指定的分区不存在' });
-  }
+  // sections table is not part of the current schema; reject instead of crashing on write.
+  if (sectionId) return res.status(400).json({ error: '指定的分区不存在' });
 
   const id = uuidv4();
   const now = new Date().toISOString();
   const pp = plannedPomodoros || 1;
   run('INSERT INTO tasks (id, user_id, project_id, section_id, parent_id, title, priority, due_date, labels, planned_pomodoros, estimated_minutes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, req.user.id, projectId || null, sectionId || null, parentId || null, title.trim(), priority || 1, dueDate || null, JSON.stringify(Array.isArray(labels) ? labels : []), pp, pp * 25, now, now]);
+    [id, req.user.id, nullableId(projectId), nullableId(sectionId), nullableId(parentId), title.trim(), priority || 1, dueDate || null, JSON.stringify(Array.isArray(labels) ? labels : []), pp, pp * 25, now, now]);
 
   const task = queryOne('SELECT * FROM tasks WHERE id = ?', [id]);
   const mapped = mapTask(task);
@@ -90,11 +87,11 @@ router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandle
 
 /**
  * PUT /:id
- * 更新任务 - 验证任务存在性、所有权和关联实体
+ * 更新任务 - 验证任务存在性、所有权和关联实�?
  */
 router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: updateTaskSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!task) return res.status(404).json({ error: '任务不存在' });
+  if (!task) return res.status(404).json({ error: '任务不存�? });
 
   const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId'];
   const sanitized = pick(req.body, allowed);
@@ -106,14 +103,14 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
     }
   }
 
-  // 【数据隔离】如果更新了 parentId，验证新父任务属于当前用户
+  // 【数据隔离】如果更新了 parentId，验证新父任务属于当前用�?
   if (sanitized.parentId !== undefined && sanitized.parentId !== null && sanitized.parentId !== '') {
     if (!verifyOwnership('tasks', sanitized.parentId, req.user.id)) {
-      return res.status(400).json({ error: '指定的父任务不存在' });
+      return res.status(400).json({ error: '指定的父任务不存�? });
     }
     // 防止循环引用：不能将任务设为自身的子任务
     if (sanitized.parentId === req.params.id) {
-      return res.status(400).json({ error: '不能将任务设为自身的子任务' });
+      return res.status(400).json({ error: '不能将任务设为自身的子任�? });
     }
   }
 
@@ -132,6 +129,7 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
     if (sanitized[jk] !== undefined) {
       let val = sanitized[jk];
       if (jk === 'labels') val = JSON.stringify(val);
+      if (['projectId', 'sectionId', 'parentId', 'dueDate', 'completedAt'].includes(jk)) val = nullableId(val);
       if (jk === 'isCompleted') val = val ? 1 : 0;
       sets.push(`${dk} = ?`);
       values.push(val);
@@ -156,13 +154,13 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
 
 /**
  * DELETE /:id
- * 删除任务 - 同时删除关联的子任务、评论和番茄钟记录
+ * 删除任务 - 同时删除关联的子任务、评论和番茄钟记�?
  */
 router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!task) return res.status(404).json({ error: '任务不存在' });
+  if (!task) return res.status(404).json({ error: '任务不存�? });
 
-  // 级联删除关联数据（限定在同一用户的数据范围内）
+  // 级联删除关联数据（限定在同一用户的数据范围内�?
   run('DELETE FROM tasks WHERE parent_id = ? AND user_id = ?', [req.params.id, req.user.id]);
   run('DELETE FROM comments WHERE task_id = ? AND user_id = ?', [req.params.id, req.user.id]);
   run('DELETE FROM pomodoro_sessions WHERE task_id = ? AND user_id = ?', [req.params.id, req.user.id]);
@@ -177,11 +175,11 @@ router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asy
 
 /**
  * POST /:id/complete
- * 切换任务完成状态
+ * 切换任务完成状�?
  */
 router.post('/:id/complete', authenticate, validate({ params: taskIdParamSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!task) return res.status(404).json({ error: '任务不存在' });
+  if (!task) return res.status(404).json({ error: '任务不存�? });
 
   const newStatus = task.is_completed ? 0 : 1;
   run('UPDATE tasks SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?', [newStatus, newStatus ? new Date().toISOString() : null, new Date().toISOString(), req.params.id]);

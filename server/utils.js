@@ -9,6 +9,15 @@ function pick(obj, allowedFields) {
   return result;
 }
 
+function parseJsonArray(value) {
+  try {
+    const parsed = JSON.parse(value || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 // Map DB row (snake_case) to API response (camelCase)
 function mapTask(row) {
   if (!row) return null;
@@ -24,7 +33,7 @@ function mapTask(row) {
     completedAt: row.completed_at,
     priority: row.priority,
     dueDate: row.due_date,
-    labels: JSON.parse(row.labels || '[]'),
+    labels: parseJsonArray(row.labels),
     plannedPomodoros: row.planned_pomodoros || 0,
     completedPomodoros: row.completed_pomodoros || 0,
     pomodoroCount: row.pomodoro_count || 0,

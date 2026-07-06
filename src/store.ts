@@ -413,13 +413,7 @@ export const useStore = create<AppState>()(
       },
 
       pauseTimer: () => {
-        const { timerStartedAt, timerSeconds } = get();
-        let nextSeconds = timerSeconds;
-        if (timerStartedAt) {
-          const elapsed = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
-          nextSeconds = Math.max(0, timerSeconds - elapsed);
-        }
-        set({ timerStatus: 'paused', timerSeconds: nextSeconds, timerStartedAt: null });
+        set({ timerStatus: 'paused', timerStartedAt: null });
       },
 
       resumeTimer: () => {
@@ -427,12 +421,7 @@ export const useStore = create<AppState>()(
       },
 
       stopTimer: () => {
-        const { activeTimerTaskId, timerMode, timerSeconds, pomodoroSettings, timerStartedAt } = get();
-        let effectiveSeconds = timerSeconds;
-        if (timerStartedAt && get().timerStatus === 'running') {
-          const elapsedSinceStart = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
-          effectiveSeconds = Math.max(0, timerSeconds - elapsedSinceStart);
-        }
+        const { activeTimerTaskId, timerMode, timerSeconds, pomodoroSettings } = get();
         if (activeTimerTaskId) {
           const totalSeconds =
             timerMode === 'focus'
@@ -440,7 +429,7 @@ export const useStore = create<AppState>()(
               : timerMode === 'shortBreak'
               ? pomodoroSettings.shortBreakMinutes * 60
               : pomodoroSettings.longBreakMinutes * 60;
-          const elapsed = totalSeconds - effectiveSeconds;
+          const elapsed = totalSeconds - timerSeconds;
           if (elapsed > 0) {
             const session: PomodoroSession = {
               id: generateId(),
@@ -487,18 +476,13 @@ export const useStore = create<AppState>()(
       },
 
       tick: () => {
-        const { timerSeconds, timerStatus, timerStartedAt } = get();
-        if (timerStatus !== 'running') return;
-        let currentSeconds = timerSeconds;
-        if (timerStartedAt) {
-          const elapsed = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
-          currentSeconds = Math.max(0, timerSeconds - elapsed);
-        }
-        if (currentSeconds <= 1) {
+        const { timerSeconds } = get();
+        const next = timerSeconds - 1;
+        if (next <= 0) {
           set({ timerSeconds: 0, timerStartedAt: null });
           get().completePomodoro();
         } else {
-          set({ timerSeconds: currentSeconds, timerStartedAt: new Date().toISOString() });
+          set({ timerSeconds: next, timerStartedAt: new Date().toISOString() });
         }
       },
 

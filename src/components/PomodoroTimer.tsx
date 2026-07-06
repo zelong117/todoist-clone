@@ -29,6 +29,7 @@ export default function PomodoroTimer() {
 
   const [expanded, setExpanded] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [pressing, setPressing] = useState<'play' | 'skip' | 'stop' | null>(null);
   const prevTimerStatus = useRef(timerStatus);
 
   // Detect running -> idle transition for toast
@@ -202,22 +203,39 @@ export default function PomodoroTimer() {
       <div className="flex items-center justify-center gap-2.5 mt-3">
         <button
           onClick={handleToggle}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 shadow-lg"
+          onMouseDown={() => setPressing('play')}
+          onMouseUp={() => setPressing(null)}
+          onMouseLeave={() => setPressing(null)}
+          className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-100 shadow-lg ${
+            pressing === 'play' ? 'scale-90 brightness-90' : 'hover:scale-110'
+          }`}
           style={{ backgroundColor: strokeColor, boxShadow: `0 4px 14px ${strokeColor}40` }}
           title={isRunning ? '暂停' : '继续'}
         >
-          {isRunning ? <Pause size={16} /> : <Play size={16} />}
+          <span className={`transition-transform duration-150 ${pressing === 'play' ? 'scale-90' : ''}`}>
+            {isRunning ? <Pause size={16} /> : <Play size={16} />}
+          </span>
         </button>
         <button
           onClick={handleSkip}
-          className="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/15 transition-all duration-200"
+          onMouseDown={() => setPressing('skip')}
+          onMouseUp={() => setPressing(null)}
+          onMouseLeave={() => setPressing(null)}
+          className={`w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/15 transition-all duration-100 ${
+            pressing === 'skip' ? 'scale-90' : ''
+          }`}
           title="跳过"
         >
           <SkipForward size={14} />
         </button>
         <button
           onClick={stopTimer}
-          className="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/15 transition-all duration-200"
+          onMouseDown={() => setPressing('stop')}
+          onMouseUp={() => setPressing(null)}
+          onMouseLeave={() => setPressing(null)}
+          className={`w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/15 transition-all duration-100 ${
+            pressing === 'stop' ? 'scale-90' : ''
+          }`}
           title="停止"
         >
           <Square size={14} />

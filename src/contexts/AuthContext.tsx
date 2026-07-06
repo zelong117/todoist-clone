@@ -17,7 +17,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = `${window.location.protocol}//${window.location.hostname}:3001/api`;
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -72,16 +72,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+    } catch (error) {
+      throw new Error('无法连接到后端服务，请确认 3001 端口后端已启动');
+    }
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({ error: '登录失败' }));
       throw new Error(error.error || '登录失败');
     }
 
@@ -92,16 +97,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const register = async (email: string, name: string, password: string) => {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, name, password })
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, name, password })
+      });
+    } catch (error) {
+      throw new Error('无法连接到后端服务，请确认 3001 端口后端已启动');
+    }
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({ error: '注册失败' }));
       throw new Error(error.error || '注册失败');
     }
 
