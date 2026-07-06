@@ -748,9 +748,10 @@ export default function App() {
                       if (isRunning) useStore.getState().pauseTimer();
                       else useStore.getState().resumeTimer();
                     }}
-                    className="p-1.5 rounded-lg hover:bg-[var(--bg-hover)]"
+                    className="w-10 h-10 rounded-full bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white flex items-center justify-center transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+                    title={isRunning ? '暂停' : '继续'}
                   >
-                    {isRunning ? <Pause size={16} /> : <Play size={16} />}
+                    {isRunning ? <Pause size={18} fill="white" /> : <Play size={18} fill="white" />}
                   </button>
                 </div>
               );
