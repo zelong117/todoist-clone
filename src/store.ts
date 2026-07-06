@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { isToday, parseISO, isBefore, startOfDay, addDays } from 'date-fns';
 import type { Task, Project, Section, Label, Comment, ViewMode, ActiveView, TimerMode, TimerStatus, PomodoroSettings, PomodoroSession } from './types';
 import { generateId } from './utils';
-import { tasksAPI, projectsAPI, labelsAPI } from './api';
+import { tasksAPI, projectsAPI, labelsAPI, sectionsAPI } from './api';
 
 // Helper to load from localStorage or use seed data
 function loadState<T>(key: string, fallback: T): T {
@@ -57,9 +57,10 @@ interface AppState {
   reorderProjects: (projectIds: string[]) => void;
 
   // Section actions
-  addSection: (section: Omit<Section, 'id'>) => void;
-  updateSection: (id: string, updates: Partial<Section>) => void;
-  deleteSection: (id: string) => void;
+  addSection: (section: Omit<Section, 'id'>) => Promise<void>;
+  updateSection: (id: string, updates: Partial<Section>) => Promise<void>;
+  deleteSection: (id: string) => Promise<void>;
+  fetchSections: () => Promise<void>;
 
   // Label actions
   addLabel: (label: Omit<Label, 'id'>) => Promise<void>;
@@ -297,15 +298,28 @@ export const useStore = create<AppState>()(
       },
 
       // ===== Section actions =====
-      addSection: (sectionData) => {
-        const section: Section = {
-          ...sectionData,
-          id: generateId(),
-        };
-        set((state) => ({ sections: [...state.sections, section] }));
+      addSection: async (sectionData) => {
+        try {
+          const apiSection = await sectionsAPI.create({
+            projectId: sectionData.projectId,
+            name: sectionData.name,
+            order: sectionData.order,
+          });
+          const section: Section = { ...apiSection };
+          set((state) => ({ sections: [...state.sections, section] }));
+        } catch (error) {
+          console.error('Failed to create section:', error);
+          const section: Section = { ...sectionData, id: generateId() };
+          set((state) => ({ sections: [...state.sections, section] }));
+        }
       },
 
-      updateSection: (id, updates) => {
+      updateSection: async (id, updates) => {
+        try {
+          await sectionsAPI.update(id, updates);
+        } catch (error) {
+          console.error('Failed to update section:', error);
+        }
         set((state) => ({
           sections: state.sections.map((s) =>
             s.id === id ? { ...s, ...updates } : s
@@ -313,13 +327,32 @@ export const useStore = create<AppState>()(
         }));
       },
 
-      deleteSection: (id) => {
+      deleteSection: async (id) => {
+        try {
+          await sectionsAPI.delete(id);
+        } catch (error) {
+          console.error('Failed to delete section:', error);
+        }
         set((state) => ({
           sections: state.sections.filter((s) => s.id !== id),
           tasks: state.tasks.map((t) =>
             t.sectionId === id ? { ...t, sectionId: null } : t
           ),
         }));
+      },
+
+      fetchSections: async () => {
+        try {
+          const apiSections = await sectionsAPI.getAll();
+          set({ sections: apiSections.map((s: any) => ({
+            id: s.id,
+            projectId: s.projectId,
+            name: s.name,
+            order: s.order || 0,
+          })) });
+        } catch (error) {
+          console.error('Failed to fetch sections:', error);
+        }
       },
 
       // ===== Label actions =====

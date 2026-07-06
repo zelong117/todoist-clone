@@ -1,4 +1,4 @@
-﻿const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 function getToken(): string | null {
   return localStorage.getItem('todoist_token');
@@ -20,8 +20,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: '璇锋眰澶辫触' }));
-    throw new Error(error.error || '璇锋眰澶辫触');
+    const error = await response.json().catch(() => ({ error: '请求失败' }));
+    throw new Error(error.error || '请求失败');
   }
 
   return response.json();
@@ -57,6 +57,14 @@ export const projectsAPI = {
   create: (data: any) => request<any>('/projects', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: any) => request<any>(`/projects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (id: string) => request<any>(`/projects/${id}`, { method: 'DELETE' }),
+};
+
+// Sections API
+export const sectionsAPI = {
+  getAll: () => request<any[]>('/sections'),
+  create: (data: any) => request<any>('/sections', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) => request<any>(`/sections/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => request<any>(`/sections/${id}`, { method: 'DELETE' }),
 };
 
 // Labels API

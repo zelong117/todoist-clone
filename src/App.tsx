@@ -44,6 +44,7 @@ export default function App() {
     timerSeconds,
     timerMode,
     timerStatus,
+    fetchSections,
   } = useStore();
 
   const [currentView, setCurrentView] = useState<string>('inbox');
@@ -53,6 +54,13 @@ export default function App() {
     fn: ((task: Task) => boolean) | null;
     label: string;
   }>({ fn: null, label: '' });
+
+  // Fetch sections from backend when user is logged in
+  useEffect(() => {
+    if (user) {
+      fetchSections();
+    }
+  }, [user, fetchSections]);
 
   // Sync dark mode to html element for Tailwind dark: prefix
   useEffect(() => {
