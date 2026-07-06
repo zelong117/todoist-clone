@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { useStore } from '../store';
 import type { Task, Project } from '../types';
-import { Search, Download, Upload, Trash2, CheckCircle, Circle, XCircle } from 'lucide-react';
+import { Search, Download, Upload, Trash2, CheckCircle, Circle, XCircle, Star } from 'lucide-react';
 
 export default function Admin() {
   const { tasks, projects, labels, pomodoroSessions } = useStore();
@@ -189,22 +189,22 @@ export default function Admin() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">管理后台</h1>
           <p className="text-sm text-[var(--text-tertiary)] mt-1">查看和管理所有数据</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={exportData}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
           >
             <Download size={16} />
             导出 JSON
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
           >
             <Upload size={16} />
             导入数据
@@ -218,7 +218,7 @@ export default function Admin() {
           />
           <button
             onClick={() => setShowClearConfirm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-medium transition-colors border border-red-500/20"
           >
             <Trash2 size={16} />
             清除数据
@@ -393,6 +393,7 @@ export default function Admin() {
             <thead>
               <tr className="bg-[var(--bg-active)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
                 <th className="px-4 py-2.5 text-left">名称</th>
+                <th className="px-4 py-2.5 text-center w-16">收藏</th>
                 <th className="px-4 py-2.5 text-center w-20">任务数</th>
                 <th className="px-4 py-2.5 text-center w-24">番茄开关</th>
               </tr>
@@ -401,13 +402,20 @@ export default function Admin() {
               {projects.map((project) => (
                 <tr key={project.id} className="hover:bg-[var(--bg-hover)] transition-colors">
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <span
-                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        className="w-3 h-3 rounded flex-shrink-0"
                         style={{ backgroundColor: project.color }}
                       />
                       <span className="text-[var(--text-primary)] font-medium">{project.name}</span>
                     </div>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {project.isFavorite ? (
+                      <Star size={14} className="text-yellow-500 fill-yellow-500 inline-block" />
+                    ) : (
+                      <span className="text-[var(--text-tertiary)] text-xs">-</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="text-[var(--text-secondary)] font-semibold">

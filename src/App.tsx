@@ -19,7 +19,7 @@ import FilterPage from './components/FilterPage';
 import ActivityLog from './components/ActivityLog';
 import Admin from './pages/Admin';
 import AIAssistant from './components/AIAssistant';
-import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings } from 'lucide-react';
+import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
 
 export default function App() {
   const { user, loading, logout } = useAuth();
@@ -649,6 +649,33 @@ export default function App() {
 
           {/* Content Area */}
           <div className="px-6 py-4">
+            {/* View-specific descriptions */}
+            {currentView === 'inbox' && viewTasks.length > 0 && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-blue-500/5 border border-blue-500/10 flex items-center gap-3 text-sm">
+                <Inbox size={16} className="text-blue-500 flex-shrink-0" />
+                <span className="text-[var(--text-secondary)]">
+                  收件箱显示所有<strong className="text-[var(--text-primary)]">未分配项目</strong>的任务。将任务分配到项目以更好地组织它们。
+                </span>
+              </div>
+            )}
+            {currentView === 'upcoming' && viewTasks.length > 0 && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-purple-500/5 border border-purple-500/10 flex items-center gap-3 text-sm">
+                <CalendarClock size={16} className="text-purple-500 flex-shrink-0" />
+                <span className="text-[var(--text-secondary)]">
+                  未来<strong className="text-[var(--text-primary)]">7天</strong>内到期的任务，按日期排序。点击日历视图可查看更全面的日程。
+                </span>
+              </div>
+            )}
+            {(currentView === 'filter' || currentView === 'filters') && viewTasks.length > 0 && activeFilter.label && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-orange-500/5 border border-orange-500/10 flex items-center gap-3 text-sm">
+                <Filter size={16} className="text-orange-500 flex-shrink-0" />
+                <span className="text-[var(--text-secondary)]">
+                  当前筛选: <strong className="text-[var(--text-primary)]">{activeFilter.label}</strong>
+                  {' '}— 共 <strong className="text-[var(--text-primary)]">{viewTasks.length}</strong> 个任务匹配
+                </span>
+              </div>
+            )}
+
             {currentView === 'stats' ? (
               <StatsView />
             ) : currentView === 'filter' || currentView === 'filters' ? (
@@ -669,6 +696,13 @@ export default function App() {
                   sections={currentView.startsWith('project-') ? viewSections : []}
                   projectId={currentProjectId || undefined}
                   viewTitle={viewTitle}
+                  viewType={
+                    currentView === 'inbox' ? 'inbox' :
+                    currentView === 'today' ? 'today' :
+                    currentView === 'upcoming' ? 'upcoming' :
+                    currentView.startsWith('project-') ? 'project' :
+                    'filter'
+                  }
                   showSections={currentView.startsWith('project-') && viewSections.length > 0}
                 />
               ) : viewMode === 'board' ? (

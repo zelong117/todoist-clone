@@ -34,6 +34,10 @@ function getWsServices(req) {
  * @param {string} userId - 当前用户 ID
  * @returns {boolean} 是否属于当前用户
  */
+function nullableId(value) {
+  return value === '' || value === undefined ? null : value;
+}
+
 function verifyOwnership(entityType, entityId, userId) {
   if (!entityId) return true; // null/undefined 不需要验�?
   const entity = queryOne(`SELECT id FROM ${entityType} WHERE id = ? AND user_id = ?`, [entityId, userId]);
@@ -58,16 +62,16 @@ router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandle
 
   // 【数据隔离】验�?projectId 属于当前用户
   if (projectId && !verifyOwnership('projects', projectId, req.user.id)) {
-    return res.status(400).json({ error: '指定的项目不存在' });
+    return res.status(400).json({ error: 'Invalid request' });
   }
 
   // 【数据隔离】验�?parentId 属于当前用户（父任务必须是自己的�?
   if (parentId && !verifyOwnership('tasks', parentId, req.user.id)) {
-    return res.status(400).json({ error: '指定的父任务不存�? });
+    return res.status(400).json({ error: 'Parent task not found' });
   }
 
   // sections table is not part of the current schema; reject instead of crashing on write.
-  if (sectionId) return res.status(400).json({ error: '指定的分区不存在' });
+  if (sectionId) return res.status(400).json({ error: 'Invalid request' });
 
   const id = uuidv4();
   const now = new Date().toISOString();
@@ -99,9 +103,11 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
   // 【数据隔离】如果更新了 projectId，验证新项目属于当前用户
   if (sanitized.projectId !== undefined && sanitized.projectId !== null && sanitized.projectId !== '') {
     if (!verifyOwnership('projects', sanitized.projectId, req.user.id)) {
-      return res.status(400).json({ error: '指定的项目不存在' });
+      return res.status(400).json({ error: 'Invalid request' });
     }
   }
+
+  if (sanitized.sectionId) return res.status(400).json({ error: 'Invalid request' });
 
   // 【数据隔离】如果更新了 parentId，验证新父任务属于当前用�?
   if (sanitized.parentId !== undefined && sanitized.parentId !== null && sanitized.parentId !== '') {
@@ -160,11 +166,15 @@ router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asy
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   if (!task) return res.status(404).json({ error: '任务不存�? });
 
-  // 级联删除关联数据（限定在同一用户的数据范围内�?
-  run('DELETE FROM tasks WHERE parent_id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  run('DELETE FROM comments WHERE task_id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  run('DELETE FROM pomodoro_sessions WHERE task_id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  run('DELETE FROM tasks WHERE id = ?', [req.params.id]);
+  transaction(() => {
+    const childIds = queryAll('SELECT id FROM tasks WHERE parent_id = ? AND user_id = ?', [req.params.id, req.user.id]).map(row => row.id);
+    for (const id of [req.params.id, ...childIds]) {
+      run('DELETE FROM comments WHERE task_id = ? AND user_id = ?', [id, req.user.id]);
+      run('DELETE FROM pomodoro_sessions WHERE task_id = ? AND user_id = ?', [id, req.user.id]);
+    }
+    run('DELETE FROM tasks WHERE parent_id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    run('DELETE FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  });
 
   // 🔔 WebSocket: 广播任务删除通知
   const { notificationService, messageQueue, wsManager } = getWsServices(req);

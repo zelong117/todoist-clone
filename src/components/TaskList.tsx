@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Inbox, Plus, MoreHorizontal, GripVertical } from 'lucide-react';
+import { Inbox, Plus, MoreHorizontal, GripVertical, CalendarDays, CalendarClock, Filter } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
 import TaskItem from './TaskItem';
@@ -25,6 +25,7 @@ interface TaskListProps {
   sections?: Section[];
   projectId?: string;
   viewTitle?: string;
+  viewType?: 'inbox' | 'today' | 'upcoming' | 'filter' | 'project';
   showSections?: boolean;
 }
 
@@ -214,6 +215,7 @@ export default function TaskList({
   sections = [],
   projectId,
   viewTitle,
+  viewType,
   showSections = true,
 }: TaskListProps) {
   const { reorderTasks, addSection, activeTimerTaskId } = useStore();
@@ -270,15 +272,59 @@ export default function TaskList({
   }, [projectId, addSection, sections.length]);
 
   if (tasks.length === 0) {
+    const emptyConfig = {
+      inbox: {
+        icon: Inbox,
+        gradient: 'from-blue-50 to-cyan-50',
+        iconGradient: 'from-blue-100 to-cyan-100',
+        iconColor: 'text-blue-300',
+        title: '收件箱空空如也',
+        desc: '所有未分配项目的任务都会出现在这里',
+      },
+      today: {
+        icon: CalendarDays,
+        gradient: 'from-emerald-50 to-teal-50',
+        iconGradient: 'from-emerald-100 to-teal-100',
+        iconColor: 'text-emerald-300',
+        title: '今天没有待办',
+        desc: '享受这宁静的一天吧，明天再规划',
+      },
+      upcoming: {
+        icon: CalendarClock,
+        gradient: 'from-purple-50 to-pink-50',
+        iconGradient: 'from-purple-100 to-pink-100',
+        iconColor: 'text-purple-300',
+        title: '未来7天很轻松',
+        desc: '没有即将到来的任务，享受当下吧',
+      },
+      filter: {
+        icon: Filter,
+        gradient: 'from-orange-50 to-amber-50',
+        iconGradient: 'from-orange-100 to-amber-100',
+        iconColor: 'text-orange-300',
+        title: '没有匹配的任务',
+        desc: '尝试调整你的筛选条件',
+      },
+      project: {
+        icon: Inbox,
+        gradient: 'from-blue-50 to-purple-50',
+        iconGradient: 'from-blue-100 to-purple-100',
+        iconColor: 'text-blue-300',
+        title: '暂无任务',
+        desc: '点击「添加任务」开始吧',
+      },
+    };
+    const config = emptyConfig[viewType || 'project'];
+
     return (
       <div className="flex flex-col items-center justify-center py-28 text-[var(--text-tertiary)]">
-        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center mb-6 shadow-inner">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-            <Inbox size={32} className="text-blue-300" />
+        <div className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${config.gradient} flex items-center justify-center mb-6 shadow-inner`}>
+          <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${config.iconGradient} flex items-center justify-center`}>
+            <config.icon size={32} className={config.iconColor} />
           </div>
         </div>
-        <p className="text-lg font-bold text-[var(--text-primary)] mb-1.5">暂无任务</p>
-        <p className="text-sm text-[var(--text-tertiary)]">点击「添加任务」开始吧</p>
+        <p className="text-lg font-bold text-[var(--text-primary)] mb-1.5">{config.title}</p>
+        <p className="text-sm text-[var(--text-tertiary)]">{config.desc}</p>
       </div>
     );
   }
@@ -289,7 +335,23 @@ export default function TaskList({
         {/* View Title */}
         {viewTitle && (
           <div className="px-4 mb-4">
-            <h2 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">{viewTitle}</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">{viewTitle}</h2>
+              {viewType && (
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                  viewType === 'inbox' ? 'bg-blue-500/10 text-blue-600' :
+                  viewType === 'today' ? 'bg-emerald-500/10 text-emerald-600' :
+                  viewType === 'upcoming' ? 'bg-purple-500/10 text-purple-600' :
+                  viewType === 'filter' ? 'bg-orange-500/10 text-orange-600' :
+                  'bg-gray-500/10 text-gray-600'
+                }`}>
+                  {viewType === 'inbox' ? '未分类' :
+                   viewType === 'today' ? '今日' :
+                   viewType === 'upcoming' ? '未来7天' :
+                   viewType === 'filter' ? '已筛选' : ''}
+                </span>
+              )}
+            </div>
             <div className="mt-2 h-0.5 w-12 bg-gradient-to-r from-[var(--accent)] to-transparent rounded-full" />
           </div>
         )}

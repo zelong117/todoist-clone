@@ -43,13 +43,13 @@ router.post('/', authenticate, validate({ body: createProjectSchema }), asyncHan
  */
 router.put('/:id', authenticate, validate({ params: projectIdParamSchema, body: updateProjectSchema }), asyncHandler(async (req, res) => {
   const project = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!project) return res.status(404).json({ error: '项目不存�? });
+  if (!project) return res.status(404).json({ error: 'Project not found' });
 
   const s = pick(req.body, ['name', 'color', 'isFavorite', 'usePomodoro']);
   const sets = [];
   const vals = [];
   if (s.name !== undefined) {
-    if (!s.name.trim()) return res.status(400).json({ error: '名称不能为空' });
+    if (!s.name.trim()) return res.status(400).json({ error: 'Invalid request' });
     sets.push('name = ?');
     vals.push(s.name.trim());
   }

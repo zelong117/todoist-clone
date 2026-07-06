@@ -20,6 +20,7 @@ import {
   User,
   Download,
   Upload,
+  X,
 } from 'lucide-react';
 import { useStore } from '../store';
 import type { Project } from '../types';
@@ -192,8 +193,8 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
         {!collapsed && (
           <div
             className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-              currentView === 'search'
-                ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold shadow-sm'
+              searchQuery
+                ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold shadow-sm ring-1 ring-[var(--accent)]/20'
                 : 'text-[var(--text-secondary)] hover:bg-[var(--bg-active)] hover:text-[var(--text-primary)]'
             }`}
           >
@@ -204,11 +205,22 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
                 const q = e.target.value;
                 setLocalSearchQuery(q);
                 setSearchQuery(q);
-                onViewChange('inbox');
+                if (q && currentView !== 'inbox') onViewChange('inbox');
               }}
               placeholder="搜索"
               className="w-full bg-transparent outline-none text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
             />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setLocalSearchQuery('');
+                  setSearchQuery('');
+                }}
+                className="p-0.5 rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         )}
 
@@ -312,6 +324,16 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
                             {count}
                           </span>
                         )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            useStore.getState().updateProject(project.id, { isFavorite: false });
+                          }}
+                          className="p-1 rounded-lg text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 transition-all opacity-0 group-hover:opacity-100"
+                          title="取消收藏"
+                        >
+                          <Star size={12} className="fill-yellow-500" />
+                        </button>
                       </button>
                     </div>
                   );
@@ -376,6 +398,20 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
                               {count}
                             </span>
                           )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              useStore.getState().updateProject(project.id, { isFavorite: !project.isFavorite });
+                            }}
+                            className={`p-1 rounded-lg transition-all flex-shrink-0 ${
+                              project.isFavorite
+                                ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50'
+                                : 'text-[var(--text-tertiary)] opacity-0 group-hover:opacity-100 hover:text-yellow-500 hover:bg-yellow-50'
+                            }`}
+                            title={project.isFavorite ? '取消收藏' : '收藏项目'}
+                          >
+                            <Star size={12} className={project.isFavorite ? 'fill-yellow-500' : ''} />
+                          </button>
                         </>
                       )}
                     </button>

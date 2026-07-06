@@ -82,9 +82,11 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
     (filter: PresetFilter) => {
       if (activePreset === filter.id) {
         setActivePreset(null);
+        setCustomQuery('');
         onFilterChange(null, '');
       } else {
         setActivePreset(filter.id);
+        setCustomQuery('');
         onFilterChange(filter.filter, filter.label);
       }
     },
@@ -93,15 +95,16 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
 
   const handleCustomFilter = useCallback(() => {
     if (!customQuery.trim()) {
-      onFilterChange(null, '');
+      if (!activePreset) onFilterChange(null, '');
       return;
     }
     const query = customQuery.trim().toLowerCase();
+    setActivePreset(null);
     onFilterChange(
-      (t) => t.title.toLowerCase().includes(query),
+      (t) => !t.isCompleted && (t.title.toLowerCase().includes(query) || t.description.toLowerCase().includes(query)),
       `搜索: ${customQuery.trim()}`
     );
-  }, [customQuery, onFilterChange]);
+  }, [customQuery, activePreset, onFilterChange]);
 
   const handleClear = useCallback(() => {
     setActivePreset(null);
@@ -112,7 +115,7 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
   const hasActiveFilter = activePreset || customQuery.trim();
 
   return (
-    <div className="bg-[var(--bg-card)] rounded-xl p-4 shadow-sm border border-[var(--border-light)]">
+    <div className="bg-[var(--bg-card)] rounded-xl p-4 shadow-sm border border-[var(--border-color)]">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Filter size={16} className="text-[var(--text-tertiary)]" />
@@ -138,15 +141,15 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
               key={filter.id}
               onClick={() => handlePresetClick(filter)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
-                isActive ? 'ring-2 ring-offset-1' : 'hover:shadow-sm'
+                isActive ? 'ring-2 ring-offset-1 shadow-sm' : 'hover:shadow-sm hover:bg-[var(--bg-hover)]'
               }`}
               style={{
-                backgroundColor: isActive ? filter.bgColor : '#F9FAFB',
+                backgroundColor: isActive ? filter.bgColor : 'var(--bg-card)',
               }}
             >
               <span style={{ color: filter.color }}>{filter.icon}</span>
               <span className="text-[var(--text-secondary)] text-xs font-medium">{filter.label}</span>
-              <span className="ml-auto text-[10px] text-[var(--text-tertiary)] bg-[var(--bg-card)] px-1.5 py-0.5 rounded-full">
+              <span className="ml-auto text-[10px] text-[var(--text-tertiary)] bg-[var(--bg-active)] px-1.5 py-0.5 rounded-full font-semibold">
                 {count}
               </span>
             </button>
@@ -168,22 +171,31 @@ export default function FilterPanel({ onFilterChange, activeFilterLabel }: Filte
                 if (e.key === 'Escape') handleClear();
               }}
               placeholder="按标题搜索..."
-              className="w-full pl-8 pr-3 py-1.5 text-sm border border-[var(--border-color)] rounded-lg outline-none focus:border-[#DC4C3E]/40 transition-colors"
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-[var(--border-color)] rounded-lg outline-none focus:border-[#DC4C3E]/40 focus:ring-2 focus:ring-[#DC4C3E]/10 transition-colors"
             />
           </div>
           <button
             onClick={handleCustomFilter}
             disabled={!customQuery.trim()}
-            className="px-3 py-1.5 text-sm bg-[var(--bg-active)] hover:bg-[var(--bg-active)] text-[var(--text-secondary)] rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1.5 text-sm bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium"
           >
             筛选
           </button>
         </div>
+        {customQuery.trim() && (
+          <button
+            onClick={handleClear}
+            className="mt-1.5 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors flex items-center gap-1"
+          >
+            <X size={10} />
+            清除搜索
+          </button>
+        )}
       </div>
 
       {hasActiveFilter && activeFilterLabel && (
         <div className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-[#DC4C3E]/5 rounded-lg">
-          <span className="text-xs text-[#DC4C3E]">当前过滤: {activeFilterLabel}</span>
+          <span className="text-xs text-[#DC4C3E] font-medium">当前过滤: {activeFilterLabel}</span>
         </div>
       )}
     </div>

@@ -34,7 +34,7 @@ router.post('/start', authenticate, validate({ body: startPomodoroSchema }), asy
   const m = mode || 'focus';
 
   const open = queryOne('SELECT id FROM pomodoro_sessions WHERE user_id = ? AND ended_at IS NULL', [req.user.id]);
-  if (open) return res.status(409).json({ error: '已有进行中的番茄钟会�? });
+  if (open) return res.status(409).json({ error: 'Pomodoro session already active' });
 
   // 【数据隔离】验�?taskId 属于当前用户
   if (taskId) {
