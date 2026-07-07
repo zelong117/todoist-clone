@@ -60,7 +60,7 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
 
   const tasksByDate = useMemo(() => {
     const map: Record<string, Task[]> = {};
-    tasks.forEach((task) => {
+    tasks.filter((t) => !t.isCompleted).forEach((task) => {
       if (task.dueDate) {
         if (!map[task.dueDate]) map[task.dueDate] = [];
         map[task.dueDate].push(task);

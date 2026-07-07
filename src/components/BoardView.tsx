@@ -342,14 +342,15 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
   }, [sections]);
 
   const tasksToShow = useMemo(() => {
+    // 隐藏已完成任务
+    const incompleteTasks = tasks.filter((t) => !t.isCompleted);
     if (sections.length === 0) {
-      // Non-project view: map ALL tasks to __default__ section
-      return tasks.map((t) => ({
+      return incompleteTasks.map((t) => ({
         ...t,
         sectionId: '__default__',
       }));
     }
-    return tasks;
+    return incompleteTasks;
   }, [tasks, sections]);
 
   return (
