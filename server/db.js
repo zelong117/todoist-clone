@@ -144,6 +144,21 @@ async function initDB() {
   db.run('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read_at, created_at)');
   db.run('CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id, created_at)');
 
+  // 项目成员表（共享/群组）
+  db.run(`
+    CREATE TABLE IF NOT EXISTS project_members (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      role TEXT DEFAULT 'member',
+      invited_by TEXT,
+      joined_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(project_id, user_id)
+    );
+  `);
+  db.run('CREATE INDEX IF NOT EXISTS idx_project_members_project ON project_members(project_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_project_members_user ON project_members(user_id)');
+
   saveDB();
   console.log('鉁?Database initialized:', DB_PATH);
   return db;
