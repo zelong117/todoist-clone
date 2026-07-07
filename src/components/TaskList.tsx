@@ -219,6 +219,7 @@ export default function TaskList({
   showSections = true,
 }: TaskListProps) {
   const { reorderTasks, addSection, activeTimerTaskId } = useStore();
+  const [showCompleted, setShowCompleted] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -386,16 +387,22 @@ export default function TaskList({
         {/* Completed Tasks */}
         {completedTasks.length > 0 && (
           <div className="mt-8 px-4">
-            <div className="flex items-center gap-3 py-2.5 border-t border-[var(--border-light)]">
+            <button
+              onClick={() => setShowCompleted(!showCompleted)}
+              className="flex items-center gap-3 py-2.5 border-t border-[var(--border-light)] w-full text-left"
+            >
+              <span className={`text-sm transition-transform duration-200 ${showCompleted ? 'rotate-90' : ''}`}>▶</span>
               <span className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wide">
                 已完成 ({completedTasks.length})
               </span>
-            </div>
-            <div className="space-y-0.5 opacity-60">
-              {completedTasks.map((task) => (
-                <TaskItem key={task.id} task={task} />
-              ))}
-            </div>
+            </button>
+            {showCompleted && (
+              <div className="space-y-0.5 opacity-60">
+                {completedTasks.map((task) => (
+                  <TaskItem key={task.id} task={task} />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
