@@ -178,6 +178,29 @@ async function initDB() {
   try { db.run('ALTER TABLE users ADD COLUMN avatar_url TEXT'); } catch {}
   try { db.run('ALTER TABLE users ADD COLUMN settings TEXT'); } catch {}
 
+  // 团队表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS teams (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      owner_id TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS team_members (
+      id TEXT PRIMARY KEY,
+      team_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      role TEXT DEFAULT 'member',
+      joined_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(team_id, user_id)
+    );
+  `);
+  db.run('CREATE INDEX IF NOT EXISTS idx_team_members_team ON team_members(team_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id)');
+
   saveDB();
   console.log('鉁?Database initialized:', DB_PATH);
   return db;

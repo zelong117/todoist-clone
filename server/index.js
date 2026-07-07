@@ -136,6 +136,18 @@ app.use('/api', require('./routes/attachments'));
 app.use('/api/uploads', express.static(path.join(__dirname, 'data', 'uploads')));
 app.use('/api/attachments/file', express.static(path.join(__dirname, 'data', 'attachments')));
 
+// OAuth 路由
+app.use('/api/auth', require('./routes/oauth'));
+
+// 团队路由
+app.use('/api/teams', require('./routes/teams'));
+
+// 审计日志路由
+app.use('/api/audit-logs', require('./routes/auditLogs'));
+
+// API 文档
+app.use('/api/docs', require('./routes/docs'));
+
 // ============================================================
 // 鍋ュ悍妫€鏌ュ拰鐩戞帶绔偣
 // ============================================================
