@@ -115,3 +115,117 @@
   --scrollbar-thumb: rgba(255,255,255,0.15);
   --scrollbar-thumb-hover: rgba(255,255,255,0.25);
 }
+
+/* ==================== 移动端适配 ==================== */
+
+/* 平板及以下：侧边栏可折叠 */
+@media (max-width: 1024px) {
+  /* 侧边栏窄化 */
+  aside, nav {
+    width: 60px !important;
+    overflow: hidden;
+  }
+  aside span, nav span {
+    display: none !important;
+  }
+  aside button, nav button {
+    justify-content: center !important;
+    padding: 0.5rem !important;
+  }
+}
+
+/* 手机端：侧边栏隐藏，点击展开 */
+@media (max-width: 768px) {
+  /* 侧边栏浮动覆盖 */
+  aside, nav, .complementary {
+    position: fixed !important;
+    z-index: 50 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  aside.open, nav.open, .complementary.open {
+    transform: translateX(0);
+  }
+  aside span, nav span {
+    display: block !important;
+  }
+
+  /* 主内容全宽 */
+  main, .flex-1 {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  /* 看板列堆叠 */
+  .flex.gap-5 {
+    flex-direction: column !important;
+  }
+  .flex-shrink-0 {
+    width: 100% !important;
+  }
+
+  /* 任务卡片全宽 */
+  .rounded-xl {
+    width: 100% !important;
+  }
+
+  /* 顶部统计栏换行 */
+  .flex.items-center.gap-4 {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+
+  /* 登录/注册页缩小 */
+  .max-w-md {
+    max-width: 90vw !important;
+    padding: 1rem !important;
+  }
+
+  /* 按钮触摸友好 */
+  button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  /* 输入框触摸友好 */
+  input, textarea, select {
+    min-height: 44px !important;
+    font-size: 16px !important;
+  }
+
+  /* 弹窗全宽 */
+  .fixed.inset-0 > div {
+    max-width: 90vw !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+
+  /* 番茄钟浮动器缩小 */
+  .fixed.bottom-6.right-6 {
+    bottom: 1rem !important;
+    right: 1rem !important;
+  }
+  .fixed.bottom-6.right-6 > div {
+    padding: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* 超小屏幕 */
+@media (max-width: 480px) {
+  /* 标题缩小 */
+  h1 {
+    font-size: 1.25rem !important;
+  }
+  /* 统计栏隐藏次要信息 */
+  .text-\\[11px\\] {
+    font-size: 10px !important;
+  }
+  /* 任务卡片内边距缩小 */
+  .px-4 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
