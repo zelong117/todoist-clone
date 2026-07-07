@@ -159,6 +159,25 @@ async function initDB() {
   db.run('CREATE INDEX IF NOT EXISTS idx_project_members_project ON project_members(project_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_project_members_user ON project_members(user_id)');
 
+  // 附件表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS attachments (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      filename TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      size INTEGER DEFAULT 0,
+      mimetype TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  db.run('CREATE INDEX IF NOT EXISTS idx_attachments_task ON attachments(task_id)');
+
+  // 用户表追加字段（安全添加）
+  try { db.run('ALTER TABLE users ADD COLUMN avatar_url TEXT'); } catch {}
+  try { db.run('ALTER TABLE users ADD COLUMN settings TEXT'); } catch {}
+
   saveDB();
   console.log('鉁?Database initialized:', DB_PATH);
   return db;

@@ -126,6 +126,16 @@ app.use('/api/admin', adminLimiter, require('./routes/admin'));
 // 项目共享路由
 app.use('/api/projects', require('./routes/shares'));
 
+// 用户路由（头像/设置）
+app.use('/api/users', require('./routes/users'));
+
+// 附件路由
+app.use('/api', require('./routes/attachments'));
+
+// 静态文件（上传的头像/附件）
+app.use('/api/uploads', express.static(path.join(__dirname, 'data', 'uploads')));
+app.use('/api/attachments/file', express.static(path.join(__dirname, 'data', 'attachments')));
+
 // ============================================================
 // 鍋ュ悍妫€鏌ュ拰鐩戞帶绔偣
 // ============================================================
