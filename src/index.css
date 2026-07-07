@@ -24,18 +24,18 @@
 }
 
 .dark {
-  /* 暗色模式 - 参考 Vercel */
-  --bg-primary: #0a0a0b;
-  --bg-secondary: #111113;
-  --bg-card: #18181b;
-  --bg-sidebar: #0a0a0b;
-  --bg-hover: #27272a;
-  --bg-active: #3f3f46;
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
-  --border-color: #27272a;
-  --border-light: #1f1f23;
+  /* 暗色模式 - 用户偏好配色 */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #222226;
+  --bg-card: #262629;
+  --bg-sidebar: #1a1a1a;
+  --bg-hover: #2e2e32;
+  --bg-active: #38383d;
+  --text-primary: #ffffff;
+  --text-secondary: #d4d4d8;
+  --text-tertiary: #a1a1aa;
+  --border-color: #333338;
+  --border-light: #2a2a2e;
   --accent: #DC4C3E;
   --accent-hover: #e05548;
   --success: #22c55e;

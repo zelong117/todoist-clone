@@ -27,13 +27,23 @@ router.get('/', authenticate, asyncHandler(async (req, res) => {
 }));
 
 /**
+ * GET /:id
+ * 获取单个项目详情
+ */
+router.get('/:id', authenticate, validate({ params: projectIdParamSchema }), asyncHandler(async (req, res) => {
+  const project = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+  res.json(mapProject(project));
+}));
+
+/**
  * POST /
- * 创建新项�?
+ * 创建新项目
  */
 router.post('/', authenticate, validate({ body: createProjectSchema }), asyncHandler(async (req, res) => {
-  const { name, color, usePomodoro } = req.body;
+  const { name, color, isFavorite, usePomodoro } = req.body;
   const id = uuidv4();
-  run('INSERT INTO projects (id, user_id, name, color, use_pomodoro) VALUES (?, ?, ?, ?, ?)', [id, req.user.id, name.trim(), color || '#DC4C3E', usePomodoro ? 1 : 0]);
+  run('INSERT INTO projects (id, user_id, name, color, is_favorite, use_pomodoro) VALUES (?, ?, ?, ?, ?, ?)', [id, req.user.id, name.trim(), color || '#DC4C3E', isFavorite ? 1 : 0, usePomodoro ? 1 : 0]);
   res.status(201).json(mapProject(queryOne('SELECT * FROM projects WHERE id = ?', [id])));
 }));
 

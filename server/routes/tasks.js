@@ -47,11 +47,88 @@ function verifyOwnership(entityType, entityId, userId) {
 
 /**
  * GET /
- * 鑾峰彇褰撳墠鐢ㄦ埛鐨勬墍鏈変换鍔?
+ * 获取当前用户的所有任务 - 支持 search/page/limit/priority 过滤
  */
 router.get('/', authenticate, asyncHandler(async (req, res) => {
-  const rows = queryAll('SELECT * FROM tasks WHERE user_id = ? ORDER BY sort_order', [req.user.id]);
-  res.json(rows.map(mapTask));
+  const { search, page, limit, priority, projectId, completed } = req.query;
+
+  let sql = 'SELECT * FROM tasks WHERE user_id = ?';
+  const params = [req.user.id];
+
+  // 搜索过滤
+  if (search) {
+    sql += ' AND (title LIKE ? OR description LIKE ?)';
+    const q = `%${search}%`;
+    params.push(q, q);
+  }
+
+  // 优先级过滤
+  if (priority !== undefined && priority !== '') {
+    sql += ' AND priority = ?';
+    params.push(Number(priority));
+  }
+
+  // 项目过滤
+  if (projectId !== undefined && projectId !== '') {
+    if (projectId === 'null' || projectId === 'none') {
+      sql += ' AND project_id IS NULL';
+    } else {
+      sql += ' AND project_id = ?';
+      params.push(projectId);
+    }
+  }
+
+  // 完成状态过滤
+  if (completed !== undefined && completed !== '') {
+    if (completed === 'true' || completed === '1') {
+      sql += ' AND is_completed = 1';
+    } else if (completed === 'false' || completed === '0') {
+      sql += ' AND is_completed = 0';
+    }
+  }
+
+  sql += ' ORDER BY sort_order, created_at DESC';
+
+  // 分页
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.min(200, Math.max(1, parseInt(limit) || 200));
+  const offset = (pageNum - 1) * limitNum;
+
+  // 如果请求了分页，返回分页格式
+  if (page !== undefined || limit !== undefined) {
+    // 先查总数
+    let countSql = sql.replace('SELECT *', 'SELECT COUNT(*) as total');
+    countSql = countSql.replace(' ORDER BY sort_order, created_at DESC', '');
+    const countResult = queryOne(countSql, params);
+    const total = countResult ? countResult.total : 0;
+
+    sql += ' LIMIT ? OFFSET ?';
+    params.push(limitNum, offset);
+
+    const rows = queryAll(sql, params);
+    res.json({
+      data: rows.map(mapTask),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    });
+  } else {
+    const rows = queryAll(sql, params);
+    res.json(rows.map(mapTask));
+  }
+}));
+
+/**
+ * GET /:id
+ * 获取单个任务详情
+ */
+router.get('/:id', authenticate, validate({ params: taskIdParamSchema }), asyncHandler(async (req, res) => {
+  const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  if (!task) return res.status(404).json({ error: 'Task not found' });
+  res.json(mapTask(task));
 }));
 
 /**
@@ -164,8 +241,75 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
 }));
 
 /**
+ * PATCH /:id
+ * 部分更新任务 - 与 PUT 逻辑相同，允许部分字段更新
+ */
+router.patch('/:id', authenticate, validate({ params: taskIdParamSchema, body: updateTaskSchema }), asyncHandler(async (req, res) => {
+  const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  if (!task) return res.status(404).json({ error: 'Task not found' });
+
+  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId'];
+  const sanitized = pick(req.body, allowed);
+
+  if (sanitized.projectId !== undefined && sanitized.projectId !== null && sanitized.projectId !== '') {
+    if (!verifyOwnership('projects', sanitized.projectId, req.user.id)) {
+      return res.status(400).json({ error: 'Invalid request' });
+    }
+  }
+
+  if (sanitized.sectionId) return res.status(400).json({ error: 'Invalid request' });
+
+  if (sanitized.parentId !== undefined && sanitized.parentId !== null && sanitized.parentId !== '') {
+    if (!verifyOwnership('tasks', sanitized.parentId, req.user.id)) {
+      return res.status(400).json({ error: 'Parent task not found' });
+    }
+    if (sanitized.parentId === req.params.id) {
+      return res.status(400).json({ error: 'Task cannot be its own parent' });
+    }
+  }
+
+  const fieldMap = {
+    title: 'title', description: 'description', isCompleted: 'is_completed',
+    completedAt: 'completed_at', priority: 'priority', dueDate: 'due_date',
+    labels: 'labels', plannedPomodoros: 'planned_pomodoros',
+    completedPomodoros: 'completed_pomodoros', pomodoroCount: 'pomodoro_count',
+    estimatedMinutes: 'estimated_minutes', sortOrder: 'sort_order',
+    projectId: 'project_id', sectionId: 'section_id', parentId: 'parent_id'
+  };
+
+  const sets = [];
+  const values = [];
+  for (const [jk, dk] of Object.entries(fieldMap)) {
+    if (sanitized[jk] !== undefined) {
+      let val = sanitized[jk];
+      if (jk === 'labels') val = JSON.stringify(val);
+      if (['projectId', 'sectionId', 'parentId', 'dueDate', 'completedAt'].includes(jk)) val = nullableId(val);
+      if (jk === 'isCompleted') val = val ? 1 : 0;
+      sets.push(`${dk} = ?`);
+      values.push(val);
+    }
+  }
+  if (sets.length > 0) {
+    sets.push('updated_at = ?');
+    values.push(new Date().toISOString());
+    values.push(req.params.id);
+    run(`UPDATE tasks SET ${sets.join(', ')} WHERE id = ?`, values);
+  }
+
+  const updated = queryOne('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+  const mapped = mapTask(updated);
+
+  const { notificationService: ns, messageQueue: mq, wsManager: wm } = getWsServices(req);
+  ns.broadcast('task:update', { task: mapped, changes: Object.keys(sanitized), userId: req.user.id }, wm, mq);
+  logActivity(req.user.id, 'task_updated', 'task', req.params.id, 'Updated task: ' + mapped.title);
+  refreshNotifications(req.user.id);
+
+  res.json(mapped);
+}));
+
+/**
  * DELETE /:id
- * 鍒犻櫎浠诲姟 - 鍚屾椂鍒犻櫎鍏宠仈鐨勫瓙浠诲姟銆佽瘎璁哄拰鐣寗閽熻褰?
+ * 鍒犻櫎浠诲姟 - 鍚屾椂鍒犻櫎鍏宠仈鐨勫瓙浠诲姟銆佽瘎璁哄拰鐣ㄨ寗閽熻褰?
  */
 router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);

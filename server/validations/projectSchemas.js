@@ -15,6 +15,7 @@ const createProjectSchema = Joi.object({
   color: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).default('#DC4C3E').messages({
     'string.pattern.base': '颜色格式不正确，需为 #RRGGBB 格式',
   }),
+  isFavorite: Joi.boolean().default(false),
   usePomodoro: Joi.boolean().default(false),
 });
 

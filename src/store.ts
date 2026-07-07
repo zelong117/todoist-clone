@@ -509,13 +509,22 @@ export const useStore = create<AppState>()(
       },
 
       tick: () => {
-        const { timerSeconds } = get();
-        const next = timerSeconds - 1;
-        if (next <= 0) {
+        const { timerSeconds, timerStatus, timerStartedAt } = get();
+        if (timerStatus !== 'running') return;
+
+        let currentSeconds = timerSeconds;
+        if (timerStartedAt) {
+          // 基于时间戳计算真实剩余时间
+          const elapsed = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
+          currentSeconds = Math.max(0, timerSeconds - elapsed);
+        }
+
+        if (currentSeconds <= 0) {
+          // 时间到：先停止计时器，再完成
           set({ timerSeconds: 0, timerStartedAt: null });
           get().completePomodoro();
         } else {
-          set({ timerSeconds: next, timerStartedAt: new Date().toISOString() });
+          set({ timerSeconds: currentSeconds, timerStartedAt: new Date().toISOString() });
         }
       },
 
@@ -560,6 +569,7 @@ export const useStore = create<AppState>()(
             timerMode: nextMode,
             timerSeconds: nextSeconds,
             timerStatus: pomodoroSettings.autoStartBreak ? 'running' : 'idle',
+            timerStartedAt: pomodoroSettings.autoStartBreak ? new Date().toISOString() : null,
           });
           // Increment pomodoro count on the active task
           if (activeTimerTaskId) {
