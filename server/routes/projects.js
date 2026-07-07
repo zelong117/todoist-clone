@@ -1,11 +1,11 @@
 /**
  * 项目路由
- * 处理项目�?CRUD 操作
+ * 处理项目�?CRUD 操作
  * 
- * 安全措施�?
- * - 所有查询都通过 user_id 过滤，确保数据隔�?
- * - 使用 Joi 进行输入验证（名称长度、颜色格式等�?
- * - 使用 pick() 防止批量赋值攻�?
+ * 安全措施�?
+ * - 所有查询都通过 user_id 过滤，确保数据隔�?
+ * - 使用 Joi 进行输入验证（名称长度、颜色格式等�?
+ * - 使用 pick() 防止批量赋值攻�?
  * - 级联删除时限定在同一用户的数据范围内
  */
 const express = require('express');
@@ -20,7 +20,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
 
 /**
  * GET /
- * 获取当前用户的所有项�?
+ * 获取当前用户的所有项�?
  */
 router.get('/', authenticate, asyncHandler(async (req, res) => {
   res.json(queryAll('SELECT * FROM projects WHERE user_id = ? ORDER BY sort_order', [req.user.id]).map(mapProject));
@@ -28,7 +28,7 @@ router.get('/', authenticate, asyncHandler(async (req, res) => {
 
 /**
  * POST /
- * 创建新项�?
+ * 创建新项�?
  */
 router.post('/', authenticate, validate({ body: createProjectSchema }), asyncHandler(async (req, res) => {
   const { name, color, usePomodoro } = req.body;
@@ -74,11 +74,11 @@ router.put('/:id', authenticate, validate({ params: projectIdParamSchema, body: 
 
 /**
  * DELETE /:id
- * 删除项目 - 级联解除关联任务的项目引用（限定当前用户�?
+ * 删除项目 - 级联解除关联任务的项目引用（限定当前用户�?
  */
 router.delete('/:id', authenticate, validate({ params: projectIdParamSchema }), asyncHandler(async (req, res) => {
   const p = queryOne('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!p) return res.status(404).json({ error: '项目不存�? });
+  if (!p) return res.status(404).json({ error: '项目不存在' });
 
   transaction(() => {
     run('UPDATE tasks SET project_id = NULL, updated_at = ? WHERE project_id = ? AND user_id = ?', [new Date().toISOString(), req.params.id, req.user.id]);

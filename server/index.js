@@ -13,7 +13,7 @@ const { initDB } = require('./db');
 const { helmetConfig, corsOptions, extraSecurityHeaders, requestBodyGuard } = require('./middleware/security');
 const { ipFilter, apiLimiter, authLimiter, writeLimiter, adminLimiter } = require('./middleware/rateLimiter');
 const { cacheMiddleware, getCacheStats, invalidateByUser } = require('./middleware/cache');
-      res.json({ success: true, message: `Invalidated cache for user "${userId}"` });
+const { requestTimer, collectMetrics, getMetrics, getMemoryUsage, startMemoryMonitor, createSlowQueryWrapper } = require('./middleware/performance');
 
 // ============================================================
 // WebSocket 妯″潡

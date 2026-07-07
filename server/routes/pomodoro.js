@@ -1,10 +1,10 @@
 /**
- * 番茄钟路�?
+ * 番茄钟路�?
  * 处理番茄钟会话的开始和停止
  * 
- * 安全措施�?
- * - 所有查询都通过 user_id 过滤，确保数据隔�?
- * - 开始番茄钟时验证关联任务属于当前用�?
+ * 安全措施�?
+ * - 所有查询都通过 user_id 过滤，确保数据隔�?
+ * - 开始番茄钟时验证关联任务属于当前用�?
  * - 使用 Joi 进行输入验证（模式白名单、ID 格式等）
  */
 const express = require('express');
@@ -36,10 +36,10 @@ router.post('/start', authenticate, validate({ body: startPomodoroSchema }), asy
   const open = queryOne('SELECT id FROM pomodoro_sessions WHERE user_id = ? AND ended_at IS NULL', [req.user.id]);
   if (open) return res.status(409).json({ error: 'Pomodoro session already active' });
 
-  // 【数据隔离】验�?taskId 属于当前用户
+  // 【数据隔离】验证 taskId 属于当前用户
   if (taskId) {
     const t = queryOne('SELECT id FROM tasks WHERE id = ? AND user_id = ?', [taskId, req.user.id]);
-    if (!t) return res.status(404).json({ error: '任务不存�? });
+    if (!t) return res.status(404).json({ error: '任务不存在' });
   }
 
   const id = uuidv4();
@@ -49,17 +49,17 @@ router.post('/start', authenticate, validate({ body: startPomodoroSchema }), asy
 
 /**
  * POST /stop
- * 停止番茄钟会�?- 验证会话所有权
+ * 停止番茄钟会�?- 验证会话所有权
  */
 router.post('/stop', authenticate, validate({ body: stopPomodoroSchema }), asyncHandler(async (req, res) => {
   const { sessionId, completed } = req.body;
 
   const s = queryOne('SELECT * FROM pomodoro_sessions WHERE id = ? AND user_id = ?', [sessionId, req.user.id]);
-  if (!s) return res.status(404).json({ error: '会话不存�? });
-  if (s.ended_at) return res.status(400).json({ error: '会话已结�? });
+  if (!s) return res.status(404).json({ error: '会话不存在' });
+  if (s.ended_at) return res.status(400).json({ error: '会话已结束' });
 
   const startedAt = new Date(s.started_at).getTime();
-  if (!Number.isFinite(startedAt)) return res.status(500).json({ error: '会话开始时间无�? });
+  if (!Number.isFinite(startedAt)) return res.status(500).json({ error: '会话开始时间无效' });
 
   const endedAt = new Date().toISOString();
   const dur = Math.max(0, Math.round(((Date.now() - startedAt) / 60000) * 100) / 100);
