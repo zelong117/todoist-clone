@@ -245,16 +245,15 @@ initDB().then(() => {
   // 鍒濆鍖?WebSocket 鏈嶅姟鍣?
   wsManager.init(server, notificationService, messageQueue);
 
-  server.listen(PORT, () => {
-    console.log(`鉁?Server running on http://localhost:${PORT}`);
-    console.log(`馃攲 WebSocket available at ws://localhost:${PORT}/ws`);
-    console.log(`馃搳 Memory: ${JSON.stringify(getMemoryUsage())}`);
-    console.log(`馃敀 Security: Helmet, CORS, Rate Limiting enabled`);
-    console.log(`鈿?Performance: Request timer, Slow query logging, Memory monitor enabled`);
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
+    console.log(`WebSocket available at ws://0.0.0.0:${PORT}/ws`);
+    console.log(`Memory: ${JSON.stringify(getMemoryUsage())}`);
+    console.log(`Security: Helmet, CORS, Rate Limiting enabled`);
 
-    // 鍚姩鎴鏃ユ湡鎻愰啋瀹氭椂鍣?
+    // 启动截止日期提醒定时器
     setInterval(checkDeadlines, DEADLINE_CHECK_INTERVAL);
-    // 鍚姩鏃剁珛鍗虫鏌ヤ竴娆?
+    // 启动时立即检查一次
     checkDeadlines();
   });
 

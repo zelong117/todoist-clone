@@ -34,11 +34,15 @@ start http://localhost:5173
 echo.
 echo ========================================
 echo   启动完成！
-echo   前端: http://localhost:5173
-echo   后端: http://localhost:3001
-echo ========================================
 echo.
-echo 关闭窗口不会停止服务。
-echo 要停止服务，关闭 Todoist-Backend 和 Todoist-Frontend 窗口。
+echo   本机访问:   http://localhost:5173
+echo   局域网访问: http://192.168.0.5:5173
+echo   后端API:    http://192.168.0.5:3001
+echo.
+echo   其他电脑用局域网地址访问即可。
+echo   关闭窗口不会停止服务。
+echo   要停止服务，关闭 Todoist-Backend 和
+echo   Todoist-Frontend 窗口。
+echo ========================================
 echo.
 timeout /t 5

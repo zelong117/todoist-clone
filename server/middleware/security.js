@@ -58,12 +58,12 @@ const helmetConfig = helmet({
  */
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173')
+    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173,http://192.168.0.5:5173')
       .split(',')
       .map(s => s.trim());
 
-    // 允许无 origin（如移动应用、curl）
-    if (!origin || allowedOrigins.includes(origin)) {
+    // 允许无 origin（如移动应用、curl）或局域网地址
+    if (!origin || allowedOrigins.includes(origin) || /^http:\/\/192\.168\./.test(origin) || /^http:\/\/10\./.test(origin) || /^http:\/\/172\./.test(origin)) {
       callback(null, true);
     } else {
       callback(new Error('CORS 策略不允许该来源'));
