@@ -13,6 +13,7 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
+  horizontalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
@@ -206,6 +207,21 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
   const { setNodeRef, isOver } = useDroppable({ id: section.id });
   const { addTask, deleteSection } = useStore();
 
+  // 列本身可拖动排序
+  const {
+    attributes: colAttributes,
+    listeners: colListeners,
+    setNodeRef: colSortableRef,
+    transform: colTransform,
+    transition: colTransition,
+    isDragging: colDragging,
+  } = useSortable({ id: `col-${section.id}` });
+
+  const colStyle = {
+    transform: CSS.Transform.toString(colTransform),
+    transition: colTransition,
+  };
+
   const columnTasks = useMemo(
     () => tasks.filter((t) => t.sectionId === section.id),
     [tasks, section.id]
@@ -235,15 +251,23 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node);
+        colSortableRef(node);
+      }}
+      style={colStyle}
+      {...colAttributes}
       className={`flex-shrink-0 w-[300px] rounded-2xl flex flex-col max-h-full transition-all duration-200 ${
         isOver
           ? 'bg-[var(--bg-active)]/80 ring-2 ring-[#DC4C3E]/20 shadow-inner'
           : 'bg-[var(--bg-hover)]/60'
-      }`}
+      } ${colDragging ? 'opacity-50' : ''}`}
     >
-      {/* Column header */}
-      <div className="flex items-center justify-between px-4 py-3">
+      {/* Column header - 拖动手柄区域 */}
+      <div
+        className="flex items-center justify-between px-4 py-3 cursor-grab active:cursor-grabbing"
+        {...colListeners}
+      >
         <div className="flex items-center gap-2.5">
           <h3 className="text-sm font-semibold text-[var(--text-secondary)]">{section.name}</h3>
           <span className="text-[11px] font-medium text-[var(--text-tertiary)] bg-[var(--bg-card)]/80 px-2 py-0.5 rounded-full shadow-sm border border-[var(--border-light)]">
@@ -312,7 +336,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
 }
 
 export default function BoardView({ tasks, sections }: BoardViewProps) {
-  const { updateTask, reorderTasks } = useStore();
+  const { updateTask, reorderTasks, updateSection } = useStore();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [showAddSection, setShowAddSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
@@ -330,6 +354,13 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
     [tasks]
   );
 
+  const sectionsToShow = useMemo(() => {
+    if (sections.length === 0) {
+      return [{ id: '__default__', name: '待办', projectId: '', order: 0 }] as Section[];
+    }
+    return sections;
+  }, [sections]);
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
@@ -337,6 +368,26 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
 
       if (!over) return;
 
+      // 列拖动排序
+      if (typeof active.id === 'string' && active.id.startsWith('col-')) {
+        const activeId = active.id.replace('col-', '');
+        const overId = typeof over.id === 'string' && over.id.startsWith('col-')
+          ? over.id.replace('col-', '')
+          : over.id;
+        if (activeId !== overId) {
+          const reordered = [...sectionsToShow];
+          const oldIndex = reordered.findIndex((s) => s.id === activeId);
+          const newIndex = reordered.findIndex((s) => s.id === overId);
+          if (oldIndex !== -1 && newIndex !== -1) {
+            reordered.splice(oldIndex, 1);
+            reordered.splice(newIndex, 0, sectionsToShow[oldIndex]);
+            reordered.forEach((s, i) => updateSection(s.id, { order: i }));
+          }
+        }
+        return;
+      }
+
+      // 任务卡片拖动
       const activeTaskItem = tasks.find((t) => t.id === active.id);
       if (!activeTaskItem) return;
 
@@ -371,15 +422,8 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
         }
       }
     },
-    [tasks, sections, updateTask, reorderTasks]
+    [tasks, sections, updateTask, reorderTasks, sectionsToShow, updateSection]
   );
-
-  const sectionsToShow = useMemo(() => {
-    if (sections.length === 0) {
-      return [{ id: '__default__', name: '待办', projectId: '', order: 0 }] as Section[];
-    }
-    return sections;
-  }, [sections]);
 
   const tasksToShow = useMemo(() => {
     // 隐藏已完成任务
@@ -401,9 +445,14 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
       onDragEnd={handleDragEnd}
     >
       <div className="flex gap-5 h-full overflow-x-auto pb-4 px-1">
-        {sectionsToShow.map((section) => (
-          <BoardColumn key={section.id} section={section} tasks={tasksToShow} />
-        ))}
+        <SortableContext
+          items={sectionsToShow.map((s) => `col-${s.id}`)}
+          strategy={horizontalListSortingStrategy}
+        >
+          {sectionsToShow.map((section) => (
+            <BoardColumn key={section.id} section={section} tasks={tasksToShow} />
+          ))}
+        </SortableContext>
 
         {/* Add column button */}
         {showAddSection ? (
