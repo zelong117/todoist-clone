@@ -204,7 +204,7 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
 
 function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
   const { setNodeRef, isOver } = useDroppable({ id: section.id });
-  const { addTask } = useStore();
+  const { addTask, deleteSection } = useStore();
 
   const columnTasks = useMemo(
     () => tasks.filter((t) => t.sectionId === section.id),
@@ -250,13 +250,28 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
             {columnTasks.length}
           </span>
         </div>
-        <button
-          onClick={handleAddTask}
-          className="p-1.5 rounded-lg hover:bg-[var(--bg-card)]/80 text-[var(--text-tertiary)] hover:text-[#DC4C3E] transition-all duration-150"
-          title="添加任务"
-        >
-          <Plus size={16} />
-        </button>
+        <div className="flex items-center gap-1">
+          {section.id !== '__default__' && (
+            <button
+              onClick={() => {
+                if (window.confirm(`确定删除版块「${section.name}」吗？版块内任务将移至默认版块。`)) {
+                  deleteSection(section.id);
+                }
+              }}
+              className="p-1.5 rounded-lg hover:bg-red-50 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-150"
+              title="删除版块"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+          <button
+            onClick={handleAddTask}
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-card)]/80 text-[var(--text-tertiary)] hover:text-[#DC4C3E] transition-all duration-150"
+            title="添加任务"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Cards */}
@@ -297,7 +312,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
 }
 
 export default function BoardView({ tasks, sections }: BoardViewProps) {
-  const { updateTask } = useStore();
+  const { updateTask, reorderTasks } = useStore();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [showAddSection, setShowAddSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
@@ -325,13 +340,38 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
       const activeTaskItem = tasks.find((t) => t.id === active.id);
       if (!activeTaskItem) return;
 
-      // Check if dropped on a column (section)
+      // 检查是否拖到某个列（section）上
       const overSection = sections.find((s) => s.id === over.id);
       if (overSection && activeTaskItem.sectionId !== overSection.id) {
+        // 跨列移动
         updateTask(activeTaskItem.id, { sectionId: overSection.id });
+        return;
+      }
+
+      // 列内排序
+      const overTask = tasks.find((t) => t.id === over.id);
+      if (overTask && overTask.id !== activeTaskItem.id) {
+        // 确定目标列
+        const targetSectionId = overTask.sectionId || activeTaskItem.sectionId;
+        // 如果跨列拖到某个任务上
+        if (activeTaskItem.sectionId !== overTask.sectionId) {
+          updateTask(activeTaskItem.id, { sectionId: overTask.sectionId });
+        }
+        // 重新排序
+        const sectionTasks = tasks
+          .filter((t) => (t.sectionId || '__default__') === (targetSectionId || '__default__'))
+          .sort((a, b) => (a.order || 0) - (b.order || 0));
+        const oldIndex = sectionTasks.findIndex((t) => t.id === activeTaskItem.id);
+        const newIndex = sectionTasks.findIndex((t) => t.id === overTask.id);
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newOrder = [...sectionTasks];
+          newOrder.splice(oldIndex, 1);
+          newOrder.splice(newIndex, 0, activeTaskItem);
+          reorderTasks(newOrder.map((t) => t.id));
+        }
       }
     },
-    [tasks, sections, updateTask]
+    [tasks, sections, updateTask, reorderTasks]
   );
 
   const sectionsToShow = useMemo(() => {
