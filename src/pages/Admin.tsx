@@ -318,9 +318,9 @@ export default function Admin() {
               <tr className="bg-[var(--bg-active)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
                 <th className="px-4 py-2.5 text-left">标题</th>
                 <th className="px-4 py-2.5 text-left">项目</th>
-                <th className="px-4 py-2.5 text-center w-16">优先级</th>
-                <th className="px-4 py-2.5 text-center w-20">状态</th>
-                <th className="px-4 py-2.5 text-center w-20">番茄</th>
+                <th className="px-4 py-2.5 text-center w-24 whitespace-nowrap">优先级</th>
+                <th className="px-4 py-2.5 text-center w-28 whitespace-nowrap">状态</th>
+                <th className="px-4 py-2.5 text-center w-20 whitespace-nowrap">番茄</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)]">
@@ -393,9 +393,9 @@ export default function Admin() {
             <thead>
               <tr className="bg-[var(--bg-active)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
                 <th className="px-4 py-2.5 text-left">名称</th>
-                <th className="px-4 py-2.5 text-center w-16">收藏</th>
-                <th className="px-4 py-2.5 text-center w-20">任务数</th>
-                <th className="px-4 py-2.5 text-center w-24">番茄开关</th>
+                <th className="px-4 py-2.5 text-center w-20 whitespace-nowrap">收藏</th>
+                <th className="px-4 py-2.5 text-center w-24 whitespace-nowrap">任务数</th>
+                <th className="px-4 py-2.5 text-center w-28 whitespace-nowrap">番茄开关</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)]">
