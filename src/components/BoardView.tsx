@@ -264,11 +264,11 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
       } ${colDragging ? 'opacity-50' : ''}`}
     >
       {/* Column header - 拖动手柄区域 */}
-      <div
-        className="flex items-center justify-between px-4 py-3 cursor-grab active:cursor-grabbing"
-        {...colListeners}
-      >
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between px-4 py-3 cursor-grab active:cursor-grabbing">
+        <div
+          className="flex items-center gap-2.5 flex-1"
+          {...colListeners}
+        >
           <h3 className="text-sm font-semibold text-[var(--text-secondary)]">{section.name}</h3>
           <span className="text-[11px] font-medium text-[var(--text-tertiary)] bg-[var(--bg-card)]/80 px-2 py-0.5 rounded-full shadow-sm border border-[var(--border-light)]">
             {columnTasks.length}
