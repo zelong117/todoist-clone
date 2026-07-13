@@ -20,6 +20,7 @@ import ActivityLog from './components/ActivityLog';
 import Admin from './pages/Admin';
 import AIAssistant from './components/AIAssistant';
 import AIOrganizer from './components/AIOrganizer';
+import DraggableWidget from './components/DraggableWidget';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
 
 export default function App() {
@@ -754,8 +755,9 @@ export default function App() {
         </div>
       )}
 
-      {/* Pomodoro Timer - fixed at bottom right */}
-      <div className="fixed bottom-6 right-6 z-30 max-h-[calc(100vh-48px)] overflow-visible">
+      {/* Pomodoro Timer - draggable */}
+      <DraggableWidget initialRight={24} initialBottom={24} zIndex={30}>
+        <div className="max-h-[calc(100vh-48px)] overflow-visible">
         {activeTimerTaskId ? (
             // Mini timer when a task timer is active
             (() => {
@@ -796,7 +798,8 @@ export default function App() {
         ) : (
           <PomodoroTimer />
         )}
-      </div>
+        </div>
+      </DraggableWidget>
     </div>
   );
 }

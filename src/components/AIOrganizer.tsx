@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useStore } from '../store';
 import { Sparkles, X, Copy, Check, RefreshCw } from 'lucide-react';
+import DraggableWidget from './DraggableWidget';
 
 export default function AIOrganizer() {
   const { tasks, projects, sections } = useStore();
@@ -8,6 +9,7 @@ export default function AIOrganizer() {
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const dragMovedRef = useRef(false);
 
   const handleOrganize = useCallback(async () => {
     setLoading(true);
@@ -61,14 +63,16 @@ export default function AIOrganizer() {
 
   return (
     <>
-      {/* 浮动按钮 */}
-      <button
-        onClick={() => { setIsOpen(true); if (!result) handleOrganize(); }}
-        className="fixed bottom-20 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
-      >
-        <Sparkles size={16} />
-        AI 整理
-      </button>
+      {/* 可拖动浮动按钮 */}
+      <DraggableWidget initialRight={24} initialBottom={80} zIndex={50} onMoved={(moved) => { dragMovedRef.current = moved; }}>
+        <button
+          onClick={() => { if (!dragMovedRef.current) { setIsOpen(true); if (!result) handleOrganize(); } }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          <Sparkles size={16} />
+          AI 整理
+        </button>
+      </DraggableWidget>
 
       {/* 弹窗 */}
       {isOpen && (
