@@ -257,7 +257,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
       }}
       style={colStyle}
       {...colAttributes}
-      className={`flex-shrink-0 w-[300px] rounded-2xl flex flex-col max-h-full transition-all duration-200 ${
+      className={`flex-shrink-0 w-[300px] rounded-2xl flex flex-col h-full min-h-0 transition-all duration-200 ${
         isOver
           ? 'bg-[var(--bg-active)]/80 ring-2 ring-[#DC4C3E]/20 shadow-inner'
           : 'bg-[var(--bg-hover)]/60'
@@ -299,7 +299,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
       </div>
 
       {/* Cards */}
-      <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2.5">
+      <div className="flex-1 overflow-y-auto min-h-0 px-2 pb-2 space-y-2.5">
         <SortableContext
           items={columnTasks.map((t) => t.id)}
           strategy={verticalListSortingStrategy}
@@ -444,7 +444,7 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-5 h-full overflow-x-auto pb-4 px-1">
+      <div className="flex gap-5 h-full min-h-0 overflow-x-auto overflow-y-hidden pb-4 px-1">
         <SortableContext
           items={sectionsToShow.map((s) => `col-${s.id}`)}
           strategy={horizontalListSortingStrategy}

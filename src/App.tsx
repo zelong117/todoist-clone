@@ -716,7 +716,9 @@ export default function App() {
                   showSections={currentView.startsWith('project-') && viewSections.length > 0}
                 />
               ) : viewMode === 'board' ? (
-                <BoardView tasks={viewTasks} sections={viewSections} />
+                <div className="flex-1 flex flex-col min-h-0">
+                  <BoardView tasks={viewTasks} sections={viewSections} />
+                </div>
               ) : (
                 <CalendarView tasks={viewTasks} />
               )
