@@ -122,6 +122,8 @@ app.use('/api/pomodoro', writeLimiter, require('./routes/pomodoro'));
 
 // 绠＄悊鍛樿矾鐢?- 绠＄悊鍛橀檺娴?
 app.use('/api/admin', adminLimiter, require('./routes/admin'));
+app.use('/api/ai', require('./routes/ai'));
+console.log('[AI] AI route registered at /api/ai');
 
 // 项目共享路由
 app.use('/api/projects', require('./routes/shares'));

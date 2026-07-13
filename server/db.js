@@ -63,6 +63,8 @@ async function initDB() {
       pomodoro_count INTEGER DEFAULT 0,
       estimated_minutes INTEGER DEFAULT 25,
       sort_order INTEGER DEFAULT 0,
+      is_recurring INTEGER DEFAULT 0,
+      recurrence_rule TEXT,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
