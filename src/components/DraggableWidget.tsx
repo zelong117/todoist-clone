@@ -1,20 +1,16 @@
-import { useState, useRef, useCallback, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 
 interface DraggableWidgetProps {
   children: ReactNode;
-  /** 初始 x 位置（像素，从右边算） */
   initialRight?: number;
-  /** 初始 y 位置（像素，从下边算） */
   initialBottom?: number;
-  /** z-index */
   zIndex?: number;
-  /** 拖动结束时回调，返回是否真的拖动了（用于区分点击） */
   onMoved?: (moved: boolean) => void;
 }
 
 /**
  * 可拖动的浮动小组件容器
- * 拖动任意区域即可移动，点击不会触发拖动（距离 < 5px）
+ * 使用 document 级别事件监听，鼠标移再快也不会脱离
  */
 export default function DraggableWidget({
   children,
@@ -27,8 +23,10 @@ export default function DraggableWidget({
   const [dragging, setDragging] = useState(false);
   const startRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const movedRef = useRef(false);
+  const draggingRef = useRef(false);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
     startRef.current = {
       x: e.clientX,
       y: e.clientY,
@@ -36,33 +34,45 @@ export default function DraggableWidget({
       posY: pos.y,
     };
     movedRef.current = false;
+    draggingRef.current = true;
     setDragging(true);
   }, [pos]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+  // document 级别监听，鼠标移到哪都跟得住
+  useEffect(() => {
     if (!dragging) return;
-    const dx = e.clientX - startRef.current.x;
-    const dy = e.clientY - startRef.current.y;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-      movedRef.current = true;
-    }
-    setPos({
-      x: startRef.current.posX + dx,
-      y: startRef.current.posY + dy,
-    });
-  }, [dragging]);
 
-  const handleMouseUp = useCallback(() => {
-    setDragging(false);
-    if (onMoved) onMoved(movedRef.current);
-  }, [onMoved]);
+    const handleMove = (e: MouseEvent) => {
+      if (!draggingRef.current) return;
+      const dx = e.clientX - startRef.current.x;
+      const dy = e.clientY - startRef.current.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        movedRef.current = true;
+      }
+      setPos({
+        x: startRef.current.posX + dx,
+        y: startRef.current.posY + dy,
+      });
+    };
+
+    const handleUp = () => {
+      draggingRef.current = false;
+      setDragging(false);
+      if (onMoved) onMoved(movedRef.current);
+    };
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+  }, [dragging, onMoved]);
 
   return (
     <div
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
       style={{
         position: 'fixed',
         right: 0,
