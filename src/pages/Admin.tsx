@@ -1,7 +1,15 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../store';
 import type { Task, Project } from '../types';
-import { Search, Download, Upload, Trash2, CheckCircle, Circle, XCircle, Star } from 'lucide-react';
+import { Search, Download, Upload, Trash2, CheckCircle, Circle, XCircle, Star, Users } from 'lucide-react';
+
+interface UserAccount {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  created_at: string;
+}
 
 export default function Admin() {
   const { tasks, projects, labels, pomodoroSessions } = useStore();
@@ -12,6 +20,8 @@ export default function Admin() {
   const [taskFilter, setTaskFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [users, setUsers] = useState<UserAccount[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   // Stats
   const stats = useMemo(() => ({
@@ -20,6 +30,27 @@ export default function Admin() {
     totalLabels: labels.length,
     totalPomodoros: pomodoroSessions.length,
   }), [tasks, projects, labels, pomodoroSessions]);
+
+  // 获取用户列表
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoadingUsers(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${window.location.protocol}//${window.location.hostname}:3001/api/admin/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsers(data);
+        }
+      } catch (e) {
+        console.error('Failed to fetch users:', e);
+      }
+      setLoadingUsers(false);
+    };
+    fetchUsers();
+  }, []);
 
   // Filtered tasks
   const filteredTasks = useMemo(() => {
@@ -502,6 +533,52 @@ export default function Admin() {
             <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">
               暂无番茄钟记录
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* 用户账户管理 */}
+      <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-light)] overflow-hidden">
+        <div className="flex items-center gap-2 px-6 py-4 border-b border-[var(--border-light)]">
+          <Users size={18} className="text-[var(--accent-primary)]" />
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">用户账户 ({users.length})</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[var(--bg-secondary)]">
+                <th className="px-4 py-2.5 text-left whitespace-nowrap">用户名</th>
+                <th className="px-4 py-2.5 text-left whitespace-nowrap">邮箱</th>
+                <th className="px-4 py-2.5 text-center whitespace-nowrap">角色</th>
+                <th className="px-4 py-2.5 text-center whitespace-nowrap">注册时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id} className="border-t border-[var(--border-light)] hover:bg-[var(--bg-hover)] transition-colors">
+                  <td className="px-4 py-2.5 text-[var(--text-primary)] font-medium">{user.name || '-'}</td>
+                  <td className="px-4 py-2.5 text-[var(--text-secondary)]">{user.email}</td>
+                  <td className="px-4 py-2.5 text-center">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                      user.role === 'admin'
+                        ? 'bg-purple-500/10 text-purple-500 border border-purple-500/20'
+                        : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
+                    }`}>
+                      {user.role === 'admin' ? '管理员' : '普通用户'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 text-center text-[var(--text-tertiary)] whitespace-nowrap">
+                    {user.created_at ? new Date(user.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {loadingUsers && (
+            <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">加载中...</div>
+          )}
+          {!loadingUsers && users.length === 0 && (
+            <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">暂无用户数据</div>
           )}
         </div>
       </div>
