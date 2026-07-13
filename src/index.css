@@ -235,6 +235,7 @@
   scrollbar-width: none;  /* Firefox */
   -ms-overflow-style: none;  /* IE/Edge */
   cursor: grab;
+  scroll-behavior: smooth;
 }
 .board-scroll-hide::-webkit-scrollbar {
   display: none;  /* Chrome/Safari */

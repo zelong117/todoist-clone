@@ -268,6 +268,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
       <div className="flex items-center justify-between px-4 py-3 cursor-grab active:cursor-grabbing">
         <div
           className="flex items-center gap-2.5 flex-1"
+          data-column-handle="true"
           {...colListeners}
         >
           <h3 className="text-sm font-semibold text-[var(--text-secondary)]">{section.name}</h3>
@@ -342,34 +343,44 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
   const [showAddSection, setShowAddSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
 
-  // 鼠标拖动滚动看板
+  // 鼠标拖动滚动看板（只在列与列之间的空白区域触发）
   const boardScrollRef = useRef<HTMLDivElement>(null);
   const isScrolling = useRef(false);
-  const scrollStart = useRef({ x: 0, left: 0 });
+  const scrollStart = useRef({ x: 0, left: 0, moved: false });
 
   useEffect(() => {
     const el = boardScrollRef.current;
     if (!el) return;
 
     const handleDown = (e: MouseEvent) => {
-      // 只在点击空白区域时触发拖动滚动，不在卡片或按钮上触发
+      // 排除：卡片、按钮、复选框、列标题（dnd-kit 拖拽区）
       const target = e.target as HTMLElement;
-      if (target.closest('button, [data-task-card], [role="checkbox"]')) return;
+      if (target.closest('button, [data-task-card], [role="checkbox"], [data-column-handle]')) return;
 
       isScrolling.current = true;
-      scrollStart.current = { x: e.clientX, left: el.scrollLeft };
+      scrollStart.current = { x: e.clientX, left: el.scrollLeft, moved: false };
       el.style.cursor = 'grabbing';
+      el.style.userSelect = 'none';
     };
 
     const handleMove = (e: MouseEvent) => {
       if (!isScrolling.current) return;
       const dx = e.clientX - scrollStart.current.x;
-      el.scrollLeft = scrollStart.current.left - dx;
+      if (Math.abs(dx) > 2) scrollStart.current.moved = true;
+      // 平滑滚动：加点阻尼
+      el.scrollLeft = scrollStart.current.left - dx * 1.2;
     };
 
-    const handleUp = () => {
+    const handleUp = (e: MouseEvent) => {
+      if (!isScrolling.current) return;
       isScrolling.current = false;
       el.style.cursor = 'grab';
+      el.style.userSelect = '';
+      // 如果拖动了，阻止 click 事件冒泡
+      if (scrollStart.current.moved) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     };
 
     el.addEventListener('mousedown', handleDown);
