@@ -15,7 +15,8 @@ export default function AIOrganizer() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch('/api/ai/organize', {
+      const apiUrl = `${window.location.protocol}//${window.location.hostname}:3001/api/ai/organize`;
+      const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tasks, projects, sections }),
