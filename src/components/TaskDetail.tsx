@@ -18,6 +18,7 @@ import {
   Flag,
 } from 'lucide-react';
 import { useStore } from '../store';
+import { RECURRENCE_OPTIONS, formatRecurrenceRule } from '../lib/recurrence';
 
 const PRIORITY_COLORS: Record<number, string> = {
   1: '#DC4C3E',
@@ -95,10 +96,12 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showPriorityPicker, setShowPriorityPicker] = useState(false);
+  const [showRecurrencePicker, setShowRecurrencePicker] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const tagDropdownRef = useRef<HTMLDivElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
   const priorityRef = useRef<HTMLDivElement>(null);
+  const recurrenceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (task) {
@@ -649,6 +652,60 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                   <Calendar size={14} />
                   <span>{formatDateDisplay(task.dueDate)}</span>
                 </button>
+              </div>
+
+              {/* Recurrence / 循环待办 */}
+              <div className="flex items-center justify-between group relative" ref={recurrenceRef}>
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">循环</span>
+                <button
+                  onClick={() => setShowRecurrencePicker(!showRecurrencePicker)}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  <span>{task.isRecurring && task.recurrenceRule ? formatRecurrenceRule(task.recurrenceRule) : '不循环'}</span>
+                  {task.isRecurring ? (
+                    <span className="text-[var(--text-primary)]">🔁</span>
+                  ) : (
+                    <Plus size={14} className="text-[var(--text-tertiary)]" />
+                  )}
+                </button>
+                {showRecurrencePicker && (
+                  <div
+                    className="absolute top-full right-0 mt-1.5 w-64 bg-[var(--bg-card)] rounded-2xl shadow-xl border border-[var(--border-color)] p-3 z-20 max-h-72 overflow-y-auto"
+                    style={{ animation: 'fadeIn 0.15s ease-out' }}
+                  >
+                    <div className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2 px-1">设置循环</div>
+                    {RECURRENCE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          updateTask(task.id, { isRecurring: true, recurrenceRule: opt.value });
+                          setShowRecurrencePicker(false);
+                        }}
+                        className={`w-full text-left px-3 py-2.5 text-sm rounded-xl flex items-center gap-2.5 transition-all duration-200 ${
+                          task.recurrenceRule === opt.value
+                            ? 'bg-[#DC4C3E]/10 text-[#DC4C3E] font-semibold'
+                            : 'hover:bg-[var(--bg-active)] text-[var(--text-primary)]'
+                        }`}
+                      >
+                        <span className="text-base">{opt.icon}</span>
+                        <span>{opt.label}</span>
+                        {task.recurrenceRule === opt.value && <Check size={14} className="ml-auto" />}
+                      </button>
+                    ))}
+                    {task.isRecurring && (
+                      <button
+                        onClick={() => {
+                          updateTask(task.id, { isRecurring: false, recurrenceRule: null });
+                          setShowRecurrencePicker(false);
+                        }}
+                        className="w-full text-left px-3 py-2.5 text-sm rounded-xl flex items-center gap-2.5 hover:bg-red-500/10 text-red-400 transition-all duration-200 mt-1 border-t border-[var(--border-color)] pt-3"
+                      >
+                        <Trash2 size={14} />
+                        <span>取消循环</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Priority */}

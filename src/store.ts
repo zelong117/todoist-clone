@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { isToday, parseISO, isBefore, startOfDay, addDays } from 'date-fns';
 import type { Task, Project, Section, Label, Comment, ViewMode, ActiveView, TimerMode, TimerStatus, PomodoroSettings, PomodoroSession } from './types';
 import { generateId } from './utils';
+import { parseRecurrenceRule, getNextDueDate } from './lib/recurrence';
 import { tasksAPI, projectsAPI, labelsAPI, sectionsAPI } from './api';
 
 // Helper to load from localStorage or use seed data
@@ -202,22 +203,57 @@ export const useStore = create<AppState>()(
       },
 
       toggleComplete: async (id) => {
+        const task = get().tasks.find((t) => t.id === id);
+        if (!task) return;
+
         try {
           await tasksAPI.complete(id);
         } catch (error) {
           console.error('Failed to complete task:', error);
         }
-        set((state) => ({
-          tasks: state.tasks.map((t) =>
-            t.id === id
-              ? {
-                  ...t,
-                  isCompleted: !t.isCompleted,
-                  completedAt: !t.isCompleted ? new Date().toISOString() : null,
+
+        // 如果是循环任务且正在被完成（不是取消完成），生成下一个周期任务
+        let nextRecurrenceTask = null;
+        if (!task.isCompleted && task.isRecurring && task.recurrenceRule) {
+          try {
+            const rule = parseRecurrenceRule(task.recurrenceRule);
+            if (rule) {
+              const completedDate = new Date();
+              const nextDue = getNextDueDate(rule, completedDate, task.dueDate ? new Date(task.dueDate) : null);
+              if (nextDue) {
+                nextRecurrenceTask = {
+                  ...task,
+                  id: crypto.randomUUID(),
+                  title: task.title,
+                  isCompleted: false,
+                  completedAt: null,
+                  dueDate: nextDue.toISOString().split('T')[0],
+                  pomodoroCount: 0,
+                  completedPomodoros: 0,
+                  createdAt: new Date().toISOString(),
                   updatedAt: new Date().toISOString(),
-                }
-              : t
-          ),
+                };
+              }
+            }
+          } catch (e) {
+            console.error('Failed to generate next recurrence:', e);
+          }
+        }
+
+        set((state) => ({
+          tasks: [
+            ...state.tasks.map((t) =>
+              t.id === id
+                ? {
+                    ...t,
+                    isCompleted: !t.isCompleted,
+                    completedAt: !t.isCompleted ? new Date().toISOString() : null,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : t
+            ),
+            ...(nextRecurrenceTask ? [nextRecurrenceTask] : []),
+          ],
         }));
       },
 

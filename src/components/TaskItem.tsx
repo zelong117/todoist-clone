@@ -225,6 +225,13 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
           </span>
         )}
 
+        {/* Recurrence indicator */}
+        {task.isRecurring && (
+          <span className="flex items-center gap-0.5 text-[11px] text-blue-500 px-1.5 py-0.5 rounded-lg bg-blue-500/10 font-semibold" title={task.recurrenceRule || ''}>
+            🔁
+          </span>
+        )}
+
         {/* Priority indicator */}
         <span
           className="text-[10px] font-black px-2 py-0.5 rounded-md"
