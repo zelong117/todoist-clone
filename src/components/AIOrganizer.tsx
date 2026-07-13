@@ -64,7 +64,7 @@ export default function AIOrganizer() {
       {/* 浮动按钮 */}
       <button
         onClick={() => { setIsOpen(true); if (!result) handleOrganize(); }}
-        className="fixed bottom-6 right-20 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+        className="fixed bottom-6 left-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
       >
         <Sparkles size={16} />
         AI 整理
