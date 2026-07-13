@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -75,6 +75,7 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
       style={style}
       {...attributes}
       {...listeners}
+      data-task-card="true"
       onClick={() => setSelectedTaskId(task.id)}
       className={`relative bg-[var(--bg-card)] rounded-xl p-3.5 cursor-pointer transition-all duration-200 group ${
         isDragging || isSortableDragging
@@ -341,6 +342,47 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
   const [showAddSection, setShowAddSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
 
+  // 鼠标拖动滚动看板
+  const boardScrollRef = useRef<HTMLDivElement>(null);
+  const isScrolling = useRef(false);
+  const scrollStart = useRef({ x: 0, left: 0 });
+
+  useEffect(() => {
+    const el = boardScrollRef.current;
+    if (!el) return;
+
+    const handleDown = (e: MouseEvent) => {
+      // 只在点击空白区域时触发拖动滚动，不在卡片或按钮上触发
+      const target = e.target as HTMLElement;
+      if (target.closest('button, [data-task-card], [role="checkbox"]')) return;
+
+      isScrolling.current = true;
+      scrollStart.current = { x: e.clientX, left: el.scrollLeft };
+      el.style.cursor = 'grabbing';
+    };
+
+    const handleMove = (e: MouseEvent) => {
+      if (!isScrolling.current) return;
+      const dx = e.clientX - scrollStart.current.x;
+      el.scrollLeft = scrollStart.current.left - dx;
+    };
+
+    const handleUp = () => {
+      isScrolling.current = false;
+      el.style.cursor = 'grab';
+    };
+
+    el.addEventListener('mousedown', handleDown);
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+
+    return () => {
+      el.removeEventListener('mousedown', handleDown);
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -444,7 +486,10 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-5 h-full min-h-0 overflow-x-auto overflow-y-hidden pb-4 px-1">
+      <div
+        className="flex gap-5 h-full min-h-0 overflow-x-auto overflow-y-hidden pb-4 px-1 board-scroll-hide"
+        ref={boardScrollRef}
+      >
         <SortableContext
           items={sectionsToShow.map((s) => `col-${s.id}`)}
           strategy={horizontalListSortingStrategy}

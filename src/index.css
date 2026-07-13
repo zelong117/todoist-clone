@@ -229,3 +229,16 @@
     padding-right: 0.75rem !important;
   }
 }
+
+/* 看板隐藏滚动条 + 鼠标拖动滚动 */
+.board-scroll-hide {
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge */
+  cursor: grab;
+}
+.board-scroll-hide::-webkit-scrollbar {
+  display: none;  /* Chrome/Safari */
+}
+.board-scroll-hide:active {
+  cursor: grabbing;
+}
