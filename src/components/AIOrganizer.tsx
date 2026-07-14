@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
 import { useStore } from '../store';
-import { Sparkles, X, Copy, Check, RefreshCw, Wand2, Target, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, X, Copy, Check, RefreshCw, Wand2, Target, Image as ImageIcon, Settings } from 'lucide-react';
 import DraggableWidget from './DraggableWidget';
 
-type TabMode = 'optimize' | 'goals';
+type TabMode = 'optimize' | 'goals' | 'settings';
 
 export default function AIOrganizer() {
   const { tasks, projects, sections } = useStore();
@@ -19,6 +19,22 @@ export default function AIOrganizer() {
   const dragMovedRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // API Key 配置（存 localStorage）
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('ai_api_key') || '');
+  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('ai_api_url') || '');
+  const [apiModel, setApiModel] = useState(() => localStorage.getItem('ai_model') || 'gpt-4o-mini');
+  const [keySaved, setKeySaved] = useState(false);
+
+  const saveKeyConfig = () => {
+    localStorage.setItem('ai_api_key', apiKey);
+    localStorage.setItem('ai_api_url', apiUrl);
+    localStorage.setItem('ai_model', apiModel);
+    setKeySaved(true);
+    setTimeout(() => setKeySaved(false), 2000);
+  };
+
+  const hasApiKey = !!(localStorage.getItem('ai_api_key'));
+
   // 文字优化
   const handleOptimize = useCallback(async () => {
     if (!inputText.trim()) return;
@@ -30,7 +46,14 @@ export default function AIOrganizer() {
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: inputText, tasks, projects }),
+        body: JSON.stringify({
+          text: inputText,
+          tasks,
+          projects,
+          clientApiKey: apiKey || undefined,
+          clientApiUrl: apiUrl || undefined,
+          clientModel: apiModel || undefined,
+        }),
       });
       const data = await res.json();
       if (data.result) {
@@ -55,7 +78,12 @@ export default function AIOrganizer() {
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageData }),
+        body: JSON.stringify({
+          image: imageData,
+          clientApiKey: apiKey || undefined,
+          clientApiUrl: apiUrl || undefined,
+          clientModel: apiModel || undefined,
+        }),
       });
       const data = await res.json();
       if (data.result) {
@@ -107,7 +135,14 @@ export default function AIOrganizer() {
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tasks, projects, sections }),
+        body: JSON.stringify({
+          tasks,
+          projects,
+          sections,
+          clientApiKey: apiKey || undefined,
+          clientApiUrl: apiUrl || undefined,
+          clientModel: apiModel || undefined,
+        }),
       });
       const data = await res.json();
       if (data.result) {
@@ -215,6 +250,18 @@ export default function AIOrganizer() {
                   <Target size={14} />
                   目标分析
                 </button>
+                <button
+                  onClick={() => setTab('settings')}
+                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-all ml-auto ${
+                    tab === 'settings'
+                      ? 'text-gray-500 border-gray-500'
+                      : 'text-[var(--text-tertiary)] border-transparent hover:text-[var(--text-secondary)]'
+                  }`}
+                >
+                  <Settings size={14} />
+                  设置
+                  {hasApiKey && <span className="w-1.5 h-1.5 rounded-full bg-green-500" />}
+                </button>
               </div>
             </div>
 
@@ -306,6 +353,56 @@ export default function AIOrganizer() {
                     <Target size={14} />
                     开始分析
                   </button>
+                </div>
+              )}
+
+              {/* 设置 Tab */}
+              {tab === 'settings' && (
+                <div className="space-y-4 max-w-md">
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">API Key</label>
+                    <input
+                      type="password"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="sk-... 或你的 API Key"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">API 地址（可选，默认 OpenAI）</label>
+                    <input
+                      type="text"
+                      value={apiUrl}
+                      onChange={(e) => setApiUrl(e.target.value)}
+                      placeholder="https://api.openai.com/v1/chat/completions"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                    />
+                    <p className="text-xs text-[var(--text-tertiary)] mt-1">支持 OpenAI / DeepSeek / 其他兼容接口</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">模型名称</label>
+                    <input
+                      type="text"
+                      value={apiModel}
+                      onChange={(e) => setApiModel(e.target.value)}
+                      placeholder="gpt-4o-mini"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                    />
+                    <p className="text-xs text-[var(--text-tertiary)] mt-1">推荐：gpt-4o-mini / deepseek-chat / glm-4-flash</p>
+                  </div>
+                  <button
+                    onClick={saveKeyConfig}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    {keySaved ? <Check size={14} /> : <Settings size={14} />}
+                    {keySaved ? '已保存' : '保存配置'}
+                  </button>
+                  {!hasApiKey && (
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 text-xs">
+                      💡 配置 API Key 后，文字优化、图片识别、目标分析都将使用 AI 智能处理。不配置则使用本地规则引擎（功能有限）。
+                    </div>
+                  )}
                 </div>
               )}
 

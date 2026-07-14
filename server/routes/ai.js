@@ -4,7 +4,7 @@ const router = express.Router();
 // POST /api/ai/extract-image - 从图片提取任务描述
 router.post('/extract-image', async (req, res) => {
   try {
-    const { image } = req.body;
+    const { image, clientApiKey, clientApiUrl, clientModel } = req.body;
 
     if (!image || typeof image !== 'string') {
       return res.status(400).json({ error: '需要提供图片数据' });
@@ -17,19 +17,21 @@ router.post('/extract-image', async (req, res) => {
 
     let aiResult = null;
 
+    const effApiKey = clientApiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
+    const effApiUrl = clientApiUrl || process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
+    const effModel = clientModel || process.env.AI_VISION_MODEL || process.env.AI_MODEL || 'gpt-4o-mini';
+
     // 尝试用 AI 视觉 API
-    if (process.env.OPENAI_API_KEY || process.env.AI_API_URL) {
+    if (effApiKey) {
       try {
-        const apiUrl = process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
-        const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
-        const response = await fetch(apiUrl, {
+        const response = await fetch(effApiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
+            'Authorization': `Bearer ${effApiKey}`,
           },
           body: JSON.stringify({
-            model: process.env.AI_VISION_MODEL || 'gpt-4o-mini',
+            model: effModel,
             messages: [{
               role: 'user',
               content: [
@@ -63,16 +65,19 @@ router.post('/extract-image', async (req, res) => {
 // POST /api/ai/optimize-text - 文字优化
 router.post('/optimize-text', async (req, res) => {
   try {
-    const { text, tasks, projects } = req.body;
+    const { text, tasks, projects, clientApiKey, clientApiUrl, clientModel } = req.body;
 
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ error: '需要提供文字内容' });
     }
 
-    // 尝试 AI API
+    // 尝试 AI API（优先用前端传来的 Key，其次用 .env 配置）
     let aiResult = null;
+    const effApiKey = clientApiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
+    const effApiUrl = clientApiUrl || process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
+    const effModel = clientModel || process.env.AI_MODEL || 'gpt-4o-mini';
 
-    if (process.env.OPENAI_API_KEY || process.env.AI_API_URL) {
+    if (effApiKey) {
       const prompt = `你是一个文字优化助手。请把下面这段杂乱的描述整理成清晰明了的话语，保持原意不变，语言简洁专业。
 
 原始描述：
@@ -81,16 +86,14 @@ ${text}
 请直接输出优化后的文字，不要加额外说明。`;
 
       try {
-        const apiUrl = process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
-        const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
-        const response = await fetch(apiUrl, {
+        const response = await fetch(effApiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
+            'Authorization': `Bearer ${effApiKey}`,
           },
           body: JSON.stringify({
-            model: process.env.AI_MODEL || 'gpt-4o-mini',
+            model: effModel,
             messages: [{ role: 'user', content: prompt }],
             temperature: 0.5,
             max_tokens: 1000,
@@ -143,7 +146,7 @@ function optimizeTextLocal(text) {
 // POST /api/ai/organize - AI 整理目标和任务
 router.post('/organize', async (req, res) => {
   try {
-    const { tasks, projects, sections } = req.body;
+    const { tasks, projects, sections, clientApiKey, clientApiUrl, clientModel } = req.body;
 
     if (!tasks || !Array.isArray(tasks)) {
       return res.status(400).json({ error: '需要提供任务数据' });
@@ -181,43 +184,23 @@ ${taskList || '暂无任务'}
 
 请用 Markdown 格式输出，语言简洁明了。`;
 
-    // 尝试调用 AI API
+    // 尝试调用 AI API（优先用前端传来的 Key）
     let aiResult = null;
 
-    // 方案1: 如果有 OPENAI_API_KEY，用 OpenAI
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.7,
-            max_tokens: 2000,
-          }),
-        });
-        const data = await response.json();
-        aiResult = data.choices?.[0]?.message?.content;
-      } catch (e) {
-        console.error('OpenAI API error:', e.message);
-      }
-    }
+    const effApiKey = clientApiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
+    const effApiUrl = clientApiUrl || process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
+    const effModel = clientModel || process.env.AI_MODEL || 'gpt-4o-mini';
 
-    // 方案2: 如果有自定义 AI 环境变量
-    if (!aiResult && process.env.AI_API_URL) {
+    if (effApiKey) {
       try {
-        const response = await fetch(process.env.AI_API_URL, {
+        const response = await fetch(effApiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(process.env.AI_API_KEY ? { 'Authorization': `Bearer ${process.env.AI_API_KEY}` } : {}),
+            'Authorization': `Bearer ${effApiKey}`,
           },
           body: JSON.stringify({
-            model: process.env.AI_MODEL || 'gpt-4o-mini',
+            model: effModel,
             messages: [{ role: 'user', content: prompt }],
             temperature: 0.7,
             max_tokens: 2000,
