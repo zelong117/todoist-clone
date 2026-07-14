@@ -227,9 +227,9 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
         {/* Smart Views */}
         <div className="space-y-0.5">
           {[
-            { id: 'inbox', label: '收件箱', icon: Inbox, count: inboxCount, color: '#0066FF' },
-            { id: 'today', label: '今天', icon: CalendarDays, count: todayCount, color: '#058527' },
-            { id: 'upcoming', label: '即将到来', icon: CalendarClock, count: upcomingCount, color: '#9B59B6' },
+            { id: 'inbox', label: '收件箱', icon: Inbox, count: inboxCount, color: '#3B82F6' },
+            { id: 'today', label: '今天', icon: CalendarDays, count: todayCount, color: '#10B981' },
+            { id: 'upcoming', label: '即将到来', icon: CalendarClock, count: upcomingCount, color: '#8B5CF6' },
             { id: 'filters', label: '过滤器 & 标签', icon: Filter, count: 0, color: '#6B7280' },
             { id: 'log', label: '日志', icon: Activity, count: 0, color: '#6B7280' },
             { id: 'stats', label: '效率统计', icon: BarChart3, count: 0, color: '#F59E0B' },

@@ -39,7 +39,7 @@ router.get('/stats', asyncHandler(async (req, res) => {
  * 获取所有用户列表（仅管理员，不含密码哈希）
  */
 router.get('/users', asyncHandler(async (req, res) => {
-  res.json(queryAll('SELECT id, email, name, role, created_at FROM users'));
+  res.json(queryAll('SELECT id, email, name, role, plan, balance, plan_expires_at, created_at FROM users'));
 }));
 
 module.exports = router;

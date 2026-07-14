@@ -8,6 +8,9 @@ interface UserAccount {
   email: string;
   name: string;
   role: string;
+  plan: string;
+  balance: number;
+  plan_expires_at: string | null;
   created_at: string;
 }
 
@@ -550,6 +553,9 @@ export default function Admin() {
                 <th className="px-4 py-2.5 text-left whitespace-nowrap">用户名</th>
                 <th className="px-4 py-2.5 text-left whitespace-nowrap">邮箱</th>
                 <th className="px-4 py-2.5 text-center whitespace-nowrap">角色</th>
+                <th className="px-4 py-2.5 text-center whitespace-nowrap">套餐</th>
+                <th className="px-4 py-2.5 text-center whitespace-nowrap">余额</th>
+                <th className="px-4 py-2.5 text-center whitespace-nowrap">到期时间</th>
                 <th className="px-4 py-2.5 text-center whitespace-nowrap">注册时间</th>
               </tr>
             </thead>
@@ -566,6 +572,21 @@ export default function Admin() {
                     }`}>
                       {user.role === 'admin' ? '管理员' : '普通用户'}
                     </span>
+                  </td>
+                  <td className="px-4 py-2.5 text-center">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                      user.plan === 'business'
+                        ? 'bg-gradient-to-r from-purple-500/10 to-blue-500/10 text-purple-500 border border-purple-500/20'
+                        : 'bg-gray-500/10 text-gray-500 border border-gray-500/20'
+                    }`}>
+                      {user.plan === 'business' ? '商务版' : '免费版'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 text-center text-sm text-[var(--text-secondary)] whitespace-nowrap">
+                    ¥{user.balance || 0}
+                  </td>
+                  <td className="px-4 py-2.5 text-center text-[var(--text-tertiary)] whitespace-nowrap text-xs">
+                    {user.plan_expires_at ? new Date(user.plan_expires_at).toLocaleDateString('zh-CN') : '-'}
                   </td>
                   <td className="px-4 py-2.5 text-center text-[var(--text-tertiary)] whitespace-nowrap">
                     {user.created_at ? new Date(user.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '-'}

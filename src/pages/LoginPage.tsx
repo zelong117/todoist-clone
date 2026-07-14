@@ -185,6 +185,41 @@ export default function LoginPage({ onSwitchToRegister }: LoginPageProps) {
             登录即表示您同意我们的服务条款和隐私政策
           </p>
         </div>
+
+        {/* 付费升级区域 */}
+        <div className="mt-8 grid grid-cols-2 gap-4 max-w-md">
+          {/* 免费版 */}
+          <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 text-center">
+            <div className="text-xs font-medium text-[var(--text-tertiary)] mb-1">当前版本</div>
+            <div className="text-lg font-bold text-[var(--text-primary)] mb-2">免费版</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)] mb-3">¥0<span className="text-sm font-normal text-[var(--text-tertiary)]">/月</span></div>
+            <ul className="text-xs text-[var(--text-tertiary)] space-y-1.5 text-left">
+              <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> 任务管理（3 视图）</li>
+              <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> 番茄钟</li>
+              <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> AI 助手（本地）</li>
+              <li className="flex items-center gap-1.5"><span className="text-gray-400">✗</span> AI 智能识别</li>
+              <li className="flex items-center gap-1.5"><span className="text-gray-400">✗</span> 团队协作</li>
+            </ul>
+          </div>
+
+          {/* 商务版 */}
+          <div className="rounded-2xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-500/5 to-blue-500/5 p-5 text-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 px-2 py-0.5 text-[10px] font-medium text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-bl-lg">推荐</div>
+            <div className="text-xs font-medium text-purple-500 mb-1">升级到</div>
+            <div className="text-lg font-bold text-[var(--text-primary)] mb-2">商务版</div>
+            <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 mb-3">¥29<span className="text-sm font-normal text-[var(--text-tertiary)]">/月</span></div>
+            <ul className="text-xs text-[var(--text-secondary)] space-y-1.5 text-left">
+              <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> 全部免费版功能</li>
+              <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> AI 智能识别（图片+文字）</li>
+              <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> 团队协作（无限成员）</li>
+              <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> 数据备份与恢复</li>
+              <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> 优先客服支持</li>
+            </ul>
+            <button className="mt-4 w-full py-2 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-medium hover:opacity-90 transition-opacity">
+              立即升级
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -29,6 +29,9 @@ async function initDB() {
       name TEXT NOT NULL,
       password_hash TEXT NOT NULL,
       role TEXT DEFAULT 'user',
+      plan TEXT DEFAULT 'free',
+      balance INTEGER DEFAULT 0,
+      plan_expires_at TEXT,
       created_at TEXT DEFAULT (datetime('now'))
     );
   `);
