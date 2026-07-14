@@ -1,6 +1,86 @@
 const express = require('express');
 const router = express.Router();
 
+// POST /api/ai/optimize-text - 文字优化
+router.post('/optimize-text', async (req, res) => {
+  try {
+    const { text, tasks, projects } = req.body;
+
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: '需要提供文字内容' });
+    }
+
+    // 尝试 AI API
+    let aiResult = null;
+
+    if (process.env.OPENAI_API_KEY || process.env.AI_API_URL) {
+      const prompt = `你是一个文字优化助手。请把下面这段杂乱的描述整理成清晰明了的话语，保持原意不变，语言简洁专业。
+
+原始描述：
+${text}
+
+请直接输出优化后的文字，不要加额外说明。`;
+
+      try {
+        const apiUrl = process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
+        const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: process.env.AI_MODEL || 'gpt-4o-mini',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.5,
+            max_tokens: 1000,
+          }),
+        });
+        const data = await response.json();
+        aiResult = data.choices?.[0]?.message?.content;
+      } catch (e) {
+        console.error('AI API error:', e.message);
+      }
+    }
+
+    // 本地优化规则
+    if (!aiResult) {
+      aiResult = optimizeTextLocal(text);
+    }
+
+    res.json({ result: aiResult });
+  } catch (error) {
+    console.error('AI optimize-text error:', error);
+    res.status(500).json({ error: '文字优化失败' });
+  }
+});
+
+// 本地文字优化
+function optimizeTextLocal(text) {
+  let result = text.trim();
+
+  // 去除多余空格
+  result = result.replace(/\s+/g, ' ');
+  // 去除多余标点
+  result = result.replace(/([，。！？、])\1+/g, '$1');
+  // 去除口语化废话
+  const fillers = ['就是说', '然后的话', '这样子', '就是说啊', '然后呢', '就是', '那个', '嗯', '啊', '吧', '的话'];
+  fillers.forEach(f => {
+    result = result.replace(new RegExp(f, 'g'), '');
+  });
+  // 整理换行
+  result = result.replace(/\n{3,}/g, '\n\n');
+  // 首字母大写（英文）
+  result = result.replace(/^([a-z])/, (m, c) => c.toUpperCase());
+  // 句末加句号
+  if (result && !/[。！？.!?]$/.test(result)) {
+    result += '。';
+  }
+
+  return result;
+}
+
 // POST /api/ai/organize - AI 整理目标和任务
 router.post('/organize', async (req, res) => {
   try {
