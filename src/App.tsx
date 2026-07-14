@@ -21,6 +21,7 @@ import Admin from './pages/Admin';
 import AIAssistant from './components/AIAssistant';
 import AIOrganizer from './components/AIOrganizer';
 import DraggableWidget from './components/DraggableWidget';
+import SharePanel from './components/SharePanel';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
 
 export default function App() {
@@ -50,6 +51,7 @@ export default function App() {
   } = useStore();
 
   const [currentView, setCurrentView] = useState<string>('inbox');
+  const [showSharePanel, setShowSharePanel] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showPomodoroSettings, setShowPomodoroSettings] = useState(false);
   const [activeFilter, setActiveFilter] = useState<{
@@ -501,7 +503,10 @@ export default function App() {
                 {isTaskListView && (
                   <>
                     {currentView.startsWith('project-') && currentProject && (
-                      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]">
+                      <button
+                        onClick={() => setShowSharePanel(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]"
+                      >
                         <Users size={15} />
                         <span>共享</span>
                       </button>
@@ -729,6 +734,15 @@ export default function App() {
         {/* AI Assistant Panel */}
         <AIAssistant />
         <AIOrganizer />
+
+        {/* 共享面板 */}
+        {showSharePanel && currentProject && (
+          <SharePanel
+            projectId={currentProject.id}
+            projectName={currentProject.name}
+            onClose={() => setShowSharePanel(false)}
+          />
+        )}
 
       </main>
 
