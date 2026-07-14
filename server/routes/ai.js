@@ -1,6 +1,65 @@
 const express = require('express');
 const router = express.Router();
 
+// POST /api/ai/extract-image - 从图片提取任务描述
+router.post('/extract-image', async (req, res) => {
+  try {
+    const { image } = req.body;
+
+    if (!image || typeof image !== 'string') {
+      return res.status(400).json({ error: '需要提供图片数据' });
+    }
+
+    // 检查图片大小（base64 约 5MB 限制）
+    if (image.length > 5 * 1024 * 1024) {
+      return res.status(413).json({ error: '图片太大，请小于 5MB' });
+    }
+
+    let aiResult = null;
+
+    // 尝试用 AI 视觉 API
+    if (process.env.OPENAI_API_KEY || process.env.AI_API_URL) {
+      try {
+        const apiUrl = process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
+        const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: process.env.AI_VISION_MODEL || 'gpt-4o-mini',
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'text', text: '请仔细识别这张图片中的所有文字内容，提取出其中的任务、目标、待办事项。用清晰的格式输出，每个任务一行。如果图片中没有明确的任务信息，请描述图片主要内容。' },
+                { type: 'image_url', image_url: { url: image } }
+              ]
+            }],
+            temperature: 0.3,
+            max_tokens: 1500,
+          }),
+        });
+        const data = await response.json();
+        aiResult = data.choices?.[0]?.message?.content;
+      } catch (e) {
+        console.error('AI Vision API error:', e.message);
+      }
+    }
+
+    // 没有 API Key 时返回提示
+    if (!aiResult) {
+      aiResult = `## ⚠️ 需要 AI API Key 才能识别图片\n\n当前没有配置 AI API，无法识别图片内容。\n\n### 配置方法\n在 \`server/.env\` 中添加：\n\`\`\`\nOPENAI_API_KEY=你的key\n# 或\nAI_API_URL=你的AI接口地址\nAI_API_KEY=你的key\nAI_VISION_MODEL=支持视觉的模型\n\`\`\`\n\n### 临时方案\n请手动输入文字描述，使用「文字优化」功能整理。`;
+    }
+
+    res.json({ result: aiResult });
+  } catch (error) {
+    console.error('AI extract-image error:', error);
+    res.status(500).json({ error: '图片识别失败' });
+  }
+});
+
 // POST /api/ai/optimize-text - 文字优化
 router.post('/optimize-text', async (req, res) => {
   try {

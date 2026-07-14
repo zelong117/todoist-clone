@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useStore } from '../store';
-import { Sparkles, X, Copy, Check, RefreshCw, Wand2, Target } from 'lucide-react';
+import { Sparkles, X, Copy, Check, RefreshCw, Wand2, Target, Image as ImageIcon } from 'lucide-react';
 import DraggableWidget from './DraggableWidget';
 
 type TabMode = 'optimize' | 'goals';
@@ -11,14 +11,19 @@ export default function AIOrganizer() {
   const [tab, setTab] = useState<TabMode>('optimize');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('');
   const [copied, setCopied] = useState(false);
   const [inputText, setInputText] = useState('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageData, setImageData] = useState<string | null>(null);
   const dragMovedRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 文字优化
   const handleOptimize = useCallback(async () => {
     if (!inputText.trim()) return;
     setLoading(true);
+    setLoadingMsg('正在优化文字...');
     setResult('');
     try {
       const apiUrl = `${window.location.protocol}//${window.location.hostname}:3001/api/ai/optimize-text`;
@@ -39,9 +44,63 @@ export default function AIOrganizer() {
     setLoading(false);
   }, [inputText, tasks, projects]);
 
+  // 图片提取任务
+  const handleExtractImage = useCallback(async () => {
+    if (!imageData) return;
+    setLoading(true);
+    setLoadingMsg('正在识别图片内容...');
+    setResult('');
+    try {
+      const apiUrl = `${window.location.protocol}//${window.location.hostname}:3001/api/ai/extract-image`;
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData }),
+      });
+      const data = await res.json();
+      if (data.result) {
+        setResult(data.result);
+      } else {
+        setResult('识别失败，请重试。');
+      }
+    } catch {
+      setResult('网络错误，请检查后端是否运行。');
+    }
+    setLoading(false);
+  }, [imageData]);
+
+  // 处理图片文件
+  const handleImageFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setImagePreview(dataUrl);
+      setImageData(dataUrl);
+      setResult('');
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  // 粘贴图片
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) {
+          handleImageFile(file);
+          e.preventDefault();
+          break;
+        }
+      }
+    }
+  }, [handleImageFile]);
+
   // 目标分析
   const handleAnalyze = useCallback(async () => {
     setLoading(true);
+    setLoadingMsg('正在分析任务数据...');
     setResult('');
     try {
       const apiUrl = `${window.location.protocol}//${window.location.hostname}:3001/api/ai/organize`;
@@ -163,21 +222,70 @@ export default function AIOrganizer() {
             <div className="flex-1 overflow-y-auto px-6 py-4">
               {/* 文字优化 Tab */}
               {tab === 'optimize' && (
-                <div className="space-y-3">
+                <div className="space-y-3" onPaste={handlePaste}>
+                  {/* 图片粘贴/上传区 */}
+                  {imagePreview ? (
+                    <div className="relative rounded-xl border border-[var(--border-light)] overflow-hidden">
+                      <img src={imagePreview} alt="粘贴的图片" className="w-full max-h-48 object-contain bg-[var(--bg-card)]" />
+                      <button
+                        onClick={() => { setImagePreview(null); setImageData(null); }}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('ring-2', 'ring-purple-500/40'); }}
+                      onDragLeave={(e) => { e.currentTarget.classList.remove('ring-2', 'ring-purple-500/40'); }}
+                      onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove('ring-2', 'ring-purple-500/40'); if (e.dataTransfer.files[0]) handleImageFile(e.dataTransfer.files[0]); }}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-[var(--border-light)] cursor-pointer hover:border-purple-500/40 hover:bg-purple-500/5 transition-all"
+                    >
+                      <ImageIcon size={18} className="text-purple-500" />
+                      <div className="flex-1">
+                        <div className="text-sm text-[var(--text-secondary)]">截图粘贴 / 点击上传 / 拖拽图片</div>
+                        <div className="text-xs text-[var(--text-tertiary)]">Ctrl+V 粘贴截图，AI 自动识别任务</div>
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => { if (e.target.files?.[0]) handleImageFile(e.target.files[0]); }}
+                  />
+
+                  {/* 文字输入框 */}
                   <textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder="把杂乱的任务描述粘贴到这里，AI 帮你整理成清晰明了的话语..."
-                    className="w-full h-32 px-4 py-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30 resize-none"
+                    placeholder="或者输入文字描述，AI 帮你整理成清晰明了的话语..."
+                    className="w-full h-28 px-4 py-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30 resize-none"
                   />
-                  <button
-                    onClick={handleOptimize}
-                    disabled={loading || !inputText.trim()}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
-                  >
-                    <Wand2 size={14} />
-                    {loading ? '优化中...' : '开始优化'}
-                  </button>
+
+                  {/* 操作按钮 */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleOptimize}
+                      disabled={loading || !inputText.trim()}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+                    >
+                      <Wand2 size={14} />
+                      {loading ? '处理中...' : '优化文字'}
+                    </button>
+                    {imageData && (
+                      <button
+                        onClick={handleExtractImage}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-500 to-teal-500 text-white text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+                      >
+                        <ImageIcon size={14} />
+                        {loading ? '识别中...' : '识别图片'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -207,7 +315,7 @@ export default function AIOrganizer() {
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center animate-pulse">
                     <Sparkles size={24} className="text-white" />
                   </div>
-                  <div className="text-sm text-[var(--text-secondary)]">{tab === 'optimize' ? '正在优化文字...' : '正在分析任务数据...'}</div>
+                  <div className="text-sm text-[var(--text-secondary)]">{loadingMsg || (tab === 'optimize' ? '正在优化文字...' : '正在分析任务数据...')}</div>
                 </div>
               )}
 
