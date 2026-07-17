@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../store';
 import type { Task, Project } from '../types';
-import { Search, Download, Upload, Trash2, CheckCircle, Circle, XCircle, Star, Users } from 'lucide-react';
+import { Search, Download, Upload, Trash2, CheckCircle, Circle, XCircle, Star, Users, Settings, Save } from 'lucide-react';
 
 interface UserAccount {
   id: string;
@@ -25,6 +25,16 @@ export default function Admin() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // AI 配置
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiApiUrl, setAiApiUrl] = useState('');
+  const [aiModel, setAiModel] = useState('');
+  const [aiHasKey, setAiHasKey] = useState(false);
+  const [aiSaving, setAiSaving] = useState(false);
+  const [aiSaved, setAiSaved] = useState(false);
+
+  const API_URL = `${window.location.protocol}//${window.location.hostname}:3001/api`;
 
   // Stats
   const stats = useMemo(() => ({
@@ -53,6 +63,23 @@ export default function Admin() {
       setLoadingUsers(false);
     };
     fetchUsers();
+
+    // 获取 AI 配置
+    const fetchConfig = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/admin/config`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAiApiUrl(data.apiUrl || '');
+          setAiModel(data.model || '');
+          setAiHasKey(data.hasKey);
+        }
+      } catch (e) { /* ignore */ }
+    };
+    fetchConfig();
   }, []);
 
   // Filtered tasks
@@ -601,6 +628,86 @@ export default function Admin() {
           {!loadingUsers && users.length === 0 && (
             <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">暂无用户数据</div>
           )}
+        </div>
+      </div>
+
+      {/* AI 配置管理 */}
+      <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-light)] overflow-hidden">
+        <div className="flex items-center gap-2 px-6 py-4 border-b border-[var(--border-light)]">
+          <Settings size={18} className="text-purple-500" />
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">AI 配置</h2>
+          {aiHasKey && <span className="text-xs text-green-500 font-medium">✓ 已配置</span>}
+          {!aiHasKey && <span className="text-xs text-amber-500 font-medium">未配置（使用本地规则）</span>}
+        </div>
+        <div className="px-6 py-5 space-y-4 max-w-2xl">
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">API Key</label>
+            <input
+              type="password"
+              value={aiApiKey}
+              onChange={(e) => setAiApiKey(e.target.value)}
+              placeholder={aiHasKey ? '已设置（留空则不修改）' : 'sk-... 或你的 API Key'}
+              className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">API 地址</label>
+              <input
+                type="text"
+                value={aiApiUrl}
+                onChange={(e) => setAiApiUrl(e.target.value)}
+                placeholder="https://api.openai.com/v1/chat/completions"
+                className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">模型名称</label>
+              <input
+                type="text"
+                value={aiModel}
+                onChange={(e) => setAiModel(e.target.value)}
+                placeholder="gpt-4o-mini"
+                className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={async () => {
+                setAiSaving(true);
+                try {
+                  const token = localStorage.getItem('token');
+                  const res = await fetch(`${API_URL}/admin/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({
+                      apiKey: aiApiKey || undefined,
+                      apiUrl: aiApiUrl || undefined,
+                      model: aiModel || undefined,
+                    }),
+                  });
+                  if (res.ok) {
+                    setAiHasKey(true);
+                    setAiSaved(true);
+                    setAiApiKey('');
+                    setTimeout(() => setAiSaved(false), 3000);
+                  }
+                } catch { /* ignore */ }
+                setAiSaving(false);
+              }}
+              disabled={aiSaving}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+            >
+              {aiSaving ? <Save size={14} className="animate-pulse" /> : <Save size={14} />}
+              {aiSaving ? '保存中...' : aiSaved ? '✓ 已保存' : '保存配置'}
+            </button>
+            <span className="text-xs text-[var(--text-tertiary)]">配置保存后立即生效，所有用户可使用 AI 功能</span>
+          </div>
+          <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 text-xs text-[var(--text-tertiary)] space-y-1">
+            <p>💡 推荐模型：gpt-4o-mini（OpenAI）/ deepseek-chat（DeepSeek，便宜）/ glm-4-flash（智谱，免费）</p>
+            <p>💡 API 地址留空则默认 OpenAI。DeepSeek: https://api.deepseek.com/v1/chat/completions</p>
+          </div>
         </div>
       </div>
 

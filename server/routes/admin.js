@@ -42,4 +42,53 @@ router.get('/users', asyncHandler(async (req, res) => {
   res.json(queryAll('SELECT id, email, name, role, plan, balance, plan_expires_at, created_at FROM users'));
 }));
 
+// GET /api/admin/config - 获取 AI 配置（脱敏）
+router.get('/config', asyncHandler(async (req, res) => {
+  const key = process.env.OPENAI_API_KEY || process.env.AI_API_KEY || '';
+  const masked = key ? key.slice(0, 6) + '***' + key.slice(-4) : '';
+  res.json({
+    apiKeyMasked: masked,
+    apiUrl: process.env.AI_API_URL || '',
+    model: process.env.AI_MODEL || '',
+    hasKey: !!key,
+  });
+}));
+
+// POST /api/admin/config - 更新 AI 配置
+router.post('/config', asyncHandler(async (req, res) => {
+  const { apiKey, apiUrl, model } = req.body;
+
+  // 更新内存中的环境变量（重启后丢失，需要持久化到 .env）
+  if (apiKey !== undefined) process.env.AI_API_KEY = apiKey;
+  if (apiUrl !== undefined) process.env.AI_API_URL = apiUrl;
+  if (model !== undefined) process.env.AI_MODEL = model;
+
+  // 写入 .env 文件持久化
+  const fs = require('fs');
+  const envPath = require('path').join(__dirname, '..', '.env');
+  try {
+    let envContent = fs.readFileSync(envPath, 'utf8');
+
+    const updateEnv = (key, value) => {
+      const regex = new RegExp(`^${key}=.*$`, 'm');
+      const line = `${key}=${value || ''}`;
+      if (regex.test(envContent)) {
+        envContent = envContent.replace(regex, line);
+      } else {
+        envContent += `\n${line}`;
+      }
+    };
+
+    if (apiKey !== undefined) updateEnv('OPENAI_API_KEY', apiKey);
+    if (apiUrl !== undefined) updateEnv('AI_API_URL', apiUrl);
+    if (model !== undefined) updateEnv('AI_MODEL', model);
+
+    fs.writeFileSync(envPath, envContent, 'utf8');
+    res.json({ success: true, message: '配置已保存并生效' });
+  } catch (e) {
+    console.error('Failed to save config:', e);
+    res.json({ success: true, message: '配置已生效（内存），但未写入文件' });
+  }
+}));
+
 module.exports = router;
