@@ -134,7 +134,7 @@ function formatBytes(bytes) {
 }
 
 // 内存使用警告阈值
-const MEMORY_WARN_PERCENT = 85;
+const MEMORY_WARN_PERCENT = 95;
 
 function checkMemoryHealth() {
   const mem = process.memoryUsage();
