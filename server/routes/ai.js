@@ -122,23 +122,43 @@ ${text}
 function optimizeTextLocal(text) {
   let result = text.trim();
 
-  // 去除多余空格
+  // 1. 去除多余空格和换行
   result = result.replace(/\s+/g, ' ');
-  // 去除多余标点
-  result = result.replace(/([，。！？、])\1+/g, '$1');
-  // 去除口语化废话
-  const fillers = ['就是说', '然后的话', '这样子', '就是说啊', '然后呢', '就是', '那个', '嗯', '啊', '吧', '的话'];
+  // 2. 去除重复标点
+  result = result.replace(/([，。！？、,])\1+/g, '$1');
+  result = result.replace(/[，。]$/g, '');
+
+  // 3. 去除口语化废话
+  const fillers = ['就是说', '然后的话', '这样子', '就是说啊', '然后呢', '就是', '那个', '嗯', '啊', '吧', '的话', '其实', '反正', '差不多', '基本上', '总之'];
   fillers.forEach(f => {
     result = result.replace(new RegExp(f, 'g'), '');
   });
-  // 整理换行
-  result = result.replace(/\n{3,}/g, '\n\n');
-  // 首字母大写（英文）
-  result = result.replace(/^([a-z])/, (m, c) => c.toUpperCase());
-  // 句末加句号
-  if (result && !/[。！？.!?]$/.test(result)) {
-    result += '。';
+
+  // 4. 修复断句：去掉句中多余逗号
+  result = result.replace(/，\s*，/g, '，');
+  result = result.replace(/^\s*，\s*/g, '');
+  result = result.replace(/\s*，\s*$/g, '');
+
+  // 5. 智能分段：如果有多个独立句子，按句号分段
+  const sentences = result.split(/[。！？]/).filter(s => s.trim());
+  if (sentences.length > 1) {
+    result = sentences.map(s => {
+      let trimmed = s.trim().replace(/^[，,\s]+/, '');
+      if (trimmed && !/[。！？]$/.test(trimmed)) {
+        trimmed += '。';
+      }
+      return trimmed;
+    }).join('\n');
+  } else {
+    // 单句也整理
+    result = result.replace(/\s+/g, ' ').trim();
+    if (result && !/[。！？.!?]$/.test(result)) {
+      result += '。';
+    }
   }
+
+  // 6. 首字母大写（英文）
+  result = result.replace(/^([a-z])/, (m, c) => c.toUpperCase());
 
   return result;
 }
