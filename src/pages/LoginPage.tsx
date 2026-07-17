@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { CheckSquare, Timer, Sparkles, Users, BarChart3, Zap, Shield, Globe, ArrowRight } from 'lucide-react';
+import { CheckSquare, Timer, Sparkles, Users, BarChart3, Zap, Shield, Globe } from 'lucide-react';
 
 interface LoginPageProps {
   onSwitchToRegister: () => void;
