@@ -1,37 +1,62 @@
 const express = require('express');
 const router = express.Router();
+const { authenticate } = require('../middleware/auth');
+const { queryOne } = require('../db');
 
-// POST /api/ai/extract-image - 从图片提取任务描述
+// 检查用户套餐是否为商务版
+function isBusinessUser(userId) {
+  if (!userId) return false;
+  const user = queryOne('SELECT plan, plan_expires_at FROM users WHERE id = ?', [userId]);
+  if (!user || user.plan !== 'business') return false;
+  // 检查是否过期
+  if (user.plan_expires_at && new Date(user.plan_expires_at) < new Date()) return false;
+  return true;
+}
+
+// 获取 AI 配置（服务器端或客户端）
+function getAIConfig(clientApiKey, clientApiUrl, clientModel) {
+  return {
+    apiKey: clientApiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || '',
+    apiUrl: clientApiUrl || process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions',
+    model: clientModel || process.env.AI_MODEL || 'gpt-4o-mini',
+  };
+}
+
+// POST /api/ai/extract-image - 从图片提取任务描述（商务版）
 router.post('/extract-image', async (req, res) => {
   try {
-    const { image, clientApiKey, clientApiUrl, clientModel } = req.body;
+    const { image, clientApiKey, clientApiUrl, clientModel, userId } = req.body;
 
     if (!image || typeof image !== 'string') {
       return res.status(400).json({ error: '需要提供图片数据' });
     }
 
-    // 检查图片大小（base64 约 5MB 限制）
     if (image.length > 5 * 1024 * 1024) {
       return res.status(413).json({ error: '图片太大，请小于 5MB' });
     }
 
+    const config = getAIConfig(clientApiKey, clientApiUrl, clientModel);
+    const canUseAI = config.apiKey && isBusinessUser(userId);
+
+    if (!canUseAI) {
+      return res.json({
+        result: '## ⚠️ 图片识别需要商务版\n\n免费版不支持 AI 图片识别功能。\n\n请在管理后台升级到商务版后使用。',
+        mode: 'blocked'
+      });
+    }
+
     let aiResult = null;
 
-    const effApiKey = clientApiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
-    const effApiUrl = clientApiUrl || process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
-    const effModel = clientModel || process.env.AI_VISION_MODEL || process.env.AI_MODEL || 'gpt-4o-mini';
-
-    // 尝试用 AI 视觉 API
-    if (effApiKey) {
+    if (config.apiKey) {
       try {
-        const response = await fetch(effApiUrl, {
+        const response = await fetch(config.apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${effApiKey}`,
+            'Authorization': `Bearer ${config.apiKey}`,
           },
           body: JSON.stringify({
-            model: effModel,
+            model: config.model,
             messages: [{
               role: 'user',
               content: [
@@ -65,19 +90,17 @@ router.post('/extract-image', async (req, res) => {
 // POST /api/ai/optimize-text - 文字优化
 router.post('/optimize-text', async (req, res) => {
   try {
-    const { text, tasks, projects, clientApiKey, clientApiUrl, clientModel } = req.body;
+    const { text, tasks, projects, clientApiKey, clientApiUrl, clientModel, userId } = req.body;
 
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ error: '需要提供文字内容' });
     }
 
-    // 尝试 AI API（优先用前端传来的 Key，其次用 .env 配置）
-    let aiResult = null;
-    const effApiKey = clientApiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
-    const effApiUrl = clientApiUrl || process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
-    const effModel = clientModel || process.env.AI_MODEL || 'gpt-4o-mini';
+    const config = getAIConfig(clientApiKey, clientApiUrl, clientModel);
+    const canUseAI = config.apiKey && isBusinessUser(userId);
 
-    if (effApiKey) {
+    if (canUseAI) {
+      // 商务版：用 AI API 智能优化
       const prompt = `你是一个文字优化助手。请把下面这段杂乱的描述整理成清晰明了的话语，保持原意不变，语言简洁专业。
 
 原始描述：
@@ -86,14 +109,14 @@ ${text}
 请直接输出优化后的文字，不要加额外说明。`;
 
       try {
-        const response = await fetch(effApiUrl, {
+        const response = await fetch(config.apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${effApiKey}`,
+            'Authorization': `Bearer ${config.apiKey}`,
           },
           body: JSON.stringify({
-            model: effModel,
+            model: config.model,
             messages: [{ role: 'user', content: prompt }],
             temperature: 0.5,
             max_tokens: 1000,
@@ -104,14 +127,15 @@ ${text}
       } catch (e) {
         console.error('AI API error:', e.message);
       }
+      if (!aiResult) {
+        // AI 调用失败，降级到本地规则
+        aiResult = optimizeTextLocal(text);
+      }
+      res.json({ result: aiResult, mode: 'ai' });
+    } else {
+      // 免费版：本地规则引擎
+      res.json({ result: optimizeTextLocal(text), mode: 'local' });
     }
-
-    // 本地优化规则
-    if (!aiResult) {
-      aiResult = optimizeTextLocal(text);
-    }
-
-    res.json({ result: aiResult });
   } catch (error) {
     console.error('AI optimize-text error:', error);
     res.status(500).json({ error: '文字优化失败' });
@@ -166,7 +190,7 @@ function optimizeTextLocal(text) {
 // POST /api/ai/organize - AI 整理目标和任务
 router.post('/organize', async (req, res) => {
   try {
-    const { tasks, projects, sections, clientApiKey, clientApiUrl, clientModel } = req.body;
+    const { tasks, projects, sections, clientApiKey, clientApiUrl, clientModel, userId } = req.body;
 
     if (!tasks || !Array.isArray(tasks)) {
       return res.status(400).json({ error: '需要提供任务数据' });
@@ -204,23 +228,22 @@ ${taskList || '暂无任务'}
 
 请用 Markdown 格式输出，语言简洁明了。`;
 
-    // 尝试调用 AI API（优先用前端传来的 Key）
-    let aiResult = null;
+    // 检查是否可以用 AI
+    const config = getAIConfig(clientApiKey, clientApiUrl, clientModel);
+    const canUseAI = config.apiKey && isBusinessUser(userId);
 
-    const effApiKey = clientApiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
-    const effApiUrl = clientApiUrl || process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions';
-    const effModel = clientModel || process.env.AI_MODEL || 'gpt-4o-mini';
-
-    if (effApiKey) {
+    if (canUseAI) {
+      // 商务版：AI 智能分析
+      let aiResult = null;
       try {
-        const response = await fetch(effApiUrl, {
+        const response = await fetch(config.apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${effApiKey}`,
+            'Authorization': `Bearer ${config.apiKey}`,
           },
           body: JSON.stringify({
-            model: effModel,
+            model: config.model,
             messages: [{ role: 'user', content: prompt }],
             temperature: 0.7,
             max_tokens: 2000,
@@ -231,17 +254,56 @@ ${taskList || '暂无任务'}
       } catch (e) {
         console.error('AI API error:', e.message);
       }
+      if (aiResult) {
+        res.json({ result: aiResult, mode: 'ai' });
+      } else {
+        res.json({ result: generateLocalAnalysis(tasks, projects, sections), mode: 'local' });
+      }
+    } else {
+      // 免费版：本地规则引擎
+      res.json({ result: generateLocalAnalysis(tasks, projects, sections), mode: 'local' });
     }
-
-    // 方案3: 本地规则引擎（不需要 API Key）
-    if (!aiResult) {
-      aiResult = generateLocalAnalysis(tasks, projects, sections);
-    }
-
-    res.json({ result: aiResult, prompt });
   } catch (error) {
     console.error('AI organize error:', error);
     res.status(500).json({ error: 'AI 整理失败' });
+  }
+});
+
+// POST /api/ai/upgrade - 升级套餐（演示用，生产环境接支付回调）
+router.post('/upgrade', authenticate, async (req, res) => {
+  try {
+    const { plan } = req.body;
+    const { run } = require('../db');
+
+    if (!['free', 'business'].includes(plan)) {
+      return res.status(400).json({ error: '无效套餐' });
+    }
+
+    const expiresAt = plan === 'business'
+      ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()  // 1 年
+      : null;
+
+    run('UPDATE users SET plan = ?, plan_expires_at = ? WHERE id = ?', [plan, expiresAt, req.user.id]);
+
+    res.json({ success: true, plan, expiresAt });
+  } catch (error) {
+    console.error('Upgrade error:', error);
+    res.status(500).json({ error: '升级失败' });
+  }
+});
+
+// GET /api/ai/plan - 查看当前套餐
+router.get('/plan', authenticate, async (req, res) => {
+  try {
+    const user = queryOne('SELECT plan, plan_expires_at FROM users WHERE id = ?', [req.user.id]);
+    const isBusiness = user?.plan === 'business' && (!user.plan_expires_at || new Date(user.plan_expires_at) > new Date());
+    res.json({
+      plan: user?.plan || 'free',
+      planExpiresAt: user?.plan_expires_at,
+      isBusiness,
+    });
+  } catch (error) {
+    res.status(500).json({ error: '查询失败' });
   }
 });
 
