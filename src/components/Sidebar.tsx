@@ -21,6 +21,7 @@ import {
   Download,
   Upload,
   X,
+  Sparkles,
 } from 'lucide-react';
 import { useStore } from '../store';
 import type { Project } from '../types';
@@ -31,9 +32,10 @@ interface SidebarProps {
   currentView: string;
   onViewChange: (view: string, projectId?: string) => void;
   onLogout?: () => void;
+  onQuickCapture?: () => void;
 }
 
-export default function Sidebar({ currentView, onViewChange, onLogout }: SidebarProps) {
+export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCapture }: SidebarProps) {
   const [searchQuery, setLocalSearchQuery] = useState('');
   const [showFavorites, setShowFavorites] = useState(true);
   const [showProjects, setShowProjects] = useState(true);
@@ -164,7 +166,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
 
       {/* Add Task Button */}
       {!collapsed && (
-        <div className="px-3 pb-2">
+        <div className="px-3 pb-2 space-y-1.5">
           <button
             onClick={() => onViewChange('quick-add')}
             className="flex items-center gap-2.5 w-full px-3.5 py-2.5 bg-gradient-to-r from-[#DC4C3E] to-[#E85D4A] hover:from-[#c4403a] hover:to-[#D45040] text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-md shadow-red-500/20 hover:shadow-lg hover:shadow-red-500/30 hover:-translate-y-0.5 active:translate-y-0"
@@ -172,6 +174,15 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
             <Plus size={18} strokeWidth={2.5} />
             <span>添加任务</span>
           </button>
+          {onQuickCapture && (
+            <button
+              onClick={onQuickCapture}
+              className="flex items-center gap-2.5 w-full px-3.5 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl text-xs font-medium transition-all duration-200 shadow-md shadow-purple-500/20 hover:shadow-lg"
+            >
+              <Sparkles size={14} />
+              <span>语音/截图快速录入</span>
+            </button>
+          )}
         </div>
       )}
 

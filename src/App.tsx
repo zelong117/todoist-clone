@@ -22,6 +22,7 @@ import AIAssistant from './components/AIAssistant';
 import AIOrganizer from './components/AIOrganizer';
 import DraggableWidget from './components/DraggableWidget';
 import SharePanel from './components/SharePanel';
+import QuickCapture from './components/QuickCapture';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState<string>('inbox');
   const [showSharePanel, setShowSharePanel] = useState(false);
+  const [showQuickCapture, setShowQuickCapture] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showPomodoroSettings, setShowPomodoroSettings] = useState(false);
   const [activeFilter, setActiveFilter] = useState<{
@@ -471,7 +473,7 @@ export default function App() {
   return (
     <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
       {/* Sidebar */}
-      <Sidebar currentView={currentView} onViewChange={handleViewChange} onLogout={logout} />
+      <Sidebar currentView={currentView} onViewChange={handleViewChange} onLogout={logout} onQuickCapture={() => setShowQuickCapture(true)} />
 
       {/* Main Content */}
       <main className={`flex-1 flex overflow-hidden ${darkClasses} transition-colors duration-200`}>
@@ -742,6 +744,11 @@ export default function App() {
             projectName={currentProject.name}
             onClose={() => setShowSharePanel(false)}
           />
+        )}
+
+        {/* 快速录入 */}
+        {showQuickCapture && (
+          <QuickCapture onClose={() => setShowQuickCapture(false)} />
         )}
 
       </main>

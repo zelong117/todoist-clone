@@ -269,6 +269,151 @@ ${taskList || '暂无任务'}
   }
 });
 
+// POST /api/ai/extract-tasks - 从语音/文字/图片提取任务
+router.post('/extract-tasks', authenticate, async (req, res) => {
+  try {
+    const { text, image } = req.body;
+    const userId = req.user.id;
+
+    if (!text && !image) {
+      return res.status(400).json({ error: '需要提供文字或图片' });
+    }
+
+    const config = getAIConfig('', '', '');
+    const canUseAI = config.apiKey && isBusinessUser(userId);
+
+    if (canUseAI) {
+      // 商务版：AI 智能提取
+      let prompt = `你是一个任务提取助手。请从以下内容中提取出所有待办任务。
+
+要求：
+1. 每个任务一行
+2. 返回 JSON 数组格式
+3. 每个任务包含：title（标题）、priority（优先级：urgent/high/medium/low）、dueDate（截止日期，YYYY-MM-DD 格式，没有则为空字符串）
+4. 保持原始语言（中文就中文，英文就英文）
+5. 只返回 JSON，不要其他文字
+
+`;
+
+      const messages = [];
+
+      if (text && image) {
+        prompt += `语音/文字内容：\n${text}\n\n请同时分析图片内容，提取其中的任务。`;
+        messages.push({
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: image } }
+          ]
+        });
+      } else if (image) {
+        prompt += '请从图片中提取所有待办任务。';
+        messages.push({
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: image } }
+          ]
+        });
+      } else {
+        prompt += `内容：\n${text}`;
+        messages.push({ role: 'user', content: prompt });
+      }
+
+      try {
+        const response = await fetch(config.apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${config.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: config.model,
+            messages,
+            temperature: 0.3,
+            max_tokens: 1500,
+          }),
+        });
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || '';
+
+        // 尝试解析 JSON
+        let tasks = [];
+        try {
+          // 提取 JSON 部分（可能被 markdown 包裹）
+          const jsonMatch = content.match(/\[[\s\S]*\]/);
+          if (jsonMatch) {
+            tasks = JSON.parse(jsonMatch[0]);
+          }
+        } catch {}
+
+        if (tasks.length > 0) {
+          res.json({ tasks, mode: 'ai' });
+        } else {
+          // AI 返回了内容但解析失败，用本地规则
+          res.json({ tasks: extractTasksLocal(text || ''), mode: 'local' });
+        }
+      } catch (e) {
+        console.error('AI extract-tasks error:', e.message);
+        res.json({ tasks: extractTasksLocal(text || ''), mode: 'local' });
+      }
+    } else {
+      // 免费版：本地规则提取
+      res.json({ tasks: extractTasksLocal(text || ''), mode: 'local' });
+    }
+  } catch (error) {
+    console.error('Extract tasks error:', error);
+    res.status(500).json({ error: '任务提取失败' });
+  }
+});
+
+// 本地任务提取规则
+function extractTasksLocal(text) {
+  if (!text.trim()) return [];
+
+  // 按常见分隔符拆分
+  const separators = /[，。；\n、,;]/;
+  const parts = text.split(separators).filter(s => s.trim().length > 1);
+
+  const tasks = parts.map(part => {
+    let title = part.trim();
+    let priority = 'medium';
+    let dueDate = '';
+
+    // 识别优先级
+    if (/紧急|急|马上|立刻|ASAP/i.test(title)) priority = 'urgent';
+    else if (/重要|优先|尽快/i.test(title)) priority = 'high';
+    else if (/不急|稍后|有空/i.test(title)) priority = 'low';
+
+    // 识别日期
+    const today = new Date();
+    if (/今天|今日/.test(title)) {
+      dueDate = today.toISOString().split('T')[0];
+    } else if (/明天|明日/.test(title)) {
+      dueDate = new Date(today.getTime() + 86400000).toISOString().split('T')[0];
+    } else if (/后天/.test(title)) {
+      dueDate = new Date(today.getTime() + 172800000).toISOString().split('T')[0];
+    } else if (/周[一二三四五六日天]/.test(title)) {
+      const dayMap = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 0, '天': 0 };
+      const match = title.match(/周([一二三四五六日天])/);
+      if (match) {
+        const targetDay = dayMap[match[1]];
+        const currentDay = today.getDay();
+        let daysUntil = targetDay - currentDay;
+        if (daysUntil <= 0) daysUntil += 7;
+        dueDate = new Date(today.getTime() + daysUntil * 86400000).toISOString().split('T')[0];
+      }
+    }
+
+    // 清理标题中的日期词
+    title = title.replace(/今天|今日|明天|明日|后天|周[一二三四五六日天]|紧急|急|马上|立刻|重要|优先|尽快|不急|稍后|有空/g, '').trim();
+
+    return { title, priority, dueDate };
+  }).filter(t => t.title.length > 0);
+
+  return tasks;
+}
+
 // POST /api/ai/upgrade - 升级套餐（演示用，生产环境接支付回调）
 router.post('/upgrade', authenticate, async (req, res) => {
   try {
