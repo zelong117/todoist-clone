@@ -175,6 +175,8 @@ export default function QuickCapture({ onClose }: QuickCaptureProps) {
         dueDate: task.dueDate || null,
         labels: [],
         pomodoroCount: 1,
+        plannedPomodoros: 1,
+        estimatedMinutes: 25,
         isCompleted: false,
         completedPomodoros: 0,
         order: 0,
