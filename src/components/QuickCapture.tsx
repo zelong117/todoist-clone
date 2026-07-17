@@ -182,7 +182,6 @@ export default function QuickCapture({ onClose }: QuickCaptureProps) {
         isRecurring: false,
         recurrenceRule: null,
         completedAt: null,
-        assignedTo: null,
       });
     });
 
