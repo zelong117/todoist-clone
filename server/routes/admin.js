@@ -29,8 +29,21 @@ router.get('/stats', asyncHandler(async (req, res) => {
     totalPomodoros: queryOne('SELECT COUNT(*) as c FROM pomodoro_sessions').c,
     completedPomodoros: queryOne('SELECT COUNT(*) as c FROM pomodoro_sessions WHERE completed = 1').c,
     totalUsers: queryOne('SELECT COUNT(*) as c FROM users').c,
+    // 商业数据
+    paidUsers: queryOne("SELECT COUNT(*) as c FROM users WHERE plan = 'business'").c,
+    freeUsers: queryOne("SELECT COUNT(*) as c FROM users WHERE plan = 'free' OR plan IS NULL").c,
+    totalRevenue: queryOne('SELECT COALESCE(SUM(balance), 0) as c FROM users').c,
+    // 最近注册
+    recentUsers: queryAll("SELECT email, name, plan, created_at FROM users ORDER BY created_at DESC LIMIT 5"),
+    // 今日注册
+    todayRegistrations: queryOne("SELECT COUNT(*) as c FROM users WHERE date(created_at) = date('now')").c,
+    // 本周注册
+    weekRegistrations: queryOne("SELECT COUNT(*) as c FROM users WHERE created_at >= datetime('now', '-7 days')").c,
+    // 付费转化率
+    conversionRate: 0,
   };
   s.pendingTasks = s.totalTasks - s.completedTasks;
+  s.conversionRate = s.totalUsers > 0 ? Math.round((s.paidUsers / s.totalUsers) * 100) : 0;
   res.json(s);
 }));
 

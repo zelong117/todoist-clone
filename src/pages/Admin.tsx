@@ -44,13 +44,16 @@ export default function Admin() {
     totalPomodoros: pomodoroSessions.length,
   }), [tasks, projects, labels, pomodoroSessions]);
 
+  // 服务端商业数据
+  const [serverStats, setServerStats] = useState<any>(null);
+
   // 获取用户列表
   useEffect(() => {
     const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${window.location.protocol}//${window.location.hostname}:3001/api/admin/users`, {
+        const res = await fetch(`${API_URL}/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -63,6 +66,21 @@ export default function Admin() {
       setLoadingUsers(false);
     };
     fetchUsers();
+
+    // 获取服务端统计
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/admin/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setServerStats(data);
+        }
+      } catch (e) { /* ignore */ }
+    };
+    fetchStats();
 
     // 获取 AI 配置
     const fetchConfig = async () => {
@@ -291,6 +309,58 @@ export default function Admin() {
       {importMessage && (
         <div className="px-4 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm font-medium">
           {importMessage}
+        </div>
+      )}
+
+      {/* 商业仪表盘 */}
+      {serverStats && (
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-white dark:to-gray-100 rounded-2xl p-6 text-white dark:text-gray-900">
+          <h2 className="text-sm font-medium opacity-60 mb-4">📊 商业数据总览</h2>
+          <div className="grid grid-cols-6 gap-4">
+            <div>
+              <p className="text-xs opacity-50">总注册</p>
+              <p className="text-2xl font-bold">{serverStats.totalUsers}</p>
+            </div>
+            <div>
+              <p className="text-xs opacity-50">付费用户</p>
+              <p className="text-2xl font-bold text-green-400 dark:text-green-600">{serverStats.paidUsers}</p>
+            </div>
+            <div>
+              <p className="text-xs opacity-50">免费用户</p>
+              <p className="text-2xl font-bold">{serverStats.freeUsers}</p>
+            </div>
+            <div>
+              <p className="text-xs opacity-50">今日注册</p>
+              <p className="text-2xl font-bold text-blue-400 dark:text-blue-600">{serverStats.todayRegistrations}</p>
+            </div>
+            <div>
+              <p className="text-xs opacity-50">本周注册</p>
+              <p className="text-2xl font-bold text-purple-400 dark:text-purple-600">{serverStats.weekRegistrations}</p>
+            </div>
+            <div>
+              <p className="text-xs opacity-50">转化率</p>
+              <p className="text-2xl font-bold text-amber-400 dark:text-amber-600">{serverStats.conversionRate}%</p>
+            </div>
+          </div>
+          {/* 最近注册用户 */}
+          {serverStats.recentUsers && serverStats.recentUsers.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-white/10 dark:border-gray-900/10">
+              <p className="text-xs opacity-50 mb-2">最近注册</p>
+              <div className="flex gap-4">
+                {serverStats.recentUsers.map((u: any, i: number) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <div className="w-6 h-6 rounded-full bg-white/20 dark:bg-gray-900/10 flex items-center justify-center text-[10px] font-bold">
+                      {(u.name || u.email)[0].toUpperCase()}
+                    </div>
+                    <span className="opacity-80">{u.name || u.email}</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${u.plan === 'business' ? 'bg-green-500/20 text-green-300 dark:bg-green-500/10 dark:text-green-700' : 'bg-white/10 dark:bg-gray-900/5 opacity-50'}`}>
+                      {u.plan === 'business' ? '商务' : '免费'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
