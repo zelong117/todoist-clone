@@ -432,8 +432,8 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
           const oldIndex = reordered.findIndex((s) => s.id === activeId);
           const newIndex = reordered.findIndex((s) => s.id === overId);
           if (oldIndex !== -1 && newIndex !== -1) {
-            reordered.splice(oldIndex, 1);
-            reordered.splice(newIndex, 0, sectionsToShow[oldIndex]);
+            const [moved] = reordered.splice(oldIndex, 1);
+            reordered.splice(newIndex, 0, moved);
             reordered.forEach((s, i) => updateSection(s.id, { order: i }));
           }
         }
