@@ -23,6 +23,7 @@ import AIOrganizer from './components/AIOrganizer';
 import DraggableWidget from './components/DraggableWidget';
 import SharePanel from './components/SharePanel';
 import QuickCapture from './components/QuickCapture';
+import { initClickSounds } from './utils/sounds';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
 
 export default function App() {
@@ -105,6 +106,7 @@ export default function App() {
 
   // Keyboard shortcuts
   useEffect(() => {
+    initClickSounds();
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === 'k') {
         e.preventDefault();

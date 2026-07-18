@@ -22,8 +22,11 @@ import {
   Upload,
   X,
   Sparkles,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { useStore } from '../store';
+import { setSoundEnabled, getSoundEnabled } from '../utils/sounds';
 import type { Project } from '../types';
 import NewProjectModal from './NewProjectModal';
 import ProjectSettingsModal from './ProjectSettingsModal';
@@ -42,6 +45,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [showProjectSettings, setShowProjectSettings] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [soundOn, setSoundOn] = useState(getSoundEnabled());
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const {
@@ -551,6 +555,15 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
                       {darkMode ? <Sun size={14} /> : <Moon size={14} />}
                       <span>主题设置</span>
                       <span className="ml-auto text-xs text-[var(--text-tertiary)]">{darkMode ? '暗色' : '浅色'}</span>
+                    </button>
+                    <button onClick={() => {
+                      const next = !soundOn;
+                      setSoundOn(next);
+                      setSoundEnabled(next);
+                    }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                      {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                      <span>音效</span>
+                      <span className="ml-auto text-xs text-[var(--text-tertiary)]">{soundOn ? '开' : '关'}</span>
                     </button>
                     <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
                       <Bell size={14} />
