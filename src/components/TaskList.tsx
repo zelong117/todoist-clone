@@ -18,6 +18,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Inbox, Plus, MoreHorizontal, GripVertical, CalendarDays, CalendarClock, Filter } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
+import { showTaskOperationError } from '../utils';
 import TaskItem from './TaskItem';
 
 interface TaskListProps {
@@ -73,8 +74,9 @@ function SectionGroup({
 
   const taskIds = useMemo(() => sectionTasks.map((t) => t.id), [sectionTasks]);
 
-  const handleAddTask = useCallback(() => {
-    addTask({
+  const handleAddTask = useCallback(async () => {
+    try {
+      await addTask({
       title: '新任务',
       description: '',
       projectId: projectId || null,
@@ -92,7 +94,10 @@ function SectionGroup({
       estimatedMinutes: 0,
       completedAt: null,
       order: 0,
-    });
+      });
+    } catch (error) {
+      showTaskOperationError(error);
+    }
   }, [section, projectId, addTask]);
 
   const handleSaveName = useCallback(() => {

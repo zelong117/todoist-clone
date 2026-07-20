@@ -20,7 +20,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Plus, Calendar, Trash2, Timer } from 'lucide-react';
 import { useStore } from '../store';
-import { formatDueDateStatus } from '../utils';
+import { formatDueDateStatus, showTaskOperationError } from '../utils';
 import type { Task, Section } from '../types';
 
 const PRIORITY_COLORS: Record<number, string> = {
@@ -94,9 +94,13 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
 
       {/* Delete button - hover to show */}
       <button
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation();
-          deleteTask(task.id);
+          try {
+            await deleteTask(task.id);
+          } catch (error) {
+            showTaskOperationError(error);
+          }
         }}
         className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-50 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-150"
       >
@@ -106,9 +110,13 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
       {/* Header with checkbox and title */}
       <div className="flex items-start gap-2.5 mb-2 pl-2">
         <button
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            toggleComplete(task.id);
+            try {
+              await toggleComplete(task.id);
+            } catch (error) {
+              showTaskOperationError(error);
+            }
           }}
           className="mt-0.5 flex-shrink-0"
         >
@@ -228,8 +236,9 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
     [tasks, section.id]
   );
 
-  const handleAddTask = useCallback(() => {
-    addTask({
+  const handleAddTask = useCallback(async () => {
+    try {
+      await addTask({
       title: '新任务',
       description: '',
       sectionId: section.id,
@@ -247,7 +256,10 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
       estimatedMinutes: 0,
       completedAt: null,
       order: columnTasks.length,
-    });
+      });
+    } catch (error) {
+      showTaskOperationError(error);
+    }
   }, [section, addTask, columnTasks.length]);
 
   return (
@@ -415,7 +427,7 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
   }, [sections]);
 
   const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
+    async (event: DragEndEvent) => {
       const { active, over } = event;
       setActiveTask(null);
 
@@ -448,7 +460,11 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
       const overSection = sections.find((s) => s.id === over.id);
       if (overSection && activeTaskItem.sectionId !== overSection.id) {
         // 跨列移动
-        updateTask(activeTaskItem.id, { sectionId: overSection.id });
+        try {
+          await updateTask(activeTaskItem.id, { sectionId: overSection.id });
+        } catch (error) {
+          showTaskOperationError(error);
+        }
         return;
       }
 
@@ -459,7 +475,12 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
         const targetSectionId = overTask.sectionId || activeTaskItem.sectionId;
         // 如果跨列拖到某个任务上
         if (activeTaskItem.sectionId !== overTask.sectionId) {
-          updateTask(activeTaskItem.id, { sectionId: overTask.sectionId });
+          try {
+            await updateTask(activeTaskItem.id, { sectionId: overTask.sectionId });
+          } catch (error) {
+            showTaskOperationError(error);
+            return;
+          }
         }
         // 重新排序
         const sectionTasks = tasks

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Flag, Calendar, Folder, Tag, Check } from 'lucide-react';
 import { useStore } from '../store';
+import { showTaskOperationError } from '../utils';
 
 const PRIORITY_COLORS: Record<number, string> = {
   1: '#DC4C3E',
@@ -141,11 +142,12 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
     return { title: afterPriority, date, priority: p };
   }, [input]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     const title = parsedResult.title || input;
     if (!title.trim()) return;
 
-    addTask({
+    try {
+      await addTask({
       title: title.trim(),
       description: '',
       projectId: projectId,
@@ -163,7 +165,11 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
       estimatedMinutes: 25,
       completedAt: null,
       order: 0,
-    });
+      });
+    } catch (error) {
+      showTaskOperationError(error);
+      return;
+    }
 
     handleClose();
   }, [parsedResult, input, projectId, priority, dueDate, selectedLabels, addTask, handleClose]);

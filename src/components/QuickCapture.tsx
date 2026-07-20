@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useStore } from '../store';
+import { showTaskOperationError } from '../utils';
 import { Mic, MicOff, Image as ImageIcon, X, Sparkles, CheckSquare, Plus } from 'lucide-react';
 
 interface QuickCaptureProps {
@@ -160,13 +161,14 @@ export default function QuickCapture({ onClose }: QuickCaptureProps) {
   }, [transcript, imageData, projects, selectedProject]);
 
   // 确认创建任务
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     const tasksToCreate = extractedTasks.filter(t => t.selected);
     const targetProject = selectedProject || projects[0]?.id;
     const targetSection = sections.find(s => s.projectId === targetProject)?.id || '__default__';
 
-    tasksToCreate.forEach(task => {
-      addTask({
+    try {
+      for (const task of tasksToCreate) {
+        await addTask({
         title: task.title,
         description: '',
         projectId: targetProject,
@@ -184,8 +186,12 @@ export default function QuickCapture({ onClose }: QuickCaptureProps) {
         isRecurring: false,
         recurrenceRule: null,
         completedAt: null,
-      });
-    });
+        });
+      }
+    } catch (error) {
+      showTaskOperationError(error);
+      return;
+    }
 
     onClose();
   }, [extractedTasks, selectedProject, projects, sections, addTask, onClose]);

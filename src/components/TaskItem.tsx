@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Pencil, Trash2, Clock, MessageSquare, Calendar, Timer, Pause } from 'lucide-react';
 import type { Task } from '../types';
 import { useStore } from '../store';
-import { formatTimer, formatDueDateStatus } from '../utils';
+import { formatTimer, formatDueDateStatus, showTaskOperationError } from '../utils';
 
 const PRIORITY_COLORS: Record<number, string> = {
   1: '#DC4C3E',
@@ -102,9 +102,13 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
     >
       {/* Circular Checkbox - Todoist style */}
       <button
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation();
-          toggleComplete(task.id);
+          try {
+            await toggleComplete(task.id);
+          } catch (error) {
+            showTaskOperationError(error);
+          }
         }}
         className="flex-shrink-0 mt-0.5 relative group/check"
         style={{ width: 22, height: 22 }}
@@ -297,9 +301,13 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
             <MessageSquare size={14} />
           </button>
           <button
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              deleteTask(task.id);
+              try {
+                await deleteTask(task.id);
+              } catch (error) {
+                showTaskOperationError(error);
+              }
             }}
             className="p-1.5 rounded-lg hover:bg-red-100 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-200"
             title="删除"

@@ -259,3 +259,6 @@ export function getTimerProgress(elapsed: number, total: number): number {
   if (total <= 0) return 0;
   return Math.min(100, Math.max(0, (elapsed / total) * 100));
 }
+export function showTaskOperationError(error: unknown) {
+  alert(error instanceof Error ? error.message : '任务操作失败，请重试');
+}

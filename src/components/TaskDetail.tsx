@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store';
 import { RECURRENCE_OPTIONS, formatRecurrenceRule } from '../lib/recurrence';
+import { showTaskOperationError } from '../utils';
 
 const PRIORITY_COLORS: Record<number, string> = {
   1: '#DC4C3E',
@@ -157,21 +158,30 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     [siblingTasks, currentIndex, setSelectedTaskId]
   );
 
-  const handleTitleBlur = useCallback(() => {
+  const handleTitleBlur = useCallback(async () => {
     if (task && title.trim() !== task.title) {
-      updateTask(task.id, { title: title.trim() });
+      try {
+        await updateTask(task.id, { title: title.trim() });
+      } catch (error) {
+        showTaskOperationError(error);
+      }
     }
   }, [task, title, updateTask]);
 
-  const handleDescBlur = useCallback(() => {
+  const handleDescBlur = useCallback(async () => {
     if (task && description !== (task.description || '')) {
-      updateTask(task.id, { description: description.trim() });
+      try {
+        await updateTask(task.id, { description: description.trim() });
+      } catch (error) {
+        showTaskOperationError(error);
+      }
     }
   }, [task, description, updateTask]);
 
-  const handleAddSubtask = useCallback(() => {
+  const handleAddSubtask = useCallback(async () => {
     if (!task || !newSubtask.trim()) return;
-    addTask({
+    try {
+      await addTask({
       title: newSubtask.trim(),
       description: '',
       projectId: task.projectId,
@@ -189,7 +199,11 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       estimatedMinutes: 25,
       completedAt: null,
       order: subtasks.length,
-    });
+      });
+    } catch (error) {
+      showTaskOperationError(error);
+      return;
+    }
     setNewSubtask('');
   }, [task, newSubtask, addTask, subtasks.length]);
 
@@ -203,33 +217,46 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   }, [task, newComment, addComment]);
 
   const handleToggleSubtask = useCallback(
-    (subtaskId: string) => {
+    async (subtaskId: string) => {
       const sub = tasks.find((t) => t.id === subtaskId);
       if (!sub) return;
-      updateTask(subtaskId, {
-        isCompleted: !sub.isCompleted,
-        completedAt: !sub.isCompleted ? new Date().toISOString() : null,
-      });
+      try {
+        await updateTask(subtaskId, {
+          isCompleted: !sub.isCompleted,
+          completedAt: !sub.isCompleted ? new Date().toISOString() : null,
+        });
+      } catch (error) {
+        showTaskOperationError(error);
+      }
     },
     [tasks, updateTask]
   );
 
   const handleToggleLabel = useCallback(
-    (labelName: string) => {
+    async (labelName: string) => {
       if (!task) return;
       const currentLabels = task.labels || [];
       const newLabels = currentLabels.includes(labelName)
         ? currentLabels.filter((l) => l !== labelName)
         : [...currentLabels, labelName];
-      updateTask(task.id, { labels: newLabels });
+      try {
+        await updateTask(task.id, { labels: newLabels });
+      } catch (error) {
+        showTaskOperationError(error);
+      }
     },
     [task, updateTask]
   );
 
   const handleSetDate = useCallback(
-    (date: string | null) => {
+    async (date: string | null) => {
       if (!task) return;
-      updateTask(task.id, { dueDate: date });
+      try {
+        await updateTask(task.id, { dueDate: date });
+      } catch (error) {
+        showTaskOperationError(error);
+        return;
+      }
       setShowDatePicker(false);
     },
     [task, updateTask]
@@ -356,12 +383,16 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {/* Checkbox + Title */}
               <div className="flex items-start gap-3.5">
                 <button
-                  onClick={() =>
-                    updateTask(task.id, {
-                      isCompleted: !task.isCompleted,
-                      completedAt: !task.isCompleted ? new Date().toISOString() : null,
-                    })
-                  }
+                  onClick={async () => {
+                    try {
+                      await updateTask(task.id, {
+                        isCompleted: !task.isCompleted,
+                        completedAt: !task.isCompleted ? new Date().toISOString() : null,
+                      });
+                    } catch (error) {
+                      showTaskOperationError(error);
+                    }
+                  }}
                   className={`mt-2 w-6 h-6 rounded-full border-[2.5px] flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
                     task.isCompleted
                       ? 'bg-[#DC4C3E] border-[#DC4C3E] shadow-md shadow-red-500/25'
@@ -677,8 +708,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     {RECURRENCE_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
-                        onClick={() => {
-                          updateTask(task.id, { isRecurring: true, recurrenceRule: opt.value });
+                        onClick={async () => {
+                          try {
+                            await updateTask(task.id, { isRecurring: true, recurrenceRule: opt.value });
+                          } catch (error) {
+                            showTaskOperationError(error);
+                            return;
+                          }
                           setShowRecurrencePicker(false);
                         }}
                         className={`w-full text-left px-3 py-2.5 text-sm rounded-xl flex items-center gap-2.5 transition-all duration-200 ${
@@ -694,8 +730,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     ))}
                     {task.isRecurring && (
                       <button
-                        onClick={() => {
-                          updateTask(task.id, { isRecurring: false, recurrenceRule: null });
+                        onClick={async () => {
+                          try {
+                            await updateTask(task.id, { isRecurring: false, recurrenceRule: null });
+                          } catch (error) {
+                            showTaskOperationError(error);
+                            return;
+                          }
                           setShowRecurrencePicker(false);
                         }}
                         className="w-full text-left px-3 py-2.5 text-sm rounded-xl flex items-center gap-2.5 hover:bg-red-500/10 text-red-400 transition-all duration-200 mt-1 border-t border-[var(--border-color)] pt-3"
@@ -731,8 +772,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       {([1, 2, 3, 4] as const).map((p) => (
                         <button
                           key={p}
-                          onClick={() => {
-                            updateTask(task.id, { priority: p });
+                          onClick={async () => {
+                            try {
+                              await updateTask(task.id, { priority: p });
+                            } catch (error) {
+                              showTaskOperationError(error);
+                              return;
+                            }
                             setShowPriorityPicker(false);
                           }}
                           className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-[var(--bg-active)] transition-all duration-200"
@@ -867,14 +913,26 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">🍅 番茄</span>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => updateTask(task.id, { plannedPomodoros: Math.max(1, task.plannedPomodoros - 1), estimatedMinutes: Math.max(1, task.plannedPomodoros - 1) * 25 })}
+                    onClick={async () => {
+                      try {
+                        await updateTask(task.id, { plannedPomodoros: Math.max(1, task.plannedPomodoros - 1), estimatedMinutes: Math.max(1, task.plannedPomodoros - 1) * 25 });
+                      } catch (error) {
+                        showTaskOperationError(error);
+                      }
+                    }}
                     className="w-7 h-7 rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] flex items-center justify-center text-sm font-bold transition-all duration-200"
                   >-</button>
                   <span className="text-sm font-bold text-[var(--text-primary)] min-w-[44px] text-center">
                     {task.completedPomodoros}/{task.plannedPomodoros}
                   </span>
                   <button
-                    onClick={() => updateTask(task.id, { plannedPomodoros: task.plannedPomodoros + 1, estimatedMinutes: (task.plannedPomodoros + 1) * 25 })}
+                    onClick={async () => {
+                      try {
+                        await updateTask(task.id, { plannedPomodoros: task.plannedPomodoros + 1, estimatedMinutes: (task.plannedPomodoros + 1) * 25 });
+                      } catch (error) {
+                        showTaskOperationError(error);
+                      }
+                    }}
                     className="w-7 h-7 rounded-lg bg-[var(--bg-active)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] flex items-center justify-center text-sm font-bold transition-all duration-200"
                   >+</button>
                   <span className="text-xs text-[var(--text-tertiary)] font-medium">= {task.plannedPomodoros * 25}m</span>
@@ -941,9 +999,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                       取消
                     </button>
                     <button
-                      onClick={() => {
-                        deleteTask(task.id);
-                        onClose();
+                      onClick={async () => {
+                        try {
+                          await deleteTask(task.id);
+                          onClose();
+                        } catch (error) {
+                          showTaskOperationError(error);
+                        }
                       }}
                       className="px-3.5 py-1.5 text-xs font-bold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-all duration-200 shadow-md shadow-red-500/20"
                     >
