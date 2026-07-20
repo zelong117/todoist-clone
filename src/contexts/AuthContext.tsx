@@ -1,4 +1,5 @@
 import { useState, createContext, useContext, useEffect, type ReactNode } from 'react';
+import { useStore } from '../store';
 
 interface User {
   id: string;
@@ -123,6 +124,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     localStorage.removeItem('todoist_token');
+    // 清理 Zustand persist 的用户数据，防止切换账号串数据
+    localStorage.removeItem('todoist-clone-storage');
+    localStorage.removeItem('todoist-tasks');
+    localStorage.removeItem('todoist-projects');
+    localStorage.removeItem('todoist-sections');
+    localStorage.removeItem('todoist-labels');
+    localStorage.removeItem('todoist-comments');
+    // 清理内存中的 store 数据
+    useStore.getState().resetStore();
     setToken(null);
     setUser(null);
   };

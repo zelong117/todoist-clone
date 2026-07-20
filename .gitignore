@@ -1,8 +1,26 @@
-node_modules
-dist
-.env
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Vite cache
+.vite/
+
+# Environment files
 server/.env
-server/data
-*.db
-tsconfig.tsbuildinfo
-.vite
+.env
+.env.local
+
+# Database
+server/data/todoist.db
+server/data/uploads/
+server/data/attachments/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

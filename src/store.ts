@@ -98,6 +98,9 @@ interface AppState {
   getInboxTasks: () => Task[];
   getTasksByProject: (projectId: string) => Task[];
   getTasksByLabel: (labelName: string) => Task[];
+
+  // Reset (logout)
+  resetStore: () => void;
 }
 
 export const useStore = create<AppState>()(
@@ -138,48 +141,27 @@ export const useStore = create<AppState>()(
 
       // ===== Task actions =====
       addTask: async (taskData) => {
-        try {
-          const apiTask = await tasksAPI.create({
-            title: taskData.title,
-            projectId: taskData.projectId,
-            sectionId: taskData.sectionId,
-            parentId: taskData.parentId,
-            priority: taskData.priority,
-            dueDate: taskData.dueDate,
-            labels: taskData.labels,
-            plannedPomodoros: taskData.plannedPomodoros,
-          });
-          const task: Task = {
-            ...apiTask,
-            description: apiTask.description || '',
-            pomodoroCount: apiTask.pomodoroCount ?? 0,
-            estimatedMinutes: apiTask.estimatedMinutes ?? (apiTask.plannedPomodoros ?? 1) * 25,
-          };
-          set((state) => ({ tasks: [...state.tasks, task] }));
-        } catch (error) {
-          console.error('Failed to create task:', error);
-          // Fallback to local creation
-          const now = new Date().toISOString();
-          const task: Task = {
-            ...taskData,
-            id: generateId(),
-            pomodoroCount: taskData.pomodoroCount ?? 0,
-            plannedPomodoros: taskData.plannedPomodoros ?? 1,
-            completedPomodoros: taskData.completedPomodoros ?? 0,
-            estimatedMinutes: taskData.estimatedMinutes ?? (taskData.plannedPomodoros ?? 1) * 25,
-            createdAt: now,
-            updatedAt: now,
-          };
-          set((state) => ({ tasks: [...state.tasks, task] }));
-        }
+        const apiTask = await tasksAPI.create({
+          title: taskData.title,
+          projectId: taskData.projectId,
+          sectionId: taskData.sectionId,
+          parentId: taskData.parentId,
+          priority: taskData.priority,
+          dueDate: taskData.dueDate,
+          labels: taskData.labels,
+          plannedPomodoros: taskData.plannedPomodoros,
+        });
+        const task: Task = {
+          ...apiTask,
+          description: apiTask.description || '',
+          pomodoroCount: apiTask.pomodoroCount ?? 0,
+          estimatedMinutes: apiTask.estimatedMinutes ?? (apiTask.plannedPomodoros ?? 1) * 25,
+        };
+        set((state) => ({ tasks: [...state.tasks, task] }));
       },
 
       updateTask: async (id, updates) => {
-        try {
-          await tasksAPI.update(id, updates);
-        } catch (error) {
-          console.error('Failed to update task:', error);
-        }
+        await tasksAPI.update(id, updates);
         set((state) => ({
           tasks: state.tasks.map((t) =>
             t.id === id
@@ -190,11 +172,7 @@ export const useStore = create<AppState>()(
       },
 
       deleteTask: async (id) => {
-        try {
-          await tasksAPI.delete(id);
-        } catch (error) {
-          console.error('Failed to delete task:', error);
-        }
+        await tasksAPI.delete(id);
         set((state) => ({
           tasks: state.tasks.filter((t) => t.id !== id && t.parentId !== id),
           comments: state.comments.filter((c) => c.taskId !== id),
@@ -206,11 +184,7 @@ export const useStore = create<AppState>()(
         const task = get().tasks.find((t) => t.id === id);
         if (!task) return;
 
-        try {
-          await tasksAPI.complete(id);
-        } catch (error) {
-          console.error('Failed to complete task:', error);
-        }
+        await tasksAPI.complete(id);
 
         // 如果是循环任务且正在被完成（不是取消完成），生成下一个周期任务
         let nextRecurrenceTask = null;
@@ -700,6 +674,20 @@ export const useStore = create<AppState>()(
             (t) => !t.isCompleted && t.labels.includes(labelName)
           )
           .sort((a, b) => a.order - b.order);
+      },
+
+      resetStore: () => {
+        set({
+          tasks: [],
+          projects: [],
+          sections: [],
+          labels: [],
+          comments: [],
+          activeView: 'inbox',
+          selectedProjectId: null,
+          selectedTaskId: null,
+          searchQuery: '',
+        });
       },
     }),
     {
