@@ -73,6 +73,17 @@ async function initDB() {
     );
   `);
   db.run(`
+    CREATE TABLE IF NOT EXISTS sections (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      project_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      sort_order INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  db.run(`
     CREATE TABLE IF NOT EXISTS labels (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -143,6 +154,7 @@ async function initDB() {
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id, sort_order)');
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(user_id, project_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(user_id, parent_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_sections_project ON sections(user_id, project_id, sort_order)');
   db.run('CREATE INDEX IF NOT EXISTS idx_pomodoro_user_open ON pomodoro_sessions(user_id, ended_at)');
   db.run('CREATE INDEX IF NOT EXISTS idx_pomodoro_task ON pomodoro_sessions(user_id, task_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_filters_user ON filters(user_id, sort_order)');

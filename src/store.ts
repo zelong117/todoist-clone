@@ -62,6 +62,7 @@ interface AppState {
   updateSection: (id: string, updates: Partial<Section>) => Promise<void>;
   deleteSection: (id: string) => Promise<void>;
   fetchSections: () => Promise<void>;
+  fetchData: () => Promise<void>;
 
   // Label actions
   addLabel: (label: Omit<Label, 'id'>) => Promise<void>;
@@ -143,6 +144,7 @@ export const useStore = create<AppState>()(
       addTask: async (taskData) => {
         const apiTask = await tasksAPI.create({
           title: taskData.title,
+          description: taskData.description,
           projectId: taskData.projectId,
           sectionId: taskData.sectionId,
           parentId: taskData.parentId,
@@ -154,6 +156,9 @@ export const useStore = create<AppState>()(
         const task: Task = {
           ...apiTask,
           description: apiTask.description || '',
+          order: apiTask.order ?? apiTask.sortOrder ?? 0,
+          isRecurring: apiTask.isRecurring ?? false,
+          recurrenceRule: apiTask.recurrenceRule ?? null,
           pomodoroCount: apiTask.pomodoroCount ?? 0,
           estimatedMinutes: apiTask.estimatedMinutes ?? (apiTask.plannedPomodoros ?? 1) * 25,
         };
@@ -363,6 +368,42 @@ export const useStore = create<AppState>()(
         } catch (error) {
           console.error('Failed to fetch sections:', error);
         }
+      },
+
+      fetchData: async () => {
+        const [apiTasks, apiProjects, apiSections, apiLabels] = await Promise.all([
+          tasksAPI.getAll(), projectsAPI.getAll(), sectionsAPI.getAll(), labelsAPI.getAll(),
+        ]);
+        const serverTasks = apiTasks.map((task: any) => ({
+            ...task,
+            description: task.description || '',
+            labels: Array.isArray(task.labels) ? task.labels : [],
+            order: task.order ?? task.sortOrder ?? 0,
+            isRecurring: task.isRecurring ?? false,
+            recurrenceRule: task.recurrenceRule ?? null,
+            pomodoroCount: task.pomodoroCount ?? 0,
+            plannedPomodoros: task.plannedPomodoros ?? 0,
+            completedPomodoros: task.completedPomodoros ?? 0,
+            estimatedMinutes: task.estimatedMinutes ?? 0,
+          }));
+        const serverProjects = apiProjects.map((project: any) => ({
+            ...project,
+            order: project.order ?? project.sortOrder ?? 0,
+            isFavorite: project.isFavorite ?? false,
+            usePomodoro: project.usePomodoro ?? false,
+          }));
+        const serverSections = apiSections.map((section: any) => ({ ...section, order: section.order ?? section.sortOrder ?? 0 }));
+        const mergeById = <T extends { id: string }>(local: T[], remote: T[]) => {
+          const merged = new Map(local.map((item) => [item.id, item]));
+          remote.forEach((item) => merged.set(item.id, item));
+          return Array.from(merged.values());
+        };
+        set((state) => ({
+          tasks: mergeById(state.tasks, serverTasks),
+          projects: mergeById(state.projects, serverProjects),
+          sections: mergeById(state.sections, serverSections),
+          labels: mergeById(state.labels, apiLabels),
+        }));
       },
 
       // ===== Label actions =====

@@ -12,7 +12,7 @@ const { initDB } = require('./db');
 // ============================================================
 const { helmetConfig, corsOptions, extraSecurityHeaders, requestBodyGuard } = require('./middleware/security');
 const { ipFilter, apiLimiter, authLimiter, writeLimiter, adminLimiter } = require('./middleware/rateLimiter');
-const { cacheMiddleware, getCacheStats, invalidateByUser } = require('./middleware/cache');
+const { getCacheStats, invalidateByUser } = require('./middleware/cache');
 const { requestTimer, collectMetrics, getMetrics, getMemoryUsage, startMemoryMonitor, createSlowQueryWrapper } = require('./middleware/performance');
 
 // ============================================================
@@ -65,49 +65,14 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 
 // 椤圭洰璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛?
-app.use('/api/projects',
-  (req, res, next) => {
-    if (req.method === 'GET') {
-      return cacheMiddleware({
-        ttl: 30,
-        tags: ['projects'],
-        keyGenerator: (req) => `cache:${req.user?.id || 'anon'}:projects:${req.originalUrl}`,
-      })(req, res, next);
-    }
-    return writeLimiter(req, res, next);
-  },
-  require('./routes/projects')
-);
+app.use('/api/projects', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/projects'));
 
 // 浠诲姟璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛橈紙鏇寸煭 TTL锛屽洜涓轰换鍔″彉鍖栭绻侊級
-app.use('/api/tasks',
-  (req, res, next) => {
-    if (req.method === 'GET') {
-      return cacheMiddleware({
-        ttl: 15,
-        tags: ['tasks'],
-        keyGenerator: (req) => `cache:${req.user?.id || 'anon'}:tasks:${req.originalUrl}`,
-      })(req, res, next);
-    }
-    return writeLimiter(req, res, next);
-  },
-  require('./routes/tasks')
-);
+app.use('/api/tasks', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/tasks'));
 
 // 鏍囩璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛?
-app.use('/api/labels',
-  (req, res, next) => {
-    if (req.method === 'GET') {
-      return cacheMiddleware({
-        ttl: 60,
-        tags: ['labels'],
-        keyGenerator: (req) => `cache:${req.user?.id || 'anon'}:labels:${req.originalUrl}`,
-      })(req, res, next);
-    }
-    return writeLimiter(req, res, next);
-  },
-  require('./routes/labels')
-);
+app.use('/api/labels', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/labels'));
+app.use('/api/sections', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/sections'));
 
 app.use('/api/filters', writeLimiter, require('./routes/filters'));
 app.use('/api/notifications', writeLimiter, require('./routes/notifications'));
@@ -193,12 +158,14 @@ app.post('/api/admin/cache/invalidate',
     const { tag, userId } = req.body;
     if (tag) {
       const { invalidateByTag } = require('./middleware/cache');
+      invalidateByTag(tag);
       res.json({ success: true, message: `Invalidated cache tag "${tag}"` });
     } else if (userId) {
       invalidateByUser(userId);
       res.json({ success: true, message: `Invalidated cache for user "${userId}"` });
     } else {
       const { invalidateAll } = require('./middleware/cache');
+      invalidateAll();
       res.json({ success: true, message: 'Invalidated all cache' });
     }
   }

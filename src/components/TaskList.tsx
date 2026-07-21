@@ -18,8 +18,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { Inbox, Plus, MoreHorizontal, GripVertical, CalendarDays, CalendarClock, Filter } from 'lucide-react';
 import { useStore } from '../store';
 import type { Task, Section } from '../types';
-import { showTaskOperationError } from '../utils';
 import TaskItem from './TaskItem';
+import SectionQuickAdd from './SectionQuickAdd';
 
 interface TaskListProps {
   tasks: Task[];
@@ -56,49 +56,29 @@ function SectionGroup({
   tasks,
   projectId,
   onAddSection,
+  isAdding,
+  onStartAdding,
+  onStopAdding,
 }: {
   section: Section | null;
   tasks: Task[];
   projectId?: string;
   onAddSection?: () => void;
+  isAdding: boolean;
+  onStartAdding: () => void;
+  onStopAdding: () => void;
 }) {
-  const { addTask, updateSection, deleteSection } = useStore();
+  const { updateSection, deleteSection } = useStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(section?.name || '');
   const [showMenu, setShowMenu] = useState(false);
 
   const sectionTasks = useMemo(
-    () => tasks.filter((t) => (section ? t.sectionId === section.id : true)),
+    () => tasks.filter((t) => (section ? t.sectionId === section.id : t.sectionId === null)),
     [tasks, section]
   );
 
   const taskIds = useMemo(() => sectionTasks.map((t) => t.id), [sectionTasks]);
-
-  const handleAddTask = useCallback(async () => {
-    try {
-      await addTask({
-      title: '新任务',
-      description: '',
-      projectId: projectId || null,
-      sectionId: section ? section.id : null,
-      parentId: null,
-      priority: 4,
-      labels: [],
-      dueDate: null,
-      isRecurring: false,
-      recurrenceRule: null,
-      isCompleted: false,
-      pomodoroCount: 0,
-      plannedPomodoros: 0,
-      completedPomodoros: 0,
-      estimatedMinutes: 0,
-      completedAt: null,
-      order: 0,
-      });
-    } catch (error) {
-      showTaskOperationError(error);
-    }
-  }, [section, projectId, addTask]);
 
   const handleSaveName = useCallback(() => {
     if (section && editName.trim() && editName !== section.name) {
@@ -191,13 +171,17 @@ function SectionGroup({
       </SortableContext>
 
       {/* Add Task Button */}
+      {isAdding ? (
+        <SectionQuickAdd projectId={projectId} sectionId={section?.id || null} onClose={onStopAdding} />
+      ) : (
       <button
-        onClick={handleAddTask}
+        onClick={onStartAdding}
         className="flex items-center gap-2.5 px-5 py-2.5 mx-2.5 mt-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] rounded-xl transition-all duration-200 w-[calc(100%-20px)]"
       >
         <Plus size={16} strokeWidth={2.5} />
         <span>添加任务</span>
       </button>
+      )}
 
       {/* Add Section Button (between sections) */}
       {onAddSection && !section && (
@@ -225,6 +209,7 @@ export default function TaskList({
 }: TaskListProps) {
   const { reorderTasks, addSection, activeTimerTaskId } = useStore();
   const [showCompleted, setShowCompleted] = useState(false);
+  const [addingSectionId, setAddingSectionId] = useState<string | null | undefined>(undefined);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -262,8 +247,8 @@ export default function TaskList({
 
   const sectionsToShow = useMemo(() => {
     if (!showSections || sections.length === 0) return [null];
-    return sections;
-  }, [showSections, sections]);
+    return tasks.some((task) => task.sectionId === null) ? [null, ...sections] : sections;
+  }, [showSections, sections, tasks]);
 
   const handleAddSection = useCallback(() => {
     if (!projectId) return;
@@ -277,7 +262,7 @@ export default function TaskList({
     }
   }, [projectId, addSection, sections.length]);
 
-  if (tasks.length === 0) {
+  if (tasks.length === 0 && !projectId) {
     const emptyConfig = {
       inbox: {
         icon: Inbox,
@@ -369,6 +354,9 @@ export default function TaskList({
               section={section}
               tasks={incompleteTasks}
               projectId={projectId}
+              isAdding={addingSectionId === (section?.id || null)}
+              onStartAdding={() => setAddingSectionId(section?.id || null)}
+              onStopAdding={() => setAddingSectionId(undefined)}
               onAddSection={
                 index === sectionsToShow.length - 1 ? handleAddSection : undefined
               }

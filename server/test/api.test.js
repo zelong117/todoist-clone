@@ -9,6 +9,7 @@ const BASE = 'http://localhost:3001/api';
 let userA_token, userA_id;
 let userB_token, userB_id;
 let taskId;
+let projectA_id, sectionA_id, sectionTask_id;
 
 const headers = (token) => ({
   'Content-Type': 'application/json',
@@ -170,6 +171,40 @@ await test('删除任务', async () => {
   await assert(res.ok, `删除失败: ${res.status}`);
 });
 
+// --- 版块与任务归属 ---
+console.log('\n版块同步:');
+await test('用户A创建项目和版块', async () => {
+  let res = await fetch(`${BASE}/projects`, { method: 'POST', headers: headers(userA_token), body: JSON.stringify({ name: 'Section Test Project' }) });
+  let data = await res.json();
+  await assert(res.ok, `创建项目失败: ${JSON.stringify(data)}`);
+  projectA_id = data.id;
+  res = await fetch(`${BASE}/sections`, { method: 'POST', headers: headers(userA_token), body: JSON.stringify({ projectId: projectA_id, name: 'Test Section', order: 0 }) });
+  data = await res.json();
+  await assert(res.ok, `创建版块失败: ${JSON.stringify(data)}`);
+  sectionA_id = data.id;
+});
+
+await test('版块任务保存描述和上下文', async () => {
+  const res = await fetch(`${BASE}/tasks`, { method: 'POST', headers: headers(userA_token), body: JSON.stringify({ title: 'Section Task', description: 'Saved description', projectId: projectA_id, sectionId: sectionA_id, labels: ['工作'] }) });
+  const data = await res.json();
+  await assert(res.ok, `创建版块任务失败: ${JSON.stringify(data)}`);
+  await assert(data.sectionId === sectionA_id && data.projectId === projectA_id, '任务版块上下文丢失');
+  await assert(data.description === 'Saved description', '任务描述未保存');
+  sectionTask_id = data.id;
+});
+
+await test('用户B不能使用用户A的版块', async () => {
+  const res = await fetch(`${BASE}/tasks`, { method: 'POST', headers: headers(userB_token), body: JSON.stringify({ title: 'Cross User Section', projectId: projectA_id, sectionId: sectionA_id }) });
+  await assert(res.status === 400 || res.status === 403 || res.status === 404, `跨用户版块写入未被拒绝: ${res.status}`);
+});
+
+await test('版块列表按用户隔离', async () => {
+  const res = await fetch(`${BASE}/sections`, { headers: headers(userB_token) });
+  const data = await res.json();
+  await assert(res.ok, `获取版块失败: ${JSON.stringify(data)}`);
+  await assert(!data.some((section) => section.id === sectionA_id), '用户B看到了用户A的版块');
+});
+
 // --- 跨用户隔离 ---
 console.log('\n跨用户隔离:');
 let taskB_id;
@@ -219,6 +254,9 @@ await test('删除测试数据', async () => {
       headers: headers(userB_token),
     });
   }
+  if (sectionTask_id) await fetch(`${BASE}/tasks/${sectionTask_id}`, { method: 'DELETE', headers: headers(userA_token) });
+  if (sectionA_id) await fetch(`${BASE}/sections/${sectionA_id}`, { method: 'DELETE', headers: headers(userA_token) });
+  if (projectA_id) await fetch(`${BASE}/projects/${projectA_id}`, { method: 'DELETE', headers: headers(userA_token) });
 });
 
 console.log('\n✨ 测试完成\n');

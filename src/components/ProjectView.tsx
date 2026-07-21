@@ -157,7 +157,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
         )}
 
         {viewType === 'board' && (
-          <BoardView tasks={projectTasks} sections={projectSections} />
+          <BoardView tasks={projectTasks} sections={projectSections} projectId={projectId} />
         )}
 
         {viewType === 'calendar' && (

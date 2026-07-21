@@ -1,0 +1,1279 @@
+
+> todoist-clone@0.0.0 dev
+> vite --host
+
+[2m17:27:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v8.1.0[39m  [2mready in [0m[1m696[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.0.5:[1m5173[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m17:27:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m17:28:48[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m17:28:48[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m17:29:11[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="inbox" onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 transition-..."
+>                       title="取消收藏"
+>                     >
+              ...
+            ...
+        ...
+
+[2m17:29:11[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m17:29:11[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m17:37:31[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mSpeech recognition error: not-allowed
+[2m17:37:32[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mSpeech recognition error: not-allowed
+[2m22:22:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:22:05[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:22:06[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:24:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/TaskList.tsx[22m
+[2m22:24:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/TaskList.tsx[22m
+[2m22:25:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:25:55[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:25:56[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:26:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:26:45[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:26:46[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:27:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:27:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/BoardView.tsx[22m
+[2m22:27:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/BoardView.tsx[22m
+[2m22:27:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:27:59[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:27:59[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:28:00[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="inbox" onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 transition-..."
+>                       title="取消收藏"
+>                     >
+              ...
+            ...
+        ...
+
+[2m22:28:00[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:28:00[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="upcoming" onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative g...">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                     title={undefined}
+>                   >
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg transition-all flex-shrink-0 text-[var(--text-tertiary)] opacity-0 g..."
+>                       title="收藏项目"
+>                     >
+                    ...
+                  ...
+            ...
+        ...
+
+[2m22:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m<button> cannot contain a nested <button>.
+See this log for the ancestor stack trace.
+[2m22:29:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/AIAssistant.tsx[22m
+[2m22:29:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/TaskDetail.tsx[22m
+[2m22:29:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:29:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/Sidebar.tsx[22m
+[2m22:29:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/Sidebar.tsx[22m
+[2m22:31:07[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-4a..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative g...">
+                    <div>
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                     title={undefined}
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg transition-all flex-shrink-0 text-[var(--text-tertiary)] opacity-0 g..."
+>                       title="收藏项目"
+>                     >
+                    ...
+                  ...
+            ...
+        ...
+
+[2m22:31:07[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m<button> cannot contain a nested <button>.
+See this log for the ancestor stack trace.
+[2m22:31:07[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:31:07[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:31:07[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-pr..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 transition-..."
+>                       title="取消收藏"
+>                     >
+              ...
+            ...
+        ...
+
+[2m22:31:07[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:31:07[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts:239:24)
+[2m22:31:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/contexts/AuthContext.tsx, /src/App.tsx, /src/components/Sidebar.tsx, /src/components/QuickAdd.tsx, /src/components/TaskList.tsx, /src/components/PomodoroBar.tsx, /src/components/PomodoroTimer.tsx, /src/components/PomodoroSettings.tsx, /src/components/CalendarView.tsx, /src/components/BoardView.tsx, /src/components/StatsView.tsx, /src/components/ActivityLog.tsx, /src/components/FilterPage.tsx, /src/pages/Admin.tsx, /src/components/AIOrganizer.tsx and 7 more[22m
+[2m22:31:32[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-4a..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative g...">
+                    <div>
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                     title={undefined}
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg transition-all flex-shrink-0 text-[var(--text-tertiary)] opacity-0 g..."
+>                       title="收藏项目"
+>                     >
+                    ...
+                  ...
+            ...
+        ...
+
+[2m22:31:32[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m<button> cannot contain a nested <button>.
+See this log for the ancestor stack trace.
+[2m22:31:32[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts?t=1784557891881:240:24)
+[2m22:31:32[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts?t=1784557891881:240:24)
+[2m22:31:32[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-pr..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 transition-..."
+>                       title="取消收藏"
+>                     >
+              ...
+            ...
+        ...
+
+[2m22:31:32[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to fetch sections: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async fetchSections (http://localhost:5173/src/store.ts?t=1784557891881:240:24)
+[2m22:32:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/contexts/AuthContext.tsx, /src/App.tsx, /src/components/Sidebar.tsx, /src/components/QuickAdd.tsx, /src/components/TaskList.tsx, /src/components/PomodoroBar.tsx, /src/components/PomodoroTimer.tsx, /src/components/PomodoroSettings.tsx, /src/components/CalendarView.tsx, /src/components/BoardView.tsx, /src/components/StatsView.tsx, /src/components/ActivityLog.tsx, /src/components/FilterPage.tsx, /src/pages/Admin.tsx, /src/components/AIOrganizer.tsx and 7 more[22m
+[2m22:32:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:32:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/contexts/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m22:32:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/contexts/AuthContext.tsx[22m
+[2m22:32:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: TypeError: Failed to fetch
+    at request (http://localhost:5173/src/api.ts:14:25)
+    at Object.getAll (http://localhost:5173/src/api.ts:38:16)
+    at fetchData (http://localhost:5173/src/store.ts?t=1784557936113:253:13)
+    at http://localhost:5173/src/App.tsx?t=1784557936113:52:4
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:12902:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6652:55)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7701:6)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7688:5)
+[2m22:32:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: TypeError: Failed to fetch
+    at request (http://localhost:5173/src/api.ts:14:25)
+    at Object.getAll (http://localhost:5173/src/api.ts:78:16)
+    at fetchData (http://localhost:5173/src/store.ts?t=1784557936113:256:14)
+    at http://localhost:5173/src/App.tsx?t=1784557936113:52:4
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:12902:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6652:55)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7618:22)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7606:5)
+[2m22:32:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-4a..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative g...">
+                    <div>
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                     title={undefined}
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg transition-all flex-shrink-0 text-[var(--text-tertiary)] opacity-0 g..."
+>                       title="收藏项目"
+>                     >
+                    ...
+                  ...
+            ...
+        ...
+
+[2m22:32:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m<button> cannot contain a nested <button>.
+See this log for the ancestor stack trace.
+[2m22:32:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557936113:252:59)
+[2m22:32:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557936113:252:59)
+[2m22:32:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: TypeError: Failed to fetch
+    at request (http://localhost:5173/src/api.ts:14:25)
+    at Object.getAll (http://localhost:5173/src/api.ts:38:16)
+    at fetchData (http://localhost:5173/src/store.ts?t=1784557936113:253:13)
+    at http://localhost:5173/src/App.tsx?t=1784557936113:52:4
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:12902:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6652:55)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7701:6)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7688:5)
+[2m22:32:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: TypeError: Failed to fetch
+    at request (http://localhost:5173/src/api.ts:14:25)
+    at Object.getAll (http://localhost:5173/src/api.ts:78:16)
+    at fetchData (http://localhost:5173/src/store.ts?t=1784557936113:256:14)
+    at http://localhost:5173/src/App.tsx?t=1784557936113:52:4
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:12902:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6652:55)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7618:22)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7606:5)
+[2m22:32:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-pr..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 transition-..."
+>                       title="取消收藏"
+>                     >
+              ...
+            ...
+        ...
+
+[2m22:32:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557936113:252:59)
+[2m22:32:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557936113:252:59)
+[2m22:32:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/contexts/AuthContext.tsx, /src/App.tsx, /src/components/Sidebar.tsx, /src/components/QuickAdd.tsx, /src/components/TaskList.tsx, /src/components/PomodoroBar.tsx, /src/components/PomodoroTimer.tsx, /src/components/PomodoroSettings.tsx, /src/components/CalendarView.tsx, /src/components/BoardView.tsx, /src/components/StatsView.tsx, /src/components/ActivityLog.tsx, /src/components/FilterPage.tsx, /src/pages/Admin.tsx, /src/components/AIOrganizer.tsx and 7 more[22m
+[2m22:32:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/contexts/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m22:32:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/contexts/AuthContext.tsx[22m
+[2m22:32:27[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-4a..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative g...">
+                    <div>
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                     title={undefined}
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg transition-all flex-shrink-0 text-[var(--text-tertiary)] opacity-0 g..."
+>                       title="收藏项目"
+>                     >
+                    ...
+                  ...
+            ...
+        ...
+
+[2m22:32:27[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m<button> cannot contain a nested <button>.
+See this log for the ancestor stack trace.
+[2m22:32:27[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mAuth check failed: TypeError: Failed to fetch
+[2m22:32:27[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-4a..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative g...">
+                    <div>
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                     title={undefined}
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg transition-all flex-shrink-0 text-[var(--text-tertiary)] opacity-0 g..."
+>                       title="收藏项目"
+>                     >
+                    ...
+                  ...
+            ...
+        ...
+
+[2m22:32:27[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m<button> cannot contain a nested <button>.
+See this log for the ancestor stack trace.
+[2m22:32:27[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557946830:255:59)
+[2m22:32:27[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557946830:255:59)
+[2m22:32:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: TypeError: Failed to fetch
+    at request (http://localhost:5173/src/api.ts:14:25)
+    at Object.getAll (http://localhost:5173/src/api.ts:65:16)
+    at fetchData (http://localhost:5173/src/store.ts?t=1784557946830:258:16)
+    at http://localhost:5173/src/App.tsx?t=1784557946830:52:4
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:12902:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6652:55)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7701:6)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7688:5)
+[2m22:32:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: TypeError: Failed to fetch
+    at request (http://localhost:5173/src/api.ts:14:25)
+    at Object.getAll (http://localhost:5173/src/api.ts:65:16)
+    at fetchData (http://localhost:5173/src/store.ts?t=1784557946830:258:16)
+    at http://localhost:5173/src/App.tsx?t=1784557946830:52:4
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:12902:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6652:55)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7618:22)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7606:5)
+[2m22:32:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-pr..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 transition-..."
+>                       title="取消收藏"
+>                     >
+              ...
+            ...
+        ...
+
+[2m22:32:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557946830:255:59)
+[2m22:32:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:32:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:34:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/AIAssistant.tsx[22m
+[2m22:34:10[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-4a..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative g...">
+                    <div>
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                     title={undefined}
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg transition-all flex-shrink-0 text-[var(--text-tertiary)] opacity-0 g..."
+>                       title="收藏项目"
+>                     >
+                    ...
+                  ...
+            ...
+        ...
+
+[2m22:34:10[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m<button> cannot contain a nested <button>.
+See this log for the ancestor stack trace.
+[2m22:34:10[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557946830:255:59)
+[2m22:34:10[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557946830:255:59)
+[2m22:34:11[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="project-pr..." onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 transition-..."
+>                       title="取消收藏"
+>                     >
+              ...
+            ...
+        ...
+
+[2m22:34:11[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557946830:255:59)
+[2m22:34:11[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: Error: 接口不存在
+    at request (http://localhost:5173/src/api.ts:20:9)
+    at async Promise.all (index 2)
+    at async fetchData (http://localhost:5173/src/store.ts?t=1784557946830:255:59)
+[2m22:38:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/contexts/AuthContext.tsx, /src/App.tsx, /src/components/Sidebar.tsx, /src/components/QuickAdd.tsx, /src/components/TaskList.tsx, /src/components/PomodoroBar.tsx, /src/components/PomodoroTimer.tsx, /src/components/PomodoroSettings.tsx, /src/components/CalendarView.tsx, /src/components/BoardView.tsx, /src/components/StatsView.tsx, /src/components/ActivityLog.tsx, /src/components/FilterPage.tsx, /src/pages/Admin.tsx, /src/components/AIOrganizer.tsx and 7 more[22m
+[2m22:38:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/contexts/AuthContext.tsx, /src/index.css[22m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+      at transformWithOxc (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3657:19)
+      at TransformPluginContext.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3728:26)
+      at EnvironmentPluginContainer.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:29699:51)
+      at async loadAndTransform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:19725:26)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+      at transformWithOxc (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3657:19)
+      at TransformPluginContext.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3728:26)
+      at EnvironmentPluginContainer.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:29699:51)
+      at async loadAndTransform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:19725:26)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/NewProjectModal.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/PomodoroBar.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/PomodoroTimer.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/contexts/AuthContext.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/TaskItem.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Admin.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/FilterPage.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/ProjectSettingsModal.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/QuickAdd.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/CalendarView.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/TaskDetail.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/PomodoroSettings.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Sidebar.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/TaskList.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/SectionQuickAdd.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/QuickCapture.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/StatsView.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/ActivityLog.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/AIAssistant.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/BoardView.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/contexts/AuthContext.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/NewProjectModal.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/ProjectSettingsModal.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/CalendarView.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/StatsView.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/TaskList.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/AIAssistant.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/PomodoroTimer.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/ActivityLog.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/QuickCapture.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/TaskItem.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/SectionQuickAdd.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/contexts/AuthContext.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/PomodoroBar.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/BoardView.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Admin.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/PomodoroSettings.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/QuickAdd.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/TaskDetail.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/FilterPage.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Sidebar.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/contexts/AuthContext.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/contexts/AuthContext.tsx, /src/index.css[22m
+[2m22:38:41[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/contexts/AuthContext.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:41[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/contexts/AuthContext.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:38:41[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `;`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/store.ts:406:11 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m401 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mt[0m([38;5;249m([0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m
+ [38;5;240m    │[0m            ┬  
+ [38;5;240m    │[0m            ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m)[0m;
+ [38;5;240m    │[0m           ┬  
+ [38;5;240m    │[0m           ╰── `,` or `)` expected
+[38;5;246m─────╯[0m
+
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/store.ts[39m
+[2m22:39:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/contexts/AuthContext.tsx, /src/App.tsx, /src/components/Sidebar.tsx, /src/components/QuickAdd.tsx, /src/components/TaskList.tsx, /src/components/PomodoroBar.tsx, /src/components/PomodoroTimer.tsx, /src/components/PomodoroSettings.tsx, /src/components/CalendarView.tsx, /src/components/BoardView.tsx, /src/components/StatsView.tsx, /src/components/ActivityLog.tsx, /src/components/FilterPage.tsx, /src/pages/Admin.tsx, /src/components/AIOrganizer.tsx and 7 more[22m
+[2m22:39:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/contexts/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m22:39:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/contexts/AuthContext.tsx[22m
+[2m22:39:13[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: TypeError: Failed to fetch
+    at request (http://localhost:5173/src/api.ts:14:25)
+    at Object.getAll (http://localhost:5173/src/api.ts:78:16)
+    at fetchData (http://localhost:5173/src/store.ts?t=1784558353399:259:14)
+    at http://localhost:5173/src/App.tsx?t=1784558353399:52:4
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:12902:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6652:55)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7618:22)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7606:5)
+[2m22:39:13[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to synchronize data: TypeError: Failed to fetch
+    at request (http://localhost:5173/src/api.ts:14:25)
+    at Object.getAll (http://localhost:5173/src/api.ts:52:16)
+    at fetchData (http://localhost:5173/src/store.ts?t=1784558353399:257:16)
+    at http://localhost:5173/src/App.tsx?t=1784558353399:52:4
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:12902:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:6652:55)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7701:6)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ad52f19b:7688:5)
+[2m22:40:45[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  <AuthProvider>
+    <App>
+      <div className={"flex h-s..."}>
+        <Sidebar currentView="inbox" onViewChange={function} onLogout={function logout} ...>
+          <aside className="flex flex-..." style={{width:260, ...}}>
+            <div>
+            <div>
+            <nav className="flex-1 ove...">
+              <div>
+              <div>
+              <div className="mt-5">
+                <button>
+                <div className="space-y-0....">
+                  <div className="relative g...">
+>                   <button
+>                     onClick={function onClick}
+>                     className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm transition-all du..."
+>                     title={undefined}
+>                   >
+                      <span>
+                      <span>
+                      <span>
+>                     <button
+>                       onClick={function onClick}
+>                       className="p-1 rounded-lg transition-all flex-shrink-0 text-[var(--text-tertiary)] opacity-0 g..."
+>                       title="收藏项目"
+>                     >
+                    ...
+                  ...
+            ...
+        ...
+
+[2m22:40:45[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m<button> cannot contain a nested <button>.
+See this log for the ancestor stack trace.
+[2m22:42:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/AIAssistant.tsx[22m
+[2m22:42:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/BoardView.tsx[22m
+[2m22:42:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:42:24[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `}` but found `!==`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/App.tsx:821:24 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m821 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m{[38;5;249mt[0m[38;5;249mi[0m[38;5;249mm[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249mS[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249mu[0m[38;5;249ms[0m[38;5;249m [0m!==[38;5;249m [0m[38;5;249m'[0m[38;5;249mi[0m[38;5;249md[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249m'[0m[38;5;249m [0m[38;5;249m&[0m[38;5;249m&[0m[38;5;249m [0m[38;5;249m<[0m[38;5;249mP[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249mo[0m[38;5;249md[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mT[0m[38;5;249mi[0m[38;5;249mm[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249m [0m[38;5;249m/[0m[38;5;249m>[0m[38;5;249m}[0m
+ [38;5;240m    │[0m           ┬            ─┬─  
+ [38;5;240m    │[0m           ╰───────────────── Opened here
+ [38;5;240m    │[0m                         │   
+ [38;5;240m    │[0m                         ╰─── `,` or `}` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/App.tsx[39m
+      at transformWithOxc (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3657:19)
+      at TransformPluginContext.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3728:26)
+      at EnvironmentPluginContainer.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:29699:51)
+      at async loadAndTransform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:19725:26)
+[2m22:42:24[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `}` but found `!==`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/App.tsx:821:24 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m821 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m{[38;5;249mt[0m[38;5;249mi[0m[38;5;249mm[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249mS[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249mu[0m[38;5;249ms[0m[38;5;249m [0m!==[38;5;249m [0m[38;5;249m'[0m[38;5;249mi[0m[38;5;249md[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249m'[0m[38;5;249m [0m[38;5;249m&[0m[38;5;249m&[0m[38;5;249m [0m[38;5;249m<[0m[38;5;249mP[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249mo[0m[38;5;249md[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mT[0m[38;5;249mi[0m[38;5;249mm[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249m [0m[38;5;249m/[0m[38;5;249m>[0m[38;5;249m}[0m
+ [38;5;240m    │[0m           ┬            ─┬─  
+ [38;5;240m    │[0m           ╰───────────────── Opened here
+ [38;5;240m    │[0m                         │   
+ [38;5;240m    │[0m                         ╰─── `,` or `}` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/App.tsx[39m
+      at transformWithOxc (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3657:19)
+      at TransformPluginContext.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3728:26)
+      at EnvironmentPluginContainer.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:29699:51)
+      at async loadAndTransform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:19725:26)
+[2m22:42:24[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:42:24[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:42:24[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `}` but found `!==`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/App.tsx:821:24 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m821 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m{[38;5;249mt[0m[38;5;249mi[0m[38;5;249mm[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249mS[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mt[0m[38;5;249mu[0m[38;5;249ms[0m[38;5;249m [0m!==[38;5;249m [0m[38;5;249m'[0m[38;5;249mi[0m[38;5;249md[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249m'[0m[38;5;249m [0m[38;5;249m&[0m[38;5;249m&[0m[38;5;249m [0m[38;5;249m<[0m[38;5;249mP[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249mo[0m[38;5;249md[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mT[0m[38;5;249mi[0m[38;5;249mm[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249m [0m[38;5;249m/[0m[38;5;249m>[0m[38;5;249m}[0m
+ [38;5;240m    │[0m           ┬            ─┬─  
+ [38;5;240m    │[0m           ╰───────────────── Opened here
+ [38;5;240m    │[0m                         │   
+ [38;5;240m    │[0m                         ╰─── `,` or `}` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mD:/360MoveData/Users/ww/Desktop/github项目文件/todoist-clone/src/App.tsx[39m
+      at transformWithOxc (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3657:19)
+      at TransformPluginContext.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:3728:26)
+      at EnvironmentPluginContainer.transform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:29699:51)
+      at async loadAndTransform (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:19725:26)
+      at async viteTransformMiddleware (file:///D:/360MoveData/Users/ww/Desktop/github%E9%A1%B9%E7%9B%AE%E6%96%87%E4%BB%B6/todoist-clone/node_modules/vite/dist/node/chunks/node.js:24149:20)
+[2m22:42:24[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:43:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/TaskDetail.tsx[22m
+[2m22:43:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/TaskDetail.tsx[22m
+[2m22:45:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m22:46:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/TaskItem.tsx[22m
+[2m22:46:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/TaskDetail.tsx[22m
+[2m22:50:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m22:50:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/TaskDetail.tsx[22m

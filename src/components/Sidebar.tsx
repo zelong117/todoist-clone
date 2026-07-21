@@ -6,14 +6,11 @@ import {
   Plus,
   Search,
   Settings,
-  LayoutDashboard,
   Moon,
   Sun,
   Bell,
   Star,
   Filter,
-  Activity,
-  BarChart3,
   HelpCircle,
   ChevronDown,
   Timer,
@@ -246,9 +243,6 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
             { id: 'today', label: '今天', icon: CalendarDays, count: todayCount, color: '#10B981' },
             { id: 'upcoming', label: '即将到来', icon: CalendarClock, count: upcomingCount, color: '#8B5CF6' },
             { id: 'filters', label: '过滤器 & 标签', icon: Filter, count: 0, color: '#6B7280' },
-            { id: 'log', label: '日志', icon: Activity, count: 0, color: '#6B7280' },
-            { id: 'stats', label: '效率统计', icon: BarChart3, count: 0, color: '#F59E0B' },
-            { id: 'admin', label: '管理后台', icon: LayoutDashboard, count: 0, color: '#6366F1' },
           ].map((view) => {
             const Icon = view.icon;
             const isActive = currentView === view.id;

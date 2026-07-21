@@ -22,6 +22,7 @@ import { Plus, Calendar, Trash2, Timer } from 'lucide-react';
 import { useStore } from '../store';
 import { formatDueDateStatus, showTaskOperationError } from '../utils';
 import type { Task, Section } from '../types';
+import SectionQuickAdd from './SectionQuickAdd';
 
 const PRIORITY_COLORS: Record<number, string> = {
   1: '#DC4C3E',
@@ -40,6 +41,7 @@ const PRIORITY_LABELS: Record<number, string> = {
 interface BoardViewProps {
   tasks: Task[];
   sections: Section[];
+  projectId?: string;
 }
 
 function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
@@ -102,7 +104,8 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
             showTaskOperationError(error);
           }
         }}
-        className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-50 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-150"
+        className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-red-50 text-[var(--text-tertiary)] hover:text-red-500 transition-all duration-150"
+        title="删除任务"
       >
         <Trash2 size={13} />
       </button>
@@ -148,28 +151,6 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
         </span>
       </div>
 
-      {task.plannedPomodoros > 0 && (
-        <div className="flex items-center gap-1 text-xs text-orange-500 mt-1 pl-2">
-          <span>🍅</span>
-          <span>{task.completedPomodoros}/{task.plannedPomodoros}</span>
-          <span className="text-gray-400">· {task.plannedPomodoros * 25}m</span>
-        </div>
-      )}
-
-      {/* Labels */}
-      {task.labels && task.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2.5 pl-2">
-          {task.labels.map((label) => (
-            <span
-              key={label}
-              className="px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-[var(--bg-active)] text-[var(--text-secondary)] border border-[var(--border-color)]/50"
-            >
-              {label}
-            </span>
-          ))}
-        </div>
-      )}
-
       {/* Footer: date + priority */}
       <div className="flex items-center justify-between pl-2">
         {task.dueDate ? (
@@ -202,7 +183,7 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
             e.stopPropagation();
             useStore.getState().startTimer(task.id);
           }}
-          className="p-1 rounded hover:bg-red-100 text-gray-400 hover:text-red-500"
+          className="p-1 rounded opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-red-100 text-gray-400 hover:text-red-500"
           title="开始番茄钟"
         >
           <Timer size={14} />
@@ -214,7 +195,8 @@ function TaskCard({ task, isDragging }: { task: Task; isDragging?: boolean }) {
 
 function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
   const { setNodeRef, isOver } = useDroppable({ id: section.id });
-  const { addTask, deleteSection } = useStore();
+  const deleteSection = useStore((state) => state.deleteSection);
+  const [isAdding, setIsAdding] = useState(false);
 
   // 列本身可拖动排序
   const {
@@ -232,35 +214,9 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
   };
 
   const columnTasks = useMemo(
-    () => tasks.filter((t) => t.sectionId === section.id),
+    () => tasks.filter((t) => t.sectionId === (section.id === '__default__' ? null : section.id)),
     [tasks, section.id]
   );
-
-  const handleAddTask = useCallback(async () => {
-    try {
-      await addTask({
-      title: '新任务',
-      description: '',
-      sectionId: section.id,
-      projectId: section.projectId,
-      parentId: null,
-      priority: 4,
-      labels: [],
-      dueDate: null,
-      isRecurring: false,
-      recurrenceRule: null,
-      isCompleted: false,
-      pomodoroCount: 0,
-      plannedPomodoros: 0,
-      completedPomodoros: 0,
-      estimatedMinutes: 0,
-      completedAt: null,
-      order: columnTasks.length,
-      });
-    } catch (error) {
-      showTaskOperationError(error);
-    }
-  }, [section, addTask, columnTasks.length]);
 
   return (
     <div
@@ -303,7 +259,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
             </button>
           )}
           <button
-            onClick={handleAddTask}
+            onClick={() => setIsAdding(true)}
             className="p-1.5 rounded-lg hover:bg-[var(--bg-card)]/80 text-[var(--text-tertiary)] hover:text-[#DC4C3E] transition-all duration-150"
             title="添加任务"
           >
@@ -324,7 +280,7 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
         </SortableContext>
 
         {/* Empty state */}
-        {columnTasks.length === 0 && (
+        {columnTasks.length === 0 && !isAdding && (
           <div className="border-2 border-dashed border-[var(--border-color)] rounded-xl py-10 flex flex-col items-center justify-center text-center transition-all duration-300 hover:border-[var(--text-tertiary)]/30 hover:bg-[var(--bg-card)]/20 group cursor-default">
             <div className="w-10 h-10 rounded-xl bg-[var(--bg-active)]/50 flex items-center justify-center mb-3 text-[var(--text-tertiary)] transition-transform duration-300 group-hover:scale-110">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -337,19 +293,23 @@ function BoardColumn({ section, tasks }: { section: Section; tasks: Task[] }) {
         )}
 
         {/* Add task button */}
+        {isAdding ? (
+          <SectionQuickAdd projectId={section.projectId} sectionId={section.id === '__default__' ? null : section.id} onClose={() => setIsAdding(false)} />
+        ) : (
         <button
-          onClick={handleAddTask}
+          onClick={() => setIsAdding(true)}
           className="w-full py-2 rounded-xl border border-dashed border-[var(--border-color)] text-[var(--text-tertiary)] hover:text-[var(--text-tertiary)] hover:border-gray-300 hover:bg-[var(--bg-card)]/50 transition-all duration-200 flex items-center justify-center gap-1.5 text-xs font-medium"
         >
           <Plus size={14} />
           添加任务
         </button>
+        )}
       </div>
     </div>
   );
 }
 
-export default function BoardView({ tasks, sections }: BoardViewProps) {
+export default function BoardView({ tasks, sections, projectId }: BoardViewProps) {
   const { updateTask, reorderTasks, updateSection } = useStore();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [showAddSection, setShowAddSection] = useState(false);
@@ -421,10 +381,10 @@ export default function BoardView({ tasks, sections }: BoardViewProps) {
 
   const sectionsToShow = useMemo(() => {
     if (sections.length === 0) {
-      return [{ id: '__default__', name: '待办', projectId: '', order: 0 }] as Section[];
+      return [{ id: '__default__', name: '待办', projectId: projectId || tasks[0]?.projectId || '', order: 0 }] as Section[];
     }
     return sections;
-  }, [sections]);
+  }, [sections, projectId, tasks]);
 
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {

@@ -136,7 +136,7 @@ router.get('/:id', authenticate, validate({ params: taskIdParamSchema }), asyncH
  * 鍒涘缓鏂颁换鍔?- 楠岃瘉鍏宠仈瀹炰綋鎵€鏈夋潈
  */
 router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandler(async (req, res) => {
-  const { title, projectId, sectionId, parentId, priority, dueDate, labels, plannedPomodoros } = req.body;
+  const { title, description, projectId, sectionId, parentId, priority, dueDate, labels, plannedPomodoros } = req.body;
 
   // 銆愭暟鎹殧绂汇€戦獙璇?projectId 灞炰簬褰撳墠鐢ㄦ埛
   if (projectId && !verifyOwnership('projects', projectId, req.user.id)) {
@@ -148,14 +148,16 @@ router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandle
     return res.status(400).json({ error: 'Invalid request' });
   }
 
-  // sections table is not part of the current schema; reject instead of crashing on write.
-  if (sectionId) return res.status(400).json({ error: 'Invalid request' });
+  if (sectionId) {
+    const section = queryOne('SELECT id, project_id FROM sections WHERE id = ? AND user_id = ?', [sectionId, req.user.id]);
+    if (!section || section.project_id !== projectId) return res.status(400).json({ error: '版块不属于所选项目' });
+  }
 
   const id = uuidv4();
   const now = new Date().toISOString();
   const pp = plannedPomodoros || 1;
-  run('INSERT INTO tasks (id, user_id, project_id, section_id, parent_id, title, priority, due_date, labels, planned_pomodoros, estimated_minutes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, req.user.id, nullableId(projectId), nullableId(sectionId), nullableId(parentId), title.trim(), priority || 1, dueDate || null, JSON.stringify(Array.isArray(labels) ? labels : []), pp, pp * 25, now, now]);
+  run('INSERT INTO tasks (id, user_id, project_id, section_id, parent_id, title, description, priority, due_date, labels, planned_pomodoros, estimated_minutes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, req.user.id, nullableId(projectId), nullableId(sectionId), nullableId(parentId), title.trim(), description || '', priority || 1, dueDate || null, JSON.stringify(Array.isArray(labels) ? labels : []), pp, pp * 25, now, now]);
 
   const task = queryOne('SELECT * FROM tasks WHERE id = ?', [id]);
   const mapped = mapTask(task);
@@ -187,7 +189,12 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
     }
   }
 
-  if (sanitized.sectionId) return res.status(400).json({ error: 'Invalid request' });
+  if (sanitized.sectionId) {
+    const targetProjectId = sanitized.projectId !== undefined ? nullableId(sanitized.projectId) : task.project_id;
+    const section = queryOne('SELECT project_id FROM sections WHERE id = ? AND user_id = ?', [sanitized.sectionId, req.user.id]);
+    if (!section || section.project_id !== targetProjectId) return res.status(400).json({ error: '版块不属于所选项目' });
+  }
+  if (sanitized.projectId !== undefined && sanitized.sectionId === undefined && sanitized.projectId !== task.project_id) sanitized.sectionId = null;
 
   // 銆愭暟鎹殧绂汇€戝鏋滄洿鏂颁簡 parentId锛岄獙璇佹柊鐖朵换鍔″睘浜庡綋鍓嶇敤鎴?
   if (sanitized.parentId !== undefined && sanitized.parentId !== null && sanitized.parentId !== '') {
@@ -257,7 +264,12 @@ router.patch('/:id', authenticate, validate({ params: taskIdParamSchema, body: u
     }
   }
 
-  if (sanitized.sectionId) return res.status(400).json({ error: 'Invalid request' });
+  if (sanitized.sectionId) {
+    const targetProjectId = sanitized.projectId !== undefined ? nullableId(sanitized.projectId) : task.project_id;
+    const section = queryOne('SELECT project_id FROM sections WHERE id = ? AND user_id = ?', [sanitized.sectionId, req.user.id]);
+    if (!section || section.project_id !== targetProjectId) return res.status(400).json({ error: '版块不属于所选项目' });
+  }
+  if (sanitized.projectId !== undefined && sanitized.sectionId === undefined && sanitized.projectId !== task.project_id) sanitized.sectionId = null;
 
   if (sanitized.parentId !== undefined && sanitized.parentId !== null && sanitized.parentId !== '') {
     if (!verifyOwnership('tasks', sanitized.parentId, req.user.id)) {

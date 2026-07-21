@@ -19,6 +19,39 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:3001/api`;
+const STORAGE_KEY = 'todoist-clone-storage';
+const OWNER_KEY = 'todoist-local-data-owner';
+
+function activateWorkspace(userId: string) {
+  const ownerId = localStorage.getItem(OWNER_KEY);
+  if (!ownerId) {
+    const legacyData = localStorage.getItem(STORAGE_KEY);
+    if (legacyData) {
+      if (!localStorage.getItem('todoist-legacy-backup-v1')) localStorage.setItem('todoist-legacy-backup-v1', legacyData);
+      localStorage.setItem(`${STORAGE_KEY}:${userId}`, legacyData);
+    }
+    localStorage.setItem(OWNER_KEY, userId);
+    return;
+  }
+  if (ownerId === userId) return;
+
+  const currentData = localStorage.getItem(STORAGE_KEY);
+  if (currentData) localStorage.setItem(`${STORAGE_KEY}:${ownerId}`, currentData);
+
+  const targetData = localStorage.getItem(`${STORAGE_KEY}:${userId}`);
+  if (targetData) {
+    localStorage.setItem(STORAGE_KEY, targetData);
+    try {
+      const parsed = JSON.parse(targetData);
+      useStore.setState(parsed.state || {});
+    } catch {
+      useStore.getState().resetStore();
+    }
+  } else {
+    useStore.getState().resetStore();
+  }
+  localStorage.setItem(OWNER_KEY, userId);
+}
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -56,6 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (response.ok) {
           const userData = await response.json();
+          activateWorkspace(userData.id);
           setUser(userData);
         } else {
           // Token 无效，清除
@@ -92,6 +126,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const data = await response.json();
+    activateWorkspace(data.user.id);
     localStorage.setItem('todoist_token', data.token);
     setToken(data.token);
     setUser(data.user);
@@ -117,6 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const data = await response.json();
+    activateWorkspace(data.user.id);
     localStorage.setItem('todoist_token', data.token);
     setToken(data.token);
     setUser(data.user);
@@ -124,15 +160,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     localStorage.removeItem('todoist_token');
-    // 清理 Zustand persist 的用户数据，防止切换账号串数据
-    localStorage.removeItem('todoist-clone-storage');
-    localStorage.removeItem('todoist-tasks');
-    localStorage.removeItem('todoist-projects');
-    localStorage.removeItem('todoist-sections');
-    localStorage.removeItem('todoist-labels');
-    localStorage.removeItem('todoist-comments');
-    // 清理内存中的 store 数据
-    useStore.getState().resetStore();
+    const ownerId = localStorage.getItem(OWNER_KEY);
+    const currentData = localStorage.getItem(STORAGE_KEY);
+    if (ownerId && currentData) localStorage.setItem(`${STORAGE_KEY}:${ownerId}`, currentData);
     setToken(null);
     setUser(null);
   };

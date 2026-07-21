@@ -88,6 +88,7 @@ export default function TaskItem({ task, isDragging, dragHandleProps }: TaskItem
 
   return (
     <div
+      data-task-id={task.id}
       className={`group relative flex items-start gap-3 px-4 py-3 rounded-2xl transition-all duration-200 cursor-pointer ${
         isDragging
           ? 'bg-[var(--bg-card)] shadow-2xl ring-2 ring-[#DC4C3E]/20 scale-[1.02]'

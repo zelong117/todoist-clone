@@ -165,12 +165,19 @@ export default function AIAssistant() {
     localStorage.setItem('ai-collapsed', String(collapsed));
   }, [collapsed]);
 
+  useEffect(() => {
+    const open = () => setCollapsed(false);
+    window.addEventListener('open-ai-assistant', open);
+    return () => window.removeEventListener('open-ai-assistant', open);
+  }, []);
+
   const messages = useMemo(() => analyzeTasks(tasks), [tasks]);
 
   const toggleMsg = useCallback((id: string) => {
     setExpandedMsgs(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
@@ -182,23 +189,7 @@ export default function AIAssistant() {
 
   const pColors = { high: 'border-l-red-500 bg-red-500/5', medium: 'border-l-amber-500 bg-amber-500/5', low: 'border-l-blue-500 bg-blue-500/5' };
 
-  // Collapsed: floating button
-  if (collapsed) {
-    return (
-      <div
-        data-ai-assistant="true"
-        onClick={() => setCollapsed(false)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCollapsed(false); }}
-        style={{ position: 'fixed', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 9999, cursor: 'pointer' }}
-        className="bg-gradient-to-b from-indigo-500 to-purple-600 text-white p-3 rounded-l-xl shadow-lg hover:shadow-xl transition-all group"
-        title="AI 助手"
-      >
-        <Sparkles size={20} />
-      </div>
-    );
-  }
+  if (collapsed) return null;
 
   // Expanded: side panel
   return (

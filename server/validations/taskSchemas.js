@@ -22,7 +22,7 @@ const createTaskSchema = Joi.object({
     'number.max': '优先级必须在1-4之间',
   }),
   dueDate: Joi.string().isoDate().allow(null, '').optional(),
-  labels: Joi.array().items(uuidSchema).default([]),
+  labels: Joi.array().items(Joi.string().trim().max(100)).max(50).default([]),
   plannedPomodoros: Joi.number().integer().min(0).max(100).default(1),
 });
 
@@ -40,7 +40,7 @@ const updateTaskSchema = Joi.object({
     'number.max': '优先级必须在1-4之间',
   }),
   dueDate: Joi.string().isoDate().allow(null, ''),
-  labels: Joi.array().items(uuidSchema),
+  labels: Joi.array().items(Joi.string().trim().max(100)).max(50),
   plannedPomodoros: Joi.number().integer().min(0).max(100),
   completedPomodoros: Joi.number().integer().min(0).max(1000),
   pomodoroCount: Joi.number().integer().min(0).max(1000),

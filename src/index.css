@@ -153,22 +153,9 @@
   }
 
   /* 主内容全宽 */
-  main, .flex-1 {
+  main {
     width: 100% !important;
     margin-left: 0 !important;
-  }
-
-  /* 看板列堆叠 */
-  .flex.gap-5 {
-    flex-direction: column !important;
-  }
-  .flex-shrink-0 {
-    width: 100% !important;
-  }
-
-  /* 任务卡片全宽 */
-  .rounded-xl {
-    width: 100% !important;
   }
 
   /* 顶部统计栏换行 */
@@ -193,13 +180,6 @@
   input, textarea, select {
     min-height: 44px !important;
     font-size: 16px !important;
-  }
-
-  /* 弹窗全宽 */
-  .fixed.inset-0 > div {
-    max-width: 90vw !important;
-    max-height: 90vh !important;
-    overflow-y: auto !important;
   }
 
   /* 番茄钟浮动器缩小 */

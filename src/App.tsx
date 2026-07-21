@@ -19,12 +19,14 @@ import FilterPage from './components/FilterPage';
 import ActivityLog from './components/ActivityLog';
 import Admin from './pages/Admin';
 import AIAssistant from './components/AIAssistant';
-import AIOrganizer from './components/AIOrganizer';
 import DraggableWidget from './components/DraggableWidget';
 import SharePanel from './components/SharePanel';
 import QuickCapture from './components/QuickCapture';
+import ViewOptionsMenu, { DEFAULT_VIEW_OPTIONS } from './components/ViewOptionsMenu';
+import type { ViewOptions } from './components/ViewOptionsMenu';
 import { initClickSounds } from './utils/sounds';
-import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, List, LayoutGrid, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
+import { parseRoute, pathForTask, pathForView } from './lib/router';
+import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
 
 export default function App() {
   const { user, loading, logout } = useAuth();
@@ -49,14 +51,17 @@ export default function App() {
     timerSeconds,
     timerMode,
     timerStatus,
-    fetchSections,
+    fetchData,
   } = useStore();
 
-  const [currentView, setCurrentView] = useState<string>('inbox');
+  const initialRoute = useMemo(() => parseRoute(window.location.pathname), []);
+  const [currentView, setCurrentView] = useState<string>(initialRoute.view);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(initialRoute.sectionId);
   const [showSharePanel, setShowSharePanel] = useState(false);
   const [showQuickCapture, setShowQuickCapture] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showPomodoroSettings, setShowPomodoroSettings] = useState(false);
+  const [viewOptions, setViewOptions] = useState<ViewOptions>(DEFAULT_VIEW_OPTIONS);
   const [activeFilter, setActiveFilter] = useState<{
     fn: ((task: Task) => boolean) | null;
     label: string;
@@ -65,9 +70,29 @@ export default function App() {
   // Fetch sections from backend when user is logged in
   useEffect(() => {
     if (user) {
-      fetchSections();
+      fetchData().catch((error) => console.error('Failed to synchronize data:', error));
+      if (initialRoute.taskId) setSelectedTaskId(initialRoute.taskId);
     }
-  }, [user, fetchSections]);
+  }, [user, fetchData, initialRoute.taskId, setSelectedTaskId]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const route = parseRoute(window.location.pathname);
+      setCurrentView(route.view);
+      setSelectedSectionId(route.sectionId);
+      setSelectedTaskId(route.taskId);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [setSelectedTaskId]);
+
+  useEffect(() => {
+    if (!selectedTaskId) return;
+    const task = tasks.find((item) => item.id === selectedTaskId);
+    if (!task) return;
+    const path = pathForTask(task.projectId, task.id);
+    if (window.location.pathname !== path) window.history.pushState({}, '', path);
+  }, [selectedTaskId, tasks]);
 
   // Sync dark mode to html element for Tailwind dark: prefix
   useEffect(() => {
@@ -161,9 +186,25 @@ export default function App() {
       return;
     }
     setCurrentView(view);
+    setSelectedSectionId(null);
     setSelectedTaskId(null);
     setActiveFilter({ fn: null, label: '' });
+    const path = pathForView(view);
+    if (window.location.pathname !== path) window.history.pushState({}, '', path);
   }, [setSelectedTaskId]);
+
+  const handleSectionChange = useCallback((sectionId: string) => {
+    if (!currentView.startsWith('project-')) return;
+    setSelectedSectionId(sectionId);
+    const path = pathForView(currentView, sectionId);
+    if (window.location.pathname !== path) window.history.pushState({}, '', path);
+  }, [currentView]);
+
+  const handleTaskClose = useCallback(() => {
+    setSelectedTaskId(null);
+    const path = pathForView(currentView, selectedSectionId);
+    if (window.location.pathname !== path) window.history.pushState({}, '', path);
+  }, [currentView, selectedSectionId, setSelectedTaskId]);
   // Handle settings view
   const SettingsPage = () => {
     const { toggleDarkMode, updatePomodoroSettings, pomodoroSettings } = useStore();
@@ -390,8 +431,23 @@ export default function App() {
       );
     }
 
+    if (selectedSectionId && currentView.startsWith('project-')) {
+      baseTasks = baseTasks.filter((task) => task.sectionId === selectedSectionId);
+    }
+
+    if (!viewOptions.showCompleted) baseTasks = baseTasks.filter((task) => !task.isCompleted);
+    if (viewOptions.priority !== 'all') baseTasks = baseTasks.filter((task) => task.priority === Number(viewOptions.priority));
+    if (viewOptions.label) baseTasks = baseTasks.filter((task) => task.labels.includes(viewOptions.label));
+    const direction = viewOptions.direction === 'asc' ? 1 : -1;
+    baseTasks = [...baseTasks].sort((a, b) => {
+      if (viewOptions.sortBy === 'dueDate') return ((a.dueDate || '9999').localeCompare(b.dueDate || '9999')) * direction;
+      if (viewOptions.sortBy === 'priority') return (a.priority - b.priority) * direction;
+      if (viewOptions.sortBy === 'title') return a.title.localeCompare(b.title, 'zh-CN') * direction;
+      return (a.order - b.order) * direction;
+    });
+
     return baseTasks;
-  }, [currentView, tasks, getInboxTasks, getTodayTasks, getUpcomingTasks, getTasksByProject, searchQuery, activeFilter]);
+  }, [currentView, tasks, getInboxTasks, getTodayTasks, getUpcomingTasks, getTasksByProject, searchQuery, activeFilter, selectedSectionId, viewOptions]);
 
   const viewSections = useMemo(() => {
     if (currentView.startsWith('project-')) {
@@ -447,6 +503,7 @@ export default function App() {
 
   // Whether the current view shows a task list (inbox, today, upcoming, projects)
   const isTaskListView = currentView === 'inbox' || currentView === 'today' || currentView === 'upcoming' || currentView.startsWith('project-');
+  const availableViewLabels = useMemo(() => Array.from(new Set(tasks.flatMap((task) => task.labels))).sort(), [tasks]);
 
   // 认证检查：加载中显示 loading，未登录显示登录/注册页
   if (loading) {
@@ -516,47 +573,13 @@ export default function App() {
                       </button>
                     )}
 
-                    {/* 番茄钟开关 - 仅在项目视图显示 */}
-                    {currentView.startsWith('project-') && currentProject && (
-                      <div className="flex items-center gap-2 px-2">
-                        <span className="text-xs text-[var(--text-tertiary)]">🍅 番茄钟</span>
-                        <button
-                          onClick={() => {
-                            useStore.getState().updateProject(currentProject.id, {
-                              usePomodoro: !currentProject.usePomodoro,
-                            });
-                          }}
-                          className={`relative w-10 h-5 rounded-full transition-colors ${
-                            currentProject.usePomodoro ? 'bg-[var(--accent)]' : 'bg-gray-300'
-                          }`}
-                        >
-                          <div
-                            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                              currentProject.usePomodoro ? 'translate-x-5' : ''
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="flex items-center rounded-lg p-0.5 bg-[var(--bg-active)]">
-                      {(['list', 'board', 'calendar'] as const).map((mode) => (
-                        <button
-                          key={mode}
-                          onClick={() => useStore.getState().setViewMode(mode)}
-                          className={`relative z-10 flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
-                            viewMode === mode
-                              ? 'text-white bg-[var(--accent)]'
-                              : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-                          }`}
-                        >
-                          {mode === 'list' && <List size={14} />}
-                          {mode === 'board' && <LayoutGrid size={14} />}
-                          {mode === 'calendar' && <CalendarDays size={14} />}
-                          <span>{mode === 'list' ? '列表' : mode === 'board' ? '看板' : '日历'}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <ViewOptionsMenu
+                      viewMode={viewMode}
+                      options={viewOptions}
+                      labels={availableViewLabels}
+                      onViewModeChange={(mode) => useStore.getState().setViewMode(mode)}
+                      onOptionsChange={setViewOptions}
+                    />
 
                     {currentView.startsWith('project-') && currentProject && (
                       <button className="p-2 rounded-lg transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]" title="评论">
@@ -566,33 +589,7 @@ export default function App() {
                   </>
                 )}
 
-                <div className="relative">
-                  <button 
-                    onClick={() => {
-                      const menu = document.getElementById('more-menu');
-                      if (menu) menu.classList.toggle('hidden');
-                    }}
-                    className="p-2 rounded-lg transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]" title="更多">
-                    <MoreHorizontal size={18} />
-                  </button>
-                  <div id="more-menu" className="hidden absolute right-0 top-full mt-1 w-48 bg-[var(--bg-card)] rounded-lg shadow-lg border border-[var(--border-color)] z-50 py-1">
-                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
-                      📋 排序任务
-                    </button>
-                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
-                      🔍 过滤任务
-                    </button>
-                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
-                      👁 隐藏已完成
-                    </button>
-                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
-                      📤 导出任务
-                    </button>
-                    <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
-                      ⚙️ 项目设置
-                    </button>
-                  </div>
-                </div>
+                <button className="p-2 rounded-lg transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]" title="更多"><MoreHorizontal size={18} /></button>
               </div>
             </div>
 
@@ -604,7 +601,8 @@ export default function App() {
                   return (
                     <button
                       key={section.id}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)]"
+                      onClick={() => handleSectionChange(section.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedSectionId === section.id ? 'bg-[var(--bg-active)] text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)]'}`}
                     >
                       <span>{section.name}</span>
                       <span className="text-xs text-[var(--text-tertiary)]">
@@ -722,11 +720,11 @@ export default function App() {
                     currentView.startsWith('project-') ? 'project' :
                     'filter'
                   }
-                  showSections={currentView.startsWith('project-') && viewSections.length > 0}
+                  showSections={currentView.startsWith('project-') && viewSections.length > 0 && viewOptions.groupBy === 'section'}
                 />
               ) : viewMode === 'board' ? (
                 <div className="flex-1 flex flex-col min-h-0">
-                  <BoardView tasks={viewTasks} sections={viewSections} />
+                  <BoardView tasks={viewTasks} sections={viewSections} projectId={currentProjectId || undefined} />
                 </div>
               ) : (
                 <CalendarView tasks={viewTasks} />
@@ -737,7 +735,6 @@ export default function App() {
 
         {/* AI Assistant Panel */}
         <AIAssistant />
-        <AIOrganizer />
 
         {/* 共享面板 */}
         {showSharePanel && currentProject && (
@@ -759,7 +756,7 @@ export default function App() {
       {selectedTaskId && (
         <TaskDetail
           taskId={selectedTaskId}
-          onClose={() => setSelectedTaskId(null)}
+          onClose={handleTaskClose}
         />
       )}
 
@@ -781,6 +778,7 @@ export default function App() {
       )}
 
       {/* Pomodoro Timer - draggable */}
+      {timerStatus !== 'idle' && (
       <DraggableWidget initialRight={24} initialBottom={24} zIndex={30}>
         <div className="max-h-[calc(100vh-48px)] overflow-visible">
         {activeTimerTaskId ? (
@@ -825,6 +823,7 @@ export default function App() {
         )}
         </div>
       </DraggableWidget>
+      )}
     </div>
   );
 }

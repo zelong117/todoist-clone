@@ -39,6 +39,8 @@ function mapTask(row) {
     pomodoroCount: row.pomodoro_count || 0,
     estimatedMinutes: row.estimated_minutes || 25,
     sortOrder: row.sort_order || 0,
+    isRecurring: !!row.is_recurring,
+    recurrenceRule: row.recurrence_rule || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

@@ -16,6 +16,8 @@ import {
   Bell,
   MapPin,
   Flag,
+  Timer,
+  Sparkles,
 } from 'lucide-react';
 import { useStore } from '../store';
 import { RECURRENCE_OPTIONS, formatRecurrenceRule } from '../lib/recurrence';
@@ -41,7 +43,7 @@ interface TaskDetailProps {
 }
 
 export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
-  const { tasks, comments, projects, sections, updateTask, deleteTask, addComment, addTask, labels, setSelectedTaskId } = useStore();
+  const { tasks, comments, projects, sections, updateTask, deleteTask, addComment, addTask, labels, setSelectedTaskId, startTimer } = useStore();
   const task = useMemo(() => tasks.find((t) => t.id === taskId), [tasks, taskId]);
 
   // Find sibling tasks for navigation
@@ -325,12 +327,13 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       {/* Modal */}
       <div
         ref={panelRef}
-        className="relative w-full max-w-[740px] max-h-[88vh] bg-[var(--bg-card)] rounded-2xl shadow-2xl overflow-hidden flex flex-col mx-4"
+        data-task-detail="true"
+        className="relative w-full max-w-[920px] max-h-[90vh] bg-[var(--bg-card)] rounded-lg shadow-2xl overflow-hidden flex flex-col mx-3"
         style={{ animation: 'slideUp 0.25s ease-out', boxShadow: '0 25px 60px -12px rgba(0,0,0,0.25)' }}
       >
         {/* Top Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)]">
-          <div className="flex items-center gap-2.5 text-sm text-[var(--text-tertiary)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-3 border-b border-[var(--border-color)]">
+          <div className="flex min-w-0 items-center gap-2.5 text-sm text-[var(--text-tertiary)]">
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-active)]">
               <span className="text-[var(--text-tertiary)] font-bold">#</span>
               <span className="font-medium">{currentProject?.name || '收件箱'}</span>
@@ -343,6 +346,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             )}
           </div>
           <div className="flex items-center gap-0.5">
+            <button onClick={() => startTimer(task.id)} className="flex items-center gap-1.5 rounded-md p-2 sm:px-2 sm:py-1.5 text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-active)]" title="开始专注"><Timer size={14} /><span className="hidden sm:inline">专注</span></button>
+            <button onClick={() => window.dispatchEvent(new Event('open-ai-assistant'))} className="flex items-center gap-1.5 rounded-md p-2 sm:px-2 sm:py-1.5 text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-active)]" title="AI 助手"><Sparkles size={14} /><span className="hidden sm:inline">AI</span></button>
             <button
               onClick={() => navigateTask(-1)}
               disabled={currentIndex <= 0}
@@ -376,8 +381,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex">
+        <div className="flex-1 overflow-x-hidden overflow-y-auto">
+          <div className="flex flex-col md:flex-row">
             {/* Left Panel - Main Content */}
             <div className="flex-1 px-7 py-6 space-y-5 min-w-0">
               {/* Checkbox + Title */}
@@ -418,31 +423,6 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                   placeholder="任务标题"
                 />
               </div>
-
-              {/* Pomodoro Progress - only if project enables pomodoro */}
-              {task.plannedPomodoros > 0 && (
-                <div className="flex items-center gap-4 mb-4 p-4 bg-gradient-to-r from-orange-50/50 to-red-50/30 rounded-xl border border-orange-100">
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: task.plannedPomodoros }).map((_, i) => (
-                      <span key={i} className={`text-xl transition-all duration-300 ${i < task.completedPomodoros ? 'scale-110' : 'opacity-25 grayscale'}`}>🍅</span>
-                    ))}
-                  </div>
-                  <span className="text-sm font-bold text-[var(--text-primary)]">
-                    {task.completedPomodoros}/{task.plannedPomodoros}
-                  </span>
-                  <span className="text-xs text-[var(--text-tertiary)] font-medium">
-                    = {task.plannedPomodoros * 25}m
-                  </span>
-                </div>
-              )}
-
-              {/* Pomodoro Completed Celebration - only if project enables pomodoro */}
-              {task.completedPomodoros >= task.plannedPomodoros && task.plannedPomodoros > 0 && (
-                <div className="text-center py-2">
-                  <span className="text-3xl animate-bounce">🎉</span>
-                  <p className="text-xs text-green-500 font-bold mt-1">番茄任务完成！</p>
-                </div>
-              )}
 
               {/* Description */}
               <div className="pl-9">
@@ -601,7 +581,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             </div>
 
             {/* Right Panel - Properties */}
-            <div className="w-[280px] border-l border-[var(--border-color)] px-5 py-6 space-y-4 flex-shrink-0 bg-[var(--bg-secondary)]/30">
+            <div className="w-full md:w-[300px] border-t md:border-t-0 md:border-l border-[var(--border-color)] px-5 py-6 space-y-4 flex-shrink-0 bg-[var(--bg-secondary)]/30">
               {/* Project */}
               <div className="flex items-center justify-between group">
                 <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">项目</span>
@@ -610,10 +590,19 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                     className="w-3 h-3 rounded-md shadow-sm"
                     style={{ backgroundColor: currentProject?.color || '#6B7280' }}
                   />
-                  <span className="truncate max-w-[140px] font-medium">
-                    {currentProject?.name || '收件箱'}
-                  </span>
+                  <select value={task.projectId || ''} onChange={async (event) => { try { await updateTask(task.id, { projectId: event.target.value || null, sectionId: null }); } catch (error) { showTaskOperationError(error); } }} className="max-w-[160px] bg-transparent font-medium outline-none">
+                    <option value="">收件箱</option>
+                    {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+                  </select>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between group">
+                <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">版块</span>
+                <select value={task.sectionId || ''} disabled={!task.projectId} onChange={async (event) => { try { await updateTask(task.id, { sectionId: event.target.value || null }); } catch (error) { showTaskOperationError(error); } }} className="max-w-[170px] bg-transparent text-sm font-medium text-[var(--text-primary)] outline-none disabled:opacity-50">
+                  <option value="">无版块</option>
+                  {sections.filter((section) => section.projectId === task.projectId).map((section) => <option key={section.id} value={section.id}>{section.name}</option>)}
+                </select>
               </div>
 
               {/* Date */}
