@@ -393,17 +393,13 @@ export const useStore = create<AppState>()(
             usePomodoro: project.usePomodoro ?? false,
           }));
         const serverSections = apiSections.map((section: any) => ({ ...section, order: section.order ?? section.sortOrder ?? 0 }));
-        const mergeById = <T extends { id: string }>(local: T[], remote: T[]) => {
-          const merged = new Map(local.map((item) => [item.id, item]));
-          remote.forEach((item) => merged.set(item.id, item));
-          return Array.from(merged.values());
-        };
-        set((state) => ({
-          tasks: mergeById(state.tasks, serverTasks),
-          projects: mergeById(state.projects, serverProjects),
-          sections: mergeById(state.sections, serverSections),
-          labels: mergeById(state.labels, apiLabels),
-        }));
+        // 服务器是唯一事实来源，直接覆盖本地数据（Sprint 0 原则）
+        set({
+          tasks: serverTasks,
+          projects: serverProjects,
+          sections: serverSections,
+          labels: apiLabels.map((l: any) => ({ ...l, order: l.order ?? 0 })),
+        });
       },
 
       // ===== Label actions =====
