@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   X,
   ChevronUp,
@@ -1029,3 +1029,4 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     </div>
   );
 }
+

@@ -6,17 +6,6 @@ import { generateId } from './utils';
 import { parseRecurrenceRule, getNextDueDate } from './lib/recurrence';
 import { tasksAPI, projectsAPI, labelsAPI, sectionsAPI } from './api';
 
-// Helper to load from localStorage or use seed data
-function loadState<T>(key: string, fallback: T): T {
-  try {
-    const stored = localStorage.getItem(key);
-    if (stored) return JSON.parse(stored);
-  } catch {
-    // ignore
-  }
-  return fallback;
-}
-
 interface AppState {
   // Data
   tasks: Task[];
@@ -107,12 +96,12 @@ interface AppState {
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
-      // Initial data (loaded from localStorage or empty)
-      tasks: loadState('todoist-tasks', []),
-      projects: loadState('todoist-projects', []),
-      sections: loadState('todoist-sections', []),
-      labels: loadState('todoist-labels', []),
-      comments: loadState('todoist-comments', []),
+      // Initial data (hydrated by Zustand persist middleware)
+      tasks: [],
+      projects: [],
+      sections: [],
+      labels: [],
+      comments: [],
 
       // UI state
       activeView: 'inbox',
@@ -727,12 +716,7 @@ export const useStore = create<AppState>()(
         labels: state.labels,
         comments: state.comments,
         pomodoroSettings: state.pomodoroSettings,
-        pomodoroSessions: state.pomodoroSessions,
         completedPomodoros: state.completedPomodoros,
-        timerMode: state.timerMode,
-        timerStatus: state.timerStatus,
-        timerSeconds: state.timerSeconds,
-        timerStartedAt: state.timerStartedAt,
         activeTimerTaskId: state.activeTimerTaskId,
         viewMode: state.viewMode,
         darkMode: state.darkMode,
