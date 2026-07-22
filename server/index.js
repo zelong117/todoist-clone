@@ -265,6 +265,13 @@ initDB().then(() => {
 
   process.on('SIGTERM', gracefulShutdown);
   process.on('SIGINT', gracefulShutdown);
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('[FATAL] Unhandled Rejection:', reason);
+  });
+  process.on('uncaughtException', (err) => {
+    console.error('[FATAL] Uncaught Exception:', err);
+    gracefulShutdown();
+  });
 }).catch(err => {
   console.error('Failed to init database:', err);
   process.exit(1);

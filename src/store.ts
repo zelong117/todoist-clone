@@ -263,13 +263,7 @@ export const useStore = create<AppState>()(
           set((state) => ({ projects: [...state.projects, project] }));
         } catch (error) {
           console.error('Failed to create project:', error);
-          const project: Project = {
-            ...projectData,
-            id: generateId(),
-            usePomodoro: projectData.usePomodoro ?? false,
-            createdAt: new Date().toISOString(),
-          };
-          set((state) => ({ projects: [...state.projects, project] }));
+          throw error;
         }
       },
 
@@ -324,8 +318,7 @@ export const useStore = create<AppState>()(
           set((state) => ({ sections: [...state.sections, section] }));
         } catch (error) {
           console.error('Failed to create section:', error);
-          const section: Section = { ...sectionData, id: generateId() };
-          set((state) => ({ sections: [...state.sections, section] }));
+          throw error;
         }
       },
 
@@ -415,11 +408,7 @@ export const useStore = create<AppState>()(
           set((state) => ({ labels: [...state.labels, label] }));
         } catch (error) {
           console.error('Failed to create label:', error);
-          const label: Label = {
-            ...labelData,
-            id: generateId(),
-          };
-          set((state) => ({ labels: [...state.labels, label] }));
+          throw error;
         }
       },
 
