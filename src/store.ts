@@ -8,6 +8,10 @@ import { tasksAPI, projectsAPI, labelsAPI, sectionsAPI } from './api';
 
 interface AppState {
   // Data
+  // Loading state
+  isInitialized: boolean;
+
+  // Data
   tasks: Task[];
   projects: Project[];
   sections: Section[];
@@ -96,6 +100,9 @@ interface AppState {
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
+      // Loading state
+      isInitialized: false,
+
       // Initial data (hydrated by Zustand persist middleware)
       tasks: [],
       projects: [],
@@ -377,6 +384,7 @@ export const useStore = create<AppState>()(
         const serverSections = apiSections.map((section: any) => ({ ...section, order: section.order ?? section.sortOrder ?? 0 }));
         // 服务器是唯一事实来源，直接覆盖本地数据（Sprint 0 原则）
         set({
+          isInitialized: true,
           tasks: serverTasks,
           projects: serverProjects,
           sections: serverSections,

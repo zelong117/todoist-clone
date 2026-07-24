@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { X, Plus } from 'lucide-react';
 import { useStore } from '../store';
 import PomodoroToggle from './PomodoroToggle';
+import { UpgradeModal } from './UpgradeModal';
 
 const PROJECT_COLORS = [
   '#DC4C3E', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6',
@@ -17,9 +18,15 @@ export default function NewProjectModal({ onClose }: NewProjectModalProps) {
   const [name, setName] = useState('');
   const [color, setColor] = useState(PROJECT_COLORS[0]);
   const [usePomodoro, setUsePomodoro] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const handleCreate = useCallback(() => {
     if (!name.trim()) return;
+    // Check free tier quota (5 projects max)
+    if (projects.length >= 5) {
+      setShowUpgrade(true);
+      return;
+    }
     addProject({
       name: name.trim(),
       color,
@@ -122,6 +129,11 @@ export default function NewProjectModal({ onClose }: NewProjectModalProps) {
           </button>
         </div>
       </div>
+      <UpgradeModal
+        isOpen={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        reason="免费版最多创建 5 个项目，升级 Pro 解锁无限项目"
+      />
     </div>
   );
 }

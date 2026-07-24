@@ -27,6 +27,8 @@ import type { ViewOptions } from './components/ViewOptionsMenu';
 import { initClickSounds } from './utils/sounds';
 import { parseRoute, pathForTask, pathForView } from './lib/router';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
+import { SkeletonTask } from './components/Skeleton';
+import { EmptyState } from './components/EmptyState';
 
 export default function App() {
   const { user, loading, logout } = useAuth();
@@ -36,6 +38,7 @@ export default function App() {
     tasks,
     sections,
     projects,
+    isInitialized,
     selectedTaskId,
     setSelectedTaskId,
     setActiveView,
@@ -509,7 +512,10 @@ export default function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center">
-        <div className="text-[var(--text-secondary)]">加载中...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-[var(--text-tertiary)]">加载中...</span>
+        </div>
       </div>
     );
   }
@@ -707,7 +713,14 @@ export default function App() {
             ) : currentView === 'settings' ? (
               <SettingsPage />
             ) : isTaskListView ? (
-              viewMode === 'list' ? (
+              !isInitialized ? (
+                <SkeletonTask count={8} />
+              ) : viewTasks.length === 0 ? (
+                <EmptyState
+                  type={currentView === 'inbox' ? 'inbox' : currentView === 'today' ? 'today' : currentView === 'upcoming' ? 'upcoming' : currentView.startsWith('project-') ? 'project' : 'filter'}
+                  onAction={() => setShowQuickAdd(true)}
+                />
+              ) : viewMode === 'list' ? (
                 <TaskList
                   tasks={viewTasks}
                   sections={currentView.startsWith('project-') ? viewSections : []}
