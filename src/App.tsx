@@ -26,7 +26,7 @@ import ViewOptionsMenu, { DEFAULT_VIEW_OPTIONS } from './components/ViewOptionsM
 import type { ViewOptions } from './components/ViewOptionsMenu';
 import { initClickSounds } from './utils/sounds';
 import { parseRoute, pathForTask, pathForView } from './lib/router';
-import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter } from 'lucide-react';
+import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter, Menu } from 'lucide-react';
 import { SkeletonTask } from './components/Skeleton';
 import { EmptyState } from './components/EmptyState';
 
@@ -63,6 +63,7 @@ export default function App() {
   const [showSharePanel, setShowSharePanel] = useState(false);
   const [showQuickCapture, setShowQuickCapture] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showPomodoroSettings, setShowPomodoroSettings] = useState(false);
   const [viewOptions, setViewOptions] = useState<ViewOptions>(DEFAULT_VIEW_OPTIONS);
   const [activeFilter, setActiveFilter] = useState<{
@@ -537,8 +538,29 @@ export default function App() {
 
   return (
     <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
-      {/* Sidebar */}
-      <Sidebar currentView={currentView} onViewChange={handleViewChange} onLogout={logout} onQuickCapture={() => setShowQuickCapture(true)} />
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setShowMobileMenu(true)}
+        className="md:hidden fixed top-3 left-3 z-40 p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md hover:shadow-lg transition-all"
+        aria-label="Open menu"
+      >
+        <Menu size={20} className="text-[var(--text-primary)]" />
+      </button>
+
+      {/* Sidebar - desktop always visible, mobile as overlay */}
+      <div className="hidden md:block">
+        <Sidebar currentView={currentView} onViewChange={handleViewChange} onLogout={logout} onQuickCapture={() => setShowQuickCapture(true)} />
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {showMobileMenu && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden" onClick={() => setShowMobileMenu(false)} />
+          <div className="fixed inset-y-0 left-0 z-50 md:hidden">
+            <Sidebar currentView={currentView} onViewChange={(view) => { handleViewChange(view); setShowMobileMenu(false); }} onLogout={logout} onQuickCapture={() => { setShowQuickCapture(true); setShowMobileMenu(false); }} />
+          </div>
+        </>
+      )}
 
       {/* Main Content */}
       <main className={`flex-1 flex overflow-hidden ${darkClasses} transition-colors duration-200`}>
@@ -775,7 +797,7 @@ export default function App() {
 
       {/* Quick Add Modal */}
       {showQuickAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center max-md:items-stretch bg-black/50 backdrop-blur-sm">
           <QuickAdd
             defaultProjectId={currentProjectId || undefined}
             onClose={() => setShowQuickAdd(false)}
@@ -785,7 +807,7 @@ export default function App() {
 
       {/* Pomodoro Settings Modal */}
       {showPomodoroSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center max-md:items-stretch bg-black/50 backdrop-blur-sm">
           <PomodoroSettings onClose={() => setShowPomodoroSettings(false)} />
         </div>
       )}

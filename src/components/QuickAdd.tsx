@@ -182,12 +182,12 @@ export default function QuickAdd({ defaultProjectId, defaultDate, onClose }: Qui
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center max-md:items-stretch"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.35)', backdropFilter: 'blur(6px)' }}
     >
       <div
         ref={dialogRef}
-        className="w-full max-w-lg mx-4 bg-[var(--bg-card)] rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-lg mx-4 max-md:mx-0 max-md:max-w-full max-md:h-full max-md:rounded-none bg-[var(--bg-card)] rounded-2xl shadow-2xl overflow-hidden"
         style={{ animation: 'slideUp 0.2s ease-out' }}
       >
         {/* Main input */}

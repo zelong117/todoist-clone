@@ -315,7 +315,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center max-md:items-stretch"
       style={{ animation: 'fadeIn 0.15s ease-out' }}
     >
       {/* Backdrop */}
@@ -328,7 +328,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       <div
         ref={panelRef}
         data-task-detail="true"
-        className="relative w-full max-w-[920px] max-h-[90vh] bg-[var(--bg-card)] rounded-lg shadow-2xl overflow-hidden flex flex-col mx-3"
+        className="relative w-full max-w-[920px] max-h-[90vh] max-md:max-h-full max-md:h-full bg-[var(--bg-card)] rounded-lg max-md:rounded-none shadow-2xl overflow-hidden flex flex-col mx-3 max-md:mx-0"
         style={{ animation: 'slideUp 0.25s ease-out', boxShadow: '0 25px 60px -12px rgba(0,0,0,0.25)' }}
       >
         {/* Top Bar */}
