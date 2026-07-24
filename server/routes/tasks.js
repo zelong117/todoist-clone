@@ -136,7 +136,7 @@ router.get('/:id', authenticate, validate({ params: taskIdParamSchema }), asyncH
  * 鍒涘缓鏂颁换鍔?- 楠岃瘉鍏宠仈瀹炰綋鎵€鏈夋潈
  */
 router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandler(async (req, res) => {
-  const { title, description, projectId, sectionId, parentId, priority, dueDate, labels, plannedPomodoros } = req.body;
+  const { title, description, projectId, sectionId, parentId, priority, dueDate, labels, plannedPomodoros, isRecurring, recurrenceRule } = req.body;
 
   // 銆愭暟鎹殧绂汇€戦獙璇?projectId 灞炰簬褰撳墠鐢ㄦ埛
   if (projectId && !verifyOwnership('projects', projectId, req.user.id)) {
@@ -156,8 +156,8 @@ router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandle
   const id = uuidv4();
   const now = new Date().toISOString();
   const pp = plannedPomodoros || 1;
-  run('INSERT INTO tasks (id, user_id, project_id, section_id, parent_id, title, description, priority, due_date, labels, planned_pomodoros, estimated_minutes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, req.user.id, nullableId(projectId), nullableId(sectionId), nullableId(parentId), title.trim(), description || '', priority || 1, dueDate || null, JSON.stringify(Array.isArray(labels) ? labels : []), pp, pp * 25, now, now]);
+  run('INSERT INTO tasks (id, user_id, project_id, section_id, parent_id, title, description, priority, due_date, labels, planned_pomodoros, estimated_minutes, is_recurring, recurrence_rule, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, req.user.id, nullableId(projectId), nullableId(sectionId), nullableId(parentId), title.trim(), description || '', priority || 1, dueDate || null, JSON.stringify(Array.isArray(labels) ? labels : []), pp, pp * 25, isRecurring ? 1 : 0, recurrenceRule || null, now, now]);
 
   const task = queryOne('SELECT * FROM tasks WHERE id = ?', [id]);
   const mapped = mapTask(task);
@@ -179,7 +179,7 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   if (!task) return res.status(404).json({ error: 'Task not found' });
 
-  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId'];
+  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId', 'isRecurring', 'recurrenceRule'];
   const sanitized = pick(req.body, allowed);
 
   // 銆愭暟鎹殧绂汇€戝鏋滄洿鏂颁簡 projectId锛岄獙璇佹柊椤圭洰灞炰簬褰撳墠鐢ㄦ埛
@@ -255,7 +255,7 @@ router.patch('/:id', authenticate, validate({ params: taskIdParamSchema, body: u
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   if (!task) return res.status(404).json({ error: 'Task not found' });
 
-  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId'];
+  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId', 'isRecurring', 'recurrenceRule'];
   const sanitized = pick(req.body, allowed);
 
   if (sanitized.projectId !== undefined && sanitized.projectId !== null && sanitized.projectId !== '') {

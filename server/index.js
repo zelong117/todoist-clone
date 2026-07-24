@@ -14,6 +14,7 @@ const { helmetConfig, corsOptions, extraSecurityHeaders, requestBodyGuard } = re
 const { ipFilter, apiLimiter, authLimiter, writeLimiter, adminLimiter } = require('./middleware/rateLimiter');
 const { getCacheStats, invalidateByUser } = require('./middleware/cache');
 const { requestTimer, collectMetrics, getMetrics, getMemoryUsage, startMemoryMonitor, createSlowQueryWrapper } = require('./middleware/performance');
+const { checkProjectQuota, checkAiQuota } = require('./middleware/quota');
 
 // ============================================================
 // WebSocket 妯″潡
@@ -65,7 +66,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 
 // 椤圭洰璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛?
-app.use('/api/projects', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/projects'));
+app.use('/api/projects', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), (req, res, next) => req.method === 'POST' ? checkProjectQuota(req, res, next) : next(), require('./routes/projects'));
 
 // 浠诲姟璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛橈紙鏇寸煭 TTL锛屽洜涓轰换鍔″彉鍖栭绻侊級
 app.use('/api/tasks', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/tasks'));
@@ -87,7 +88,7 @@ app.use('/api/pomodoro', writeLimiter, require('./routes/pomodoro'));
 
 // 绠＄悊鍛樿矾鐢?- 绠＄悊鍛橀檺娴?
 app.use('/api/admin', adminLimiter, require('./routes/admin'));
-app.use('/api/ai', require('./routes/ai'));
+app.use('/api/ai', checkAiQuota, require('./routes/ai'));
 console.log('[AI] AI route registered at /api/ai');
 
 // 项目共享路由

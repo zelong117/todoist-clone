@@ -25,3 +25,16 @@ Thumbs.db
 .vscode/
 .idea/
 .worktrees/
+# Temp scripts
+fix-*.py
+fix-*.ps1
+create-*.py
+patch-*.py
+update-*.py
+
+# Logs
+*.log
+frontend-dev.log
+
+# PM2
+pm2.pid
