@@ -13,9 +13,22 @@ export default function LoginPage({ onSwitchToRegister }: LoginPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!email) errs.email = '请输入邮箱';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = '邮箱格式不正确';
+    if (!password) errs.password = '请输入密码';
+    else if (password.length < 6) errs.password = '密码至少 6 位';
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setError('');
     setLoading(true);
     try {
@@ -93,11 +106,12 @@ export default function LoginPage({ onSwitchToRegister }: LoginPageProps) {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setFieldErrors(prev => ({...prev, email: ""})); }}
                     placeholder="you@example.com"
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all"
+                    className={`w-full px-3.5 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border ${fieldErrors.email ? "border-red-400" : "border-gray-200 dark:border-gray-700"} text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all`}
                     required
                   />
+                  {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
                 </div>
 
                 <div>
@@ -106,9 +120,9 @@ export default function LoginPage({ onSwitchToRegister }: LoginPageProps) {
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => { setPassword(e.target.value); setFieldErrors(prev => ({...prev, password: ""})); }}
                       placeholder="••••••••"
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all pr-10"
+                      className={`w-full px-3.5 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border ${fieldErrors.password ? "border-red-400" : "border-gray-200 dark:border-gray-700"} text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all pr-10`}
                       required
                     />
                     <button
@@ -123,7 +137,7 @@ export default function LoginPage({ onSwitchToRegister }: LoginPageProps) {
 
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-red-500 focus:ring-red-500" />
+                    <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-red-500 focus:ring-red-500" />
                     <span className="text-xs text-gray-500 dark:text-gray-400">记住我</span>
                   </label>
                   <button type="button" className="text-xs text-red-500 hover:text-red-600">忘记密码？</button>
