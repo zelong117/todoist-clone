@@ -114,4 +114,18 @@ router.post('/reset-password', asyncHandler(async (req, res) => {
   res.json({ success: true, message: '密码重置成功' });
 }));
 
+
+/**
+ * POST /refresh
+ * 刷新 Token - 验证当前 Token 有效后下发新 Token
+ * 允许用户在 Token 过期前无感续期
+ */
+router.post('/refresh', authenticate, asyncHandler(async (req, res) => {
+  const user = queryOne('SELECT id, email, name, role FROM users WHERE id = ?', [req.user.id]);
+  if (!user) return res.status(401).json({ error: 'User not found' });
+
+  const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, user });
+}));
+
 module.exports = router;

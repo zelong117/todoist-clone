@@ -130,6 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.setItem('todoist_token', data.token);
     setToken(data.token);
     setUser(data.user);
+    startRefreshTimer(data.token);
   };
 
   const register = async (email: string, name: string, password: string) => {
@@ -156,9 +157,44 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.setItem('todoist_token', data.token);
     setToken(data.token);
     setUser(data.user);
+    startRefreshTimer(data.token);
   };
 
+  // Auto-refresh token every 6 days (before 7-day expiry)
+  const refreshTimerRef = { current: null as ReturnType<typeof setTimeout> | null };
+  
+  const startRefreshTimer = (currentToken: string) => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    refreshTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${currentToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem('todoist_token', data.token);
+          setToken(data.token);
+          setUser(data.user);
+          startRefreshTimer(data.token);
+          console.log('[Auth] Token refreshed successfully');
+        } else {
+          console.log('[Auth] Token refresh failed, user needs to re-login');
+        }
+      } catch (err) {
+        console.error('[Auth] Token refresh error:', err);
+      }
+    }, 6 * 24 * 60 * 60 * 1000); // 6 days
+  };
+
+  // Start refresh timer on mount if token exists
+  useEffect(() => {
+    if (token) startRefreshTimer(token);
+    return () => { if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const logout = () => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     localStorage.removeItem('todoist_token');
     const ownerId = localStorage.getItem(OWNER_KEY);
     const currentData = localStorage.getItem(STORAGE_KEY);
