@@ -165,6 +165,18 @@ export default function AIAssistant() {
     localStorage.setItem('ai-collapsed', String(collapsed));
   }, [collapsed]);
 
+  // Auto-collapse on narrow screens
+  useEffect(() => {
+    const check = () => {
+      if (window.innerWidth < 1024 && !collapsed) {
+        setCollapsed(true);
+      }
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, [collapsed]);
+
   useEffect(() => {
     const open = () => setCollapsed(false);
     window.addEventListener('open-ai-assistant', open);
@@ -193,7 +205,7 @@ export default function AIAssistant() {
 
   // Expanded: side panel
   return (
-    <div style={{ width: 340, flexShrink: 0 }} className="border-l border-[var(--border-color)] bg-[var(--bg-card)] flex flex-col h-full overflow-hidden">
+    <div style={{ width: 340, minWidth: 280, flexShrink: 0 }} className="border-l border-[var(--border-color)] bg-[var(--bg-card)] flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)] bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
         <div className="flex items-center gap-2">

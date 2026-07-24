@@ -90,7 +90,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
   return (
     <>
     <aside
-      className="flex flex-col h-screen transition-all duration-300 ease-in-out select-none relative overflow-hidden bg-[var(--bg-primary)] border-r border-[var(--border-color)]"
+      className="flex flex-col h-screen flex-shrink-0 transition-all duration-300 ease-in-out select-none relative overflow-hidden bg-[var(--bg-primary)] border-r border-[var(--border-color)]"
       style={{
         width: collapsed ? 56 : 260,
         minWidth: collapsed ? 56 : 260,
@@ -134,7 +134,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
                   </button>
                   <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">切换账户</button>
                   <div className="border-t border-[var(--border-color)] my-1" />
-                  <button onClick={onLogout} className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">退出登录</button>
+                  <button onClick={onLogout} className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">退出登�?/button>
                 </div>
             )}
             <div className="flex items-center gap-0.5">
@@ -181,7 +181,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
               className="flex items-center gap-2.5 w-full px-3.5 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl text-xs font-medium transition-all duration-200 shadow-md shadow-purple-500/20 hover:shadow-lg"
             >
               <Sparkles size={14} />
-              <span>语音/截图快速录入</span>
+              <span>语音/截图快速录�?/span>
             </button>
           )}
         </div>
@@ -239,10 +239,10 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
         {/* Smart Views */}
         <div className="space-y-0.5">
           {[
-            { id: 'inbox', label: '收件箱', icon: Inbox, count: inboxCount, color: '#3B82F6' },
+            { id: 'inbox', label: '收件�?, icon: Inbox, count: inboxCount, color: '#3B82F6' },
             { id: 'today', label: '今天', icon: CalendarDays, count: todayCount, color: '#10B981' },
             { id: 'upcoming', label: '即将到来', icon: CalendarClock, count: upcomingCount, color: '#8B5CF6' },
-            { id: 'filters', label: '过滤器 & 标签', icon: Filter, count: 0, color: '#6B7280' },
+            { id: 'filters', label: '过滤�?& 标签', icon: Filter, count: 0, color: '#6B7280' },
           ].map((view) => {
             const Icon = view.icon;
             const isActive = currentView === view.id;
@@ -489,13 +489,13 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
                 </button>
                 <button onClick={() => { setShowSettings(false); onViewChange('settings'); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
                   <Timer size={14} />
-                  <span>番茄钟设置</span>
+                  <span>番茄钟设�?/span>
                 </button>
                 <button onClick={() => { const data = { tasks: useStore.getState().tasks, projects: useStore.getState().projects, sections: useStore.getState().sections, labels: useStore.getState().labels, comments: useStore.getState().comments, pomodoroSessions: useStore.getState().pomodoroSessions }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'todoist-backup.json'; a.click(); URL.revokeObjectURL(url); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
                   <Download size={14} />
                   <span>数据导出</span>
                 </button>
-                <button onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = (e: Event) => { const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const data = JSON.parse(ev.target?.result as string); if (data.tasks && data.projects) { const store = useStore.getState(); const existingTaskIds = new Set(store.tasks.map(t => t.id)); const existingProjectIds = new Set(store.projects.map(p => p.id)); useStore.setState({ tasks: [...store.tasks, ...data.tasks.filter((t: any) => !existingTaskIds.has(t.id))], projects: [...store.projects, ...data.projects.filter((p: any) => !existingProjectIds.has(p.id))], }); alert('导入成功！'); } else { alert('无效的备份文件格式'); } } catch { alert('导入失败'); } }; reader.readAsText(file); }; input.click(); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                <button onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = (e: Event) => { const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const data = JSON.parse(ev.target?.result as string); if (data.tasks && data.projects) { const store = useStore.getState(); const existingTaskIds = new Set(store.tasks.map(t => t.id)); const existingProjectIds = new Set(store.projects.map(p => p.id)); useStore.setState({ tasks: [...store.tasks, ...data.tasks.filter((t: any) => !existingTaskIds.has(t.id))], projects: [...store.projects, ...data.projects.filter((p: any) => !existingProjectIds.has(p.id))], }); alert('导入成功�?); } else { alert('无效的备份文件格�?); } } catch { alert('导入失败'); } }; reader.readAsText(file); }; input.click(); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
                   <Upload size={14} />
                   <span>数据导入</span>
                 </button>
@@ -557,7 +557,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
                     }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
                       {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
                       <span>音效</span>
-                      <span className="ml-auto text-xs text-[var(--text-tertiary)]">{soundOn ? '开' : '关'}</span>
+                      <span className="ml-auto text-xs text-[var(--text-tertiary)]">{soundOn ? '开' : '�?}</span>
                     </button>
                     <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
                       <Bell size={14} />
@@ -565,13 +565,13 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
                     </button>
                     <button onClick={() => { setShowSettings(false); onViewChange('settings'); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
                       <Timer size={14} />
-                      <span>番茄钟设置</span>
+                      <span>番茄钟设�?/span>
                     </button>
                     <button onClick={() => { const data = { tasks: useStore.getState().tasks, projects: useStore.getState().projects, sections: useStore.getState().sections, labels: useStore.getState().labels, comments: useStore.getState().comments, pomodoroSessions: useStore.getState().pomodoroSessions }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'todoist-backup.json'; a.click(); URL.revokeObjectURL(url); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
                       <Download size={14} />
                       <span>数据导出</span>
                     </button>
-                    <button onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = (e: Event) => { const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const data = JSON.parse(ev.target?.result as string); if (data.tasks && data.projects) { const store = useStore.getState(); const existingTaskIds = new Set(store.tasks.map(t => t.id)); const existingProjectIds = new Set(store.projects.map(p => p.id)); useStore.setState({ tasks: [...store.tasks, ...data.tasks.filter((t: any) => !existingTaskIds.has(t.id))], projects: [...store.projects, ...data.projects.filter((p: any) => !existingProjectIds.has(p.id))], }); alert('导入成功！'); } else { alert('无效的备份文件格式'); } } catch { alert('导入失败'); } }; reader.readAsText(file); }; input.click(); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+                    <button onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = (e: Event) => { const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const data = JSON.parse(ev.target?.result as string); if (data.tasks && data.projects) { const store = useStore.getState(); const existingTaskIds = new Set(store.tasks.map(t => t.id)); const existingProjectIds = new Set(store.projects.map(p => p.id)); useStore.setState({ tasks: [...store.tasks, ...data.tasks.filter((t: any) => !existingTaskIds.has(t.id))], projects: [...store.projects, ...data.projects.filter((p: any) => !existingProjectIds.has(p.id))], }); alert('导入成功�?); } else { alert('无效的备份文件格�?); } } catch { alert('导入失败'); } }; reader.readAsText(file); }; input.click(); setShowSettings(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
                       <Upload size={14} />
                       <span>数据导入</span>
                     </button>
