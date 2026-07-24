@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../store';
 import type { Task, Project } from '../types';
-import { Search, Download, Upload, Trash2, CheckCircle, Circle, XCircle, Star, Users, Settings, Save } from 'lucide-react';
+import { Search, Download, Upload, Trash2, CheckCircle, Circle, Users, Settings } from 'lucide-react';
 
 interface UserAccount {
   id: string;
@@ -24,15 +24,7 @@ export default function Admin() {
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [users, setUsers] = useState<UserAccount[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
 
-  // AI 配置
-  const [aiApiKey, setAiApiKey] = useState('');
-  const [aiApiUrl, setAiApiUrl] = useState('');
-  const [aiModel, setAiModel] = useState('');
-  const [aiHasKey, setAiHasKey] = useState(false);
-  const [aiSaving, setAiSaving] = useState(false);
-  const [aiSaved, setAiSaved] = useState(false);
 
   const API_URL = `${window.location.protocol}//${window.location.hostname}:3001/api`;
 
@@ -50,7 +42,7 @@ export default function Admin() {
   // 获取用户列表
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoadingUsers(true);
+  
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/admin/users`, {
@@ -63,7 +55,7 @@ export default function Admin() {
       } catch (e) {
         console.error('Failed to fetch users:', e);
       }
-      setLoadingUsers(false);
+  
     };
     fetchUsers();
 
@@ -82,22 +74,7 @@ export default function Admin() {
     };
     fetchStats();
 
-    // 获取 AI 配置
-    const fetchConfig = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/admin/config`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setAiApiUrl(data.apiUrl || '');
-          setAiModel(data.model || '');
-          setAiHasKey(data.hasKey);
-        }
-      } catch (e) { /* ignore */ }
-    };
-    fetchConfig();
+
   }, []);
 
   // Filtered tasks
@@ -134,17 +111,6 @@ export default function Admin() {
     if (!projectId) return '#9CA3AF';
     const project = projects.find((p) => p.id === projectId);
     return project ? project.color : '#9CA3AF';
-  };
-
-  // Get task title by id
-  const getTaskTitle = (taskId: string) => {
-    const task = tasks.find((t) => t.id === taskId);
-    return task ? task.title : '未知任务';
-  };
-
-  // Count tasks per project
-  const getProjectTaskCount = (projectId: string) => {
-    return tasks.filter((t) => t.projectId === projectId).length;
   };
 
   // Priority labels
@@ -258,187 +224,150 @@ export default function Admin() {
     });
   };
 
-  // Mode labels
-  const modeLabels: Record<string, string> = {
-    focus: '专注',
-    shortBreak: '短休息',
-    longBreak: '长休息',
-  };
-
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-8">
+    <div className="max-w-7xl mx-auto space-y-6 pb-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">管理后台</h1>
-          <p className="text-sm text-[var(--text-tertiary)] mt-1">查看和管理所有数据</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">\u7ba1\u7406\u540e\u53f0</h1>
+          <p className="text-sm text-[var(--text-tertiary)] mt-1">\u6570\u636e\u7edf\u8ba1 \u00b7 \u7528\u6237\u7ba1\u7406 \u00b7 \u7cfb\u7edf\u914d\u7f6e</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={exportData}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-          >
+          <button onClick={exportData} className="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md">
             <Download size={16} />
-            导出 JSON
+            \u5bfc\u51fa
           </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-          >
+          <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md">
             <Upload size={16} />
-            导入数据
+            \u5bfc\u5165
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={importData}
-            className="hidden"
-          />
-          <button
-            onClick={() => setShowClearConfirm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-medium transition-colors border border-red-500/20"
-          >
+          <input ref={fileInputRef} type="file" accept=".json" onChange={importData} className="hidden" />
+          <button onClick={() => setShowClearConfirm(true)} className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-xl text-sm font-medium transition-all border border-red-500/20">
             <Trash2 size={16} />
-            清除数据
+            \u6e05\u9664
           </button>
         </div>
       </div>
 
-      {/* Import Message */}
+      {/* Import/Export Messages */}
       {importMessage && (
-        <div className="px-4 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm font-medium">
+        <div className="px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-sm font-medium text-emerald-600 flex items-center gap-2">
+          <CheckCircle size={16} />
           {importMessage}
         </div>
       )}
 
-      {/* 商业仪表盘 */}
-      {serverStats && (
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-white dark:to-gray-100 rounded-2xl p-6 text-white dark:text-gray-900">
-          <h2 className="text-sm font-medium opacity-60 mb-4">📊 商业数据总览</h2>
-          <div className="grid grid-cols-6 gap-4">
-            <div>
-              <p className="text-xs opacity-50">总注册</p>
-              <p className="text-2xl font-bold">{serverStats.totalUsers}</p>
+      {/* ===== Stats Cards ===== */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: '\u4efb\u52a1\u603b\u6570', value: stats.totalTasks, icon: '\ud83d\udccb', color: 'blue', sub: `\u5f85\u5b8c\u6210 ${stats.totalTasks - tasks.filter(t => t.isCompleted).length}` },
+          { label: '\u9879\u76ee\u603b\u6570', value: stats.totalProjects, icon: '\ud83d\udcc1', color: 'purple', sub: `\u653f\u5f85 ${stats.totalProjects}` },
+          { label: '\u6807\u7b7e\u603b\u6570', value: stats.totalLabels, icon: '\ud83c\udff7\ufe0f', color: 'green', sub: '\u5df2\u521b\u5efa' },
+          { label: '\u756a\u8304\u949f', value: stats.totalPomodoros, icon: '\ud83c\udf45', color: 'red', sub: '\u5df2\u5b8c\u6210' },
+        ].map((s, i) => (
+          <div key={i} className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-2xl">{s.icon}</span>
+              <span className={`text-xs font-semibold px-2 py-1 rounded-lg bg-${s.color}-500/10 text-${s.color}-500`}>{s.sub}</span>
             </div>
-            <div>
-              <p className="text-xs opacity-50">付费用户</p>
-              <p className="text-2xl font-bold text-green-400 dark:text-green-600">{serverStats.paidUsers}</p>
-            </div>
-            <div>
-              <p className="text-xs opacity-50">免费用户</p>
-              <p className="text-2xl font-bold">{serverStats.freeUsers}</p>
-            </div>
-            <div>
-              <p className="text-xs opacity-50">今日注册</p>
-              <p className="text-2xl font-bold text-blue-400 dark:text-blue-600">{serverStats.todayRegistrations}</p>
-            </div>
-            <div>
-              <p className="text-xs opacity-50">本周注册</p>
-              <p className="text-2xl font-bold text-purple-400 dark:text-purple-600">{serverStats.weekRegistrations}</p>
-            </div>
-            <div>
-              <p className="text-xs opacity-50">转化率</p>
-              <p className="text-2xl font-bold text-amber-400 dark:text-amber-600">{serverStats.conversionRate}%</p>
-            </div>
+            <p className="text-3xl font-black text-[var(--text-primary)]">{s.value}</p>
+            <p className="text-xs font-medium text-[var(--text-tertiary)] mt-1">{s.label}</p>
           </div>
-          {/* 最近注册用户 */}
-          {serverStats.recentUsers && serverStats.recentUsers.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-white/10 dark:border-gray-900/10">
-              <p className="text-xs opacity-50 mb-2">最近注册</p>
-              <div className="flex gap-4">
-                {serverStats.recentUsers.map((u: any, i: number) => (
-                  <div key={i} className="flex items-center gap-2 text-xs">
-                    <div className="w-6 h-6 rounded-full bg-white/20 dark:bg-gray-900/10 flex items-center justify-center text-[10px] font-bold">
-                      {(u.name || u.email)[0].toUpperCase()}
-                    </div>
-                    <span className="opacity-80">{u.name || u.email}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${u.plan === 'business' ? 'bg-green-500/20 text-green-300 dark:bg-green-500/10 dark:text-green-700' : 'bg-white/10 dark:bg-gray-900/5 opacity-50'}`}>
-                      {u.plan === 'business' ? '商务' : '免费'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        ))}
+      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-              <span className="text-lg">📋</span>
+      {/* ===== Task Completion Overview ===== */}
+      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6">
+        <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">\u4efb\u52a1\u5b8c\u6210\u7387</h2>
+        <div className="space-y-3">
+          {[
+            { label: '\u603b\u4f53\u5b8c\u6210\u7387', done: tasks.filter(t => t.isCompleted).length, total: tasks.length || 1, color: '#DC4C3E' },
+            ...projects.slice(0, 5).map(p => ({
+              label: p.name,
+              done: tasks.filter(t => t.projectId === p.id && t.isCompleted).length,
+              total: Math.max(tasks.filter(t => t.projectId === p.id).length, 1),
+              color: p.color,
+            })),
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-4">
+              <span className="text-sm text-[var(--text-secondary)] w-24 truncate">{item.label}</span>
+              <div className="flex-1 h-3 bg-[var(--bg-hover)] rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.round(item.done / item.total * 100)}%`, backgroundColor: item.color }} />
+              </div>
+              <span className="text-xs font-bold text-[var(--text-tertiary)] w-16 text-right">{item.done}/{item.total - (item.total === 1 && item.done === 0 ? 0 : 0)}</span>
             </div>
-            <div>
-              <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">任务数</p>
-              <p className="text-2xl font-black text-blue-500">{stats.totalTasks}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-              <span className="text-lg">📁</span>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">项目数</p>
-              <p className="text-2xl font-black text-purple-500">{stats.totalProjects}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-              <span className="text-lg">🏷️</span>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">标签数</p>
-              <p className="text-2xl font-black text-emerald-500">{stats.totalLabels}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
-              <span className="text-lg">🍅</span>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">番茄数</p>
-              <p className="text-2xl font-black text-red-500">{stats.totalPomodoros}</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Tasks Table */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[var(--border-color)]">
+      {/* ===== Users Table ===== */}
+      {serverStats && users.length > 0 && (
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-[var(--border-color)]">
+            <h2 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
+              <Users size={18} />
+              \u7528\u6237\u5217\u8868
+              <span className="text-xs font-normal text-[var(--text-tertiary)] bg-[var(--bg-hover)] px-2 py-0.5 rounded-full">{users.length}</span>
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-[var(--bg-hover)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left">\u7528\u6237</th>
+                  <th className="px-6 py-3 text-left">\u90ae\u7bb1</th>
+                  <th className="px-6 py-3 text-center">\u89d2\u8272</th>
+                  <th className="px-6 py-3 text-center">\u5957\u9910</th>
+                  <th className="px-6 py-3 text-center">\u6ce8\u518c\u65f6\u95f4</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-color)]">
+                {users.map((u) => (
+                  <tr key={u.id} className="hover:bg-[var(--bg-hover)] transition-colors">
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--accent)] to-[#B83A2E] flex items-center justify-center text-white text-sm font-bold">{(u.name || u.email)[0].toUpperCase()}</div>
+                        <span className="font-medium text-[var(--text-primary)]">{u.name || '-'}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3.5 text-[var(--text-secondary)]">{u.email}</td>
+                    <td className="px-6 py-3.5 text-center">
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold ${u.role === 'admin' ? 'bg-purple-500/10 text-purple-600' : 'bg-[var(--bg-active)] text-[var(--text-secondary)]'}`}>
+                        {u.role === 'admin' ? 'Admin' : 'User'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5 text-center">
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold ${u.plan === 'pro' ? 'bg-emerald-500/10 text-emerald-600' : u.plan === 'business' ? 'bg-blue-500/10 text-blue-600' : 'bg-[var(--bg-active)] text-[var(--text-tertiary)]'}`}>
+                        {u.plan === 'pro' ? 'Pro' : u.plan === 'business' ? 'Business' : 'Free'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5 text-center text-xs text-[var(--text-tertiary)]">{formatTime(u.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Tasks Table ===== */}
+      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--border-color)]">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <span>📋</span> 任务列表
-              <span className="text-xs font-normal text-[var(--text-tertiary)]">({filteredTasks.length})</span>
+              <Settings size={18} />
+              \u4efb\u52a1\u7ba1\u7406
+              <span className="text-xs font-normal text-[var(--text-tertiary)] bg-[var(--bg-hover)] px-2 py-0.5 rounded-full">{filteredTasks.length}</span>
             </h2>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-                <input
-                  type="text"
-                  placeholder="搜索任务..."
-                  value={taskSearch}
-                  onChange={(e) => setTaskSearch(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 bg-[var(--bg-active)] border border-[var(--border-color)] rounded-lg text-sm w-48 focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-                />
+                <input type="text" placeholder="\u641c\u7d22\u4efb\u52a1..." value={taskSearch} onChange={(e) => setTaskSearch(e.target.value)} className="pl-9 pr-3 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-xl text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-all" />
               </div>
-              <select
-                value={taskFilter}
-                onChange={(e) => setTaskFilter(e.target.value as any)}
-                className="px-3 py-1.5 bg-[var(--bg-active)] border border-[var(--border-color)] rounded-lg text-sm focus:outline-none"
-              >
-                <option value="all">全部</option>
-                <option value="pending">待完成</option>
-                <option value="completed">已完成</option>
+              <select value={taskFilter} onChange={(e) => setTaskFilter(e.target.value as any)} className="px-3 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-xl text-sm focus:outline-none">
+                <option value="all">\u5168\u90e8</option>
+                <option value="pending">\u5f85\u5b8c\u6210</option>
+                <option value="completed">\u5df2\u5b8c\u6210</option>
               </select>
             </div>
           </div>
@@ -446,370 +375,56 @@ export default function Admin() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[var(--bg-active)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
-                <th className="px-4 py-2.5 text-left">标题</th>
-                <th className="px-4 py-2.5 text-left">项目</th>
-                <th className="px-4 py-2.5 text-center w-24 whitespace-nowrap">优先级</th>
-                <th className="px-4 py-2.5 text-center w-28 whitespace-nowrap">状态</th>
-                <th className="px-4 py-2.5 text-center w-20 whitespace-nowrap">番茄</th>
+              <tr className="bg-[var(--bg-hover)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
+                <th className="px-6 py-3 text-left">\u6807\u9898</th>
+                <th className="px-6 py-3 text-left">\u9879\u76ee</th>
+                <th className="px-6 py-3 text-center w-24">\u4f18\u5148\u7ea7</th>
+                <th className="px-6 py-3 text-center w-28">\u72b6\u6001</th>
+                <th className="px-6 py-3 text-center w-20">\u756a\u8304\u949f</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)]">
               {filteredTasks.map((task) => (
                 <tr key={task.id} className="hover:bg-[var(--bg-hover)] transition-colors">
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-3.5">
                     <span className="text-[var(--text-primary)] font-medium">{task.title}</span>
-                    {task.description && (
-                      <p className="text-xs text-[var(--text-tertiary)] mt-0.5 truncate max-w-xs">
-                        {task.description}
-                      </p>
-                    )}
+                    {task.description && <p className="text-xs text-[var(--text-tertiary)] mt-0.5 truncate max-w-xs">{task.description}</p>}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-3.5">
                     <div className="flex items-center gap-2">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: getProjectColor(task.projectId) }}
-                      />
-                      <span className="text-[var(--text-secondary)] text-xs">
-                        {getProjectName(task.projectId)}
-                      </span>
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: getProjectColor(task.projectId) }} />
+                      <span className="text-[var(--text-secondary)] text-xs">{getProjectName(task.projectId)}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-semibold ${priorityColors[task.priority]}`}>
-                      {priorityLabels[task.priority]}
-                    </span>
+                  <td className="px-6 py-3.5 text-center">
+                    <span className={`text-xs font-bold ${priorityColors[task.priority]}`}>{priorityLabels[task.priority]}</span>
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-6 py-3.5 text-center">
                     {task.isCompleted ? (
-                      <span className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                        <CheckCircle size={12} />
-                        已完成
-                      </span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-600"><CheckCircle size={12} />\u5df2\u5b8c\u6210</span>
                     ) : (
-                      <span className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-500/10 text-orange-600 border border-orange-500/20">
-                        <Circle size={12} />
-                        待完成
-                      </span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-orange-500/10 text-orange-600"><Circle size={12} />\u5f85\u5b8c\u6210</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="text-xs font-semibold text-[var(--text-secondary)]">
-                      {task.completedPomodoros}/{task.plannedPomodoros}
-                    </span>
+                  <td className="px-6 py-3.5 text-center">
+                    <span className="text-xs font-bold text-[var(--text-secondary)]">{task.completedPomodoros}/{task.plannedPomodoros}</span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {filteredTasks.length === 0 && (
-            <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">
-              暂无任务数据
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Projects Table */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[var(--border-color)]">
-          <h2 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-            <span>📁</span> 项目列表
-            <span className="text-xs font-normal text-[var(--text-tertiary)]">({projects.length})</span>
-          </h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-[var(--bg-active)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
-                <th className="px-4 py-2.5 text-left">名称</th>
-                <th className="px-4 py-2.5 text-center w-20 whitespace-nowrap">收藏</th>
-                <th className="px-4 py-2.5 text-center w-24 whitespace-nowrap">任务数</th>
-                <th className="px-4 py-2.5 text-center w-28 whitespace-nowrap">番茄开关</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border-color)]">
-              {projects.map((project) => (
-                <tr key={project.id} className="hover:bg-[var(--bg-hover)] transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <span
-                        className="w-3 h-3 rounded flex-shrink-0"
-                        style={{ backgroundColor: project.color }}
-                      />
-                      <span className="text-[var(--text-primary)] font-medium">{project.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {project.isFavorite ? (
-                      <Star size={14} className="text-yellow-500 fill-yellow-500 inline-block" />
-                    ) : (
-                      <span className="text-[var(--text-tertiary)] text-xs">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="text-[var(--text-secondary)] font-semibold">
-                      {getProjectTaskCount(project.id)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                      project.usePomodoro ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-                    }`}>
-                      {project.usePomodoro ? <CheckCircle size={12} /> : <XCircle size={12} />}
-                      {project.usePomodoro ? '已启用' : '未启用'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {projects.length === 0 && (
-            <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">
-              暂无项目数据
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Pomodoro Sessions Table */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[var(--border-color)]">
-          <h2 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-            <span>🍅</span> 番茄钟记录
-            <span className="text-xs font-normal text-[var(--text-tertiary)]">({pomodoroSessions.length})</span>
-          </h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-[var(--bg-active)] text-[var(--text-tertiary)] text-xs font-bold uppercase tracking-wider">
-                <th className="px-4 py-2.5 text-left">任务</th>
-                <th className="px-4 py-2.5 text-left">开始时间</th>
-                <th className="px-4 py-2.5 text-left">结束时间</th>
-                <th className="px-4 py-2.5 text-center w-20">时长</th>
-                <th className="px-4 py-2.5 text-left">状态</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border-color)]">
-              {pomodoroSessions.map((session) => (
-                <tr key={session.id} className="hover:bg-[var(--bg-hover)] transition-colors">
-                  <td className="px-4 py-3">
-                    <span className="text-[var(--text-primary)] font-medium">
-                      {getTaskTitle(session.taskId)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)] text-xs">
-                    {formatTime(session.startedAt)}
-                  </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)] text-xs">
-                    {formatTime(session.endedAt)}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="text-[var(--text-secondary)] font-semibold">
-                      {session.durationMinutes.toFixed(1)}m
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                        session.completed 
-                          ? 'bg-emerald-500/10 text-emerald-500' 
-                          : 'bg-orange-500/10 text-orange-500'
-                      }`}>
-                        {session.completed ? '✅ 已完成' : '⏸️ 中断'}
-                      </span>
-                      <span className="text-[var(--text-tertiary)] text-xs">
-                        {modeLabels[session.mode] || session.mode}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {pomodoroSessions.length === 0 && (
-            <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">
-              暂无番茄钟记录
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 用户账户管理 */}
-      <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-light)] overflow-hidden">
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-[var(--border-light)]">
-          <Users size={18} className="text-[var(--accent-primary)]" />
-          <h2 className="text-base font-semibold text-[var(--text-primary)]">用户账户 ({users.length})</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-[var(--bg-secondary)]">
-                <th className="px-4 py-2.5 text-left whitespace-nowrap">用户名</th>
-                <th className="px-4 py-2.5 text-left whitespace-nowrap">邮箱</th>
-                <th className="px-4 py-2.5 text-center whitespace-nowrap">角色</th>
-                <th className="px-4 py-2.5 text-center whitespace-nowrap">套餐</th>
-                <th className="px-4 py-2.5 text-center whitespace-nowrap">余额</th>
-                <th className="px-4 py-2.5 text-center whitespace-nowrap">到期时间</th>
-                <th className="px-4 py-2.5 text-center whitespace-nowrap">注册时间</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-t border-[var(--border-light)] hover:bg-[var(--bg-hover)] transition-colors">
-                  <td className="px-4 py-2.5 text-[var(--text-primary)] font-medium">{user.name || '-'}</td>
-                  <td className="px-4 py-2.5 text-[var(--text-secondary)]">{user.email}</td>
-                  <td className="px-4 py-2.5 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                      user.role === 'admin'
-                        ? 'bg-purple-500/10 text-purple-500 border border-purple-500/20'
-                        : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
-                    }`}>
-                      {user.role === 'admin' ? '管理员' : '普通用户'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                      user.plan === 'business'
-                        ? 'bg-gradient-to-r from-purple-500/10 to-blue-500/10 text-purple-500 border border-purple-500/20'
-                        : 'bg-gray-500/10 text-gray-500 border border-gray-500/20'
-                    }`}>
-                      {user.plan === 'business' ? '商务版' : '免费版'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5 text-center text-sm text-[var(--text-secondary)] whitespace-nowrap">
-                    ¥{user.balance || 0}
-                  </td>
-                  <td className="px-4 py-2.5 text-center text-[var(--text-tertiary)] whitespace-nowrap text-xs">
-                    {user.plan_expires_at ? new Date(user.plan_expires_at).toLocaleDateString('zh-CN') : '-'}
-                  </td>
-                  <td className="px-4 py-2.5 text-center text-[var(--text-tertiary)] whitespace-nowrap">
-                    {user.created_at ? new Date(user.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '-'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {loadingUsers && (
-            <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">加载中...</div>
-          )}
-          {!loadingUsers && users.length === 0 && (
-            <div className="px-4 py-8 text-center text-[var(--text-tertiary)] text-sm">暂无用户数据</div>
-          )}
-        </div>
-      </div>
-
-      {/* AI 配置管理 */}
-      <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-light)] overflow-hidden">
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-[var(--border-light)]">
-          <Settings size={18} className="text-purple-500" />
-          <h2 className="text-base font-semibold text-[var(--text-primary)]">AI 配置</h2>
-          {aiHasKey && <span className="text-xs text-green-500 font-medium">✓ 已配置</span>}
-          {!aiHasKey && <span className="text-xs text-amber-500 font-medium">未配置（使用本地规则）</span>}
-        </div>
-        <div className="px-6 py-5 space-y-4 max-w-2xl">
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">API Key</label>
-            <input
-              type="password"
-              value={aiApiKey}
-              onChange={(e) => setAiApiKey(e.target.value)}
-              placeholder={aiHasKey ? '已设置（留空则不修改）' : 'sk-... 或你的 API Key'}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">API 地址</label>
-              <input
-                type="text"
-                value={aiApiUrl}
-                onChange={(e) => setAiApiUrl(e.target.value)}
-                placeholder="https://api.openai.com/v1/chat/completions"
-                className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">模型名称</label>
-              <input
-                type="text"
-                value={aiModel}
-                onChange={(e) => setAiModel(e.target.value)}
-                placeholder="gpt-4o-mini"
-                className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={async () => {
-                setAiSaving(true);
-                try {
-                  const token = localStorage.getItem('token');
-                  const res = await fetch(`${API_URL}/admin/config`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({
-                      apiKey: aiApiKey || undefined,
-                      apiUrl: aiApiUrl || undefined,
-                      model: aiModel || undefined,
-                    }),
-                  });
-                  if (res.ok) {
-                    setAiHasKey(true);
-                    setAiSaved(true);
-                    setAiApiKey('');
-                    setTimeout(() => setAiSaved(false), 3000);
-                  }
-                } catch { /* ignore */ }
-                setAiSaving(false);
-              }}
-              disabled={aiSaving}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
-            >
-              {aiSaving ? <Save size={14} className="animate-pulse" /> : <Save size={14} />}
-              {aiSaving ? '保存中...' : aiSaved ? '✓ 已保存' : '保存配置'}
-            </button>
-            <span className="text-xs text-[var(--text-tertiary)]">配置保存后立即生效，所有用户可使用 AI 功能</span>
-          </div>
-          <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 text-xs text-[var(--text-tertiary)] space-y-1">
-            <p>💡 推荐模型：gpt-4o-mini（OpenAI）/ deepseek-chat（DeepSeek，便宜）/ glm-4-flash（智谱，免费）</p>
-            <p>💡 API 地址留空则默认 OpenAI。DeepSeek: https://api.deepseek.com/v1/chat/completions</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Clear Data Confirmation Modal */}
+      {/* ===== Clear Confirm Dialog ===== */}
       {showClearConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6 w-96 shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
-                <Trash2 size={20} className="text-red-500" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-[var(--text-primary)]">清除所有数据</h3>
-                <p className="text-sm text-[var(--text-tertiary)]">此操作不可撤销</p>
-              </div>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)] mb-6">
-              确定要清除所有数据吗？包括任务、项目、标签、评论和番茄钟记录。
-            </p>
-            <div className="flex items-center justify-end gap-2">
-              <button
-                onClick={() => setShowClearConfirm(false)}
-                className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] rounded-lg transition-colors"
-              >
-                取消
-              </button>
-              <button
-                onClick={clearAllData}
-                className="px-4 py-2 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-              >
-                确认清除
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowClearConfirm(false)}>
+          <div className="bg-[var(--bg-card)] rounded-2xl shadow-2xl border border-[var(--border-color)] w-full max-w-sm mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">\u786e\u8ba4\u6e05\u9664\u6240\u6709\u6570\u636e\uff1f</h3>
+            <p className="text-sm text-[var(--text-tertiary)] mb-6">\u6b64\u64cd\u4f5c\u4e0d\u53ef\u64a4\u9500\uff0c\u6240\u6709\u4efb\u52a1\u3001\u9879\u76ee\u548c\u6807\u7b7e\u5c06\u88ab\u6c38\u4e45\u5220\u9664\u3002</p>
+            <div className="flex items-center gap-2 justify-end">
+              <button onClick={() => setShowClearConfirm(false)} className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] rounded-xl transition-colors">\u53d6\u6d88</button>
+              <button onClick={clearAllData} className="px-4 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors shadow-sm">\u786e\u8ba4\u6e05\u9664</button>
             </div>
           </div>
         </div>
@@ -817,3 +432,4 @@ export default function Admin() {
     </div>
   );
 }
+
