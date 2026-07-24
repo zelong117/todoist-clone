@@ -119,6 +119,149 @@ app.use('/api/docs', require('./routes/docs'));
 // ============================================================
 // 鍋ュ悍妫€鏌ュ拰鐩戞帶绔偣
 // ============================================================
+
+// ============================================================
+// Backend Dashboard Home Page
+// ============================================================
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow - Backend Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+    .header { text-align: center; margin-bottom: 48px; }
+    .logo { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .logo-icon { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #ef4444, #f97316); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; font-weight: bold; }
+    .logo-text { font-size: 28px; font-weight: 700; color: #fff; }
+    .subtitle { color: #94a3b8; font-size: 14px; }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #065f46; color: #6ee7b7; border-radius: 999px; font-size: 13px; font-weight: 500; margin-top: 16px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; transition: all 0.2s; }
+    .card:hover { border-color: #475569; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .card-title { font-size: 16px; font-weight: 600; color: #f1f5f9; }
+    .card-desc { font-size: 13px; color: #94a3b8; line-height: 1.6; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e293b; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-size: 13px; color: #94a3b8; }
+    .stat-value { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+    .api-list { list-style: none; }
+    .api-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; margin-bottom: 6px; background: #0f172a; border-radius: 8px; font-size: 13px; font-family: 'SF Mono', monospace; }
+    .method { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; min-width: 50px; text-align: center; }
+    .method-get { background: #1e3a5f; color: #60a5fa; }
+    .method-post { background: #1a3a2a; color: #4ade80; }
+    .method-put { background: #3a2a1a; color: #fbbf24; }
+    .method-delete { background: #3a1a1a; color: #f87171; }
+    .api-path { color: #cbd5e1; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; text-decoration: none; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, #ef4444, #f97316); color: white; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-secondary { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+    .btn-secondary:hover { background: #334155; }
+    .footer { text-align: center; padding: 32px 0; color: #475569; font-size: 12px; border-top: 1px solid #1e293b; margin-top: 40px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">T</div>
+        <span class="logo-text">TaskFlow</span>
+      </div>
+      <p class="subtitle">Commercial-Grade Task Management SaaS</p>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Backend Online
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background: #1e3a5f;">🚀</div>
+          <span class="card-title">Quick Start</span>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="http://localhost:5174" class="btn btn-primary">Open Frontend →</a>
+          <a href="/api/health" class="btn btn-secondary">Health Check</a>
+        </div>
+      </div>
+
+      <div class="card" id="stats-card">
+        <div class="card-header">
+          <div class="card-icon" style="background: #1a3a2a;">📊</div>
+          <span class="card-title">System Status</span>
+        </div>
+        <div id="stats-content">
+          <div class="stat-row"><span class="stat-label">Loading...</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background: #3a2a1a;">🔌</div>
+          <span class="card-title">WebSocket</span>
+        </div>
+        <div class="stat-row"><span class="stat-label">Endpoint</span><span class="stat-value">ws://localhost:3001/ws</span></div>
+        <div class="stat-row"><span class="stat-label">Protocol</span><span class="stat-value">JWT Auth</span></div>
+        <div class="stat-row"><span class="stat-label">Heartbeat</span><span class="stat-value">30s interval</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background: #1a2a3a;">📡</div>
+        <span class="card-title">API Endpoints</span>
+      </div>
+      <ul class="api-list">
+        <li class="api-item"><span class="method method-post">POST</span><span class="api-path">/api/auth/register</span><span style="color:#64748b;font-size:11px;margin-left:auto;">注册</span></li>
+        <li class="api-item"><span class="method method-post">POST</span><span class="api-path">/api/auth/login</span><span style="color:#64748b;font-size:11px;margin-left:auto;">登录</span></li>
+        <li class="api-item"><span class="method method-post">POST</span><span class="api-path">/api/auth/refresh</span><span style="color:#64748b;font-size:11px;margin-left:auto;">刷新 Token</span></li>
+        <li class="api-item"><span class="method method-get">GET</span><span class="api-path">/api/auth/me</span><span style="color:#64748b;font-size:11px;margin-left:auto;">当前用户</span></li>
+        <li class="api-item"><span class="method method-get">GET</span><span class="api-path">/api/tasks</span><span style="color:#64748b;font-size:11px;margin-left:auto;">任务列表</span></li>
+        <li class="api-item"><span class="method method-post">POST</span><span class="api-path">/api/tasks</span><span style="color:#64748b;font-size:11px;margin-left:auto;">创建任务</span></li>
+        <li class="api-item"><span class="method method-get">GET</span><span class="api-path">/api/projects</span><span style="color:#64748b;font-size:11px;margin-left:auto;">项目列表</span></li>
+        <li class="api-item"><span class="method method-post">POST</span><span class="api-path">/api/projects</span><span style="color:#64748b;font-size:11px;margin-left:auto;">创建项目</span></li>
+        <li class="api-item"><span class="method method-get">GET</span><span class="api-path">/api/labels</span><span style="color:#64748b;font-size:11px;margin-left:auto;">标签列表</span></li>
+        <li class="api-item"><span class="method method-post">POST</span><span class="api-path">/api/ai/analyze</span><span style="color:#64748b;font-size:11px;margin-left:auto;">AI 分析</span></li>
+        <li class="api-item"><span class="method method-get">GET</span><span class="api-path">/api/health</span><span style="color:#64748b;font-size:11px;margin-left:auto;">健康检查</span></li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <p>TaskFlow Backend v1.0 · Express + SQLite + WebSocket</p>
+      <p style="margin-top: 4px;">Powered by Node.js · Built for Production</p>
+    </div>
+  </div>
+
+  <script>
+    fetch('/api/health').then(r => r.json()).then(data => {
+      const el = document.getElementById('stats-content');
+      el.innerHTML = \`
+        <div class="stat-row"><span class="stat-label">Status</span><span class="stat-value" style="color:#34d399">\${data.status}</span></div>
+        <div class="stat-row"><span class="stat-label">Memory (RSS)</span><span class="stat-value">\${Math.round(data.memory.rss / 1024 / 1024)} MB</span></div>
+        <div class="stat-row"><span class="stat-label">Heap Used</span><span class="stat-value">\${Math.round(data.memory.heapUsed / 1024 / 1024)} MB</span></div>
+        <div class="stat-row"><span class="stat-label">Uptime</span><span class="stat-value">\${Math.round(process.uptime || 0)}s</span></div>
+        <div class="stat-row"><span class="stat-label">Online Users</span><span class="stat-value">\${data.ws.onlineUsers}</span></div>
+      \`;
+    }).catch(() => {
+      document.getElementById('stats-content').innerHTML = '<div class="stat-row"><span class="stat-label" style="color:#f87171">Connection failed</span></div>';
+    });
+  </script>
+</body>
+</html>`);
+});
+
+
 app.get('/api/health', (req, res) => {
   const memory = getMemoryUsage();
   res.json({
