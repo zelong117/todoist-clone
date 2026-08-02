@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "TaskFlow",
+  "version": "0.1.0",
+  "identifier": "com.taskflow.desktop",
+  "build": {
+    "beforeDevCommand": "npm --prefix ../../.. run dev",
+    "beforeBuildCommand": "npm --prefix ../../.. run build",
+    "devUrl": "http://127.0.0.1:5173",
+    "frontendDist": "../../../dist"
+  },
+  "app": {
+    "windows": [{ "title": "TaskFlow", "width": 1280, "height": 820, "minWidth": 960, "minHeight": 640 }],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' http://127.0.0.1:* http://localhost:* https: wss:; img-src 'self' asset: data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+    }
+  },
+  "bundle": { "active": true, "targets": "all" }
+}

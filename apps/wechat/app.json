@@ -1,0 +1,14 @@
+{
+  "pages": ["pages/index/index", "pages/projects/projects", "pages/profile/profile", "pages/login/login", "pages/assistant/assistant", "pages/notifications/notifications", "pages/billing/billing"],
+  "window": { "navigationBarTitleText": "TaskFlow", "navigationBarBackgroundColor": "#fffaf2", "navigationBarTextStyle": "black", "backgroundColor": "#fffaf2" },
+  "tabBar": {
+    "color": "#6b746d",
+    "selectedColor": "#e64b2e",
+    "backgroundColor": "#fffaf2",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "Tasks" },
+      { "pagePath": "pages/projects/projects", "text": "Projects" },
+      { "pagePath": "pages/profile/profile", "text": "Account" }
+    ]
+  }
+}

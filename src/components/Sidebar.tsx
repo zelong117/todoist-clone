@@ -21,6 +21,11 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
+  Building2,
+  CloudOff,
+  CreditCard,
+  ShieldCheck,
+  UsersRound,
 } from 'lucide-react';
 import { useStore } from '../store';
 import { setSoundEnabled, getSoundEnabled } from '../utils/sounds';
@@ -33,9 +38,11 @@ interface SidebarProps {
   onViewChange: (view: string, projectId?: string) => void;
   onLogout?: () => void;
   onQuickCapture?: () => void;
+  userName?: string;
+  userEmail?: string;
 }
 
-export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCapture }: SidebarProps) {
+export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCapture, userName = 'TaskFlow', userEmail = '' }: SidebarProps) {
   const [searchQuery, setLocalSearchQuery] = useState('');
   const [showFavorites, setShowFavorites] = useState(true);
   const [showProjects, setShowProjects] = useState(true);
@@ -86,6 +93,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
   );
 
   const collapsed = sidebarCollapsed;
+  const userInitial = userName.trim().charAt(0).toUpperCase() || 'T';
 
   return (
     <>
@@ -107,10 +115,10 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
               className="relative flex items-center gap-2.5 hover:bg-[var(--bg-active)] rounded-xl px-2.5 py-2 transition-all duration-200 group"
             >
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 transition-shadow">
-                W
+                {userInitial}
               </div>
               <div className="flex flex-col items-start">
-                <span className="text-sm font-bold text-[var(--text-primary)] tracking-tight">ww</span>
+                <span className="text-sm font-bold text-[var(--text-primary)] tracking-tight">{userName}</span>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-[10px] text-emerald-500 font-medium">在线</span>
@@ -121,8 +129,8 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
             {showUserMenu && (
                 <div className="absolute left-0 top-full mt-2 w-56 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] z-50">
                   <div className="p-3 border-b border-[var(--border-color)]">
-                    <p className="text-sm font-bold text-[var(--text-primary)]">ww</p>
-                    <p className="text-xs text-[var(--text-tertiary)]">ww@example.com</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">{userName}</p>
+                    <p className="text-xs text-[var(--text-tertiary)]">{userEmail}</p>
                   </div>
                   <button onClick={() => { setShowUserMenu(false); onViewChange('settings'); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
                     <User size={14} />
@@ -139,7 +147,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
             )}
             <div className="flex items-center gap-0.5">
               <button
-                onClick={() => onViewChange('today')}
+                onClick={() => onViewChange('notifications')}
                 className="p-2 rounded-xl hover:bg-[var(--bg-active)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-all duration-200"
                 title="通知"
               >
@@ -160,7 +168,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
       {collapsed && (
         <div className="flex flex-col items-center py-3 gap-2">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-blue-500/25">
-            W
+            {userInitial}
           </div>
         </div>
       )}
@@ -284,6 +292,26 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
             );
           })}
         </div>
+
+        {!collapsed && (
+          <div className="mt-5 space-y-0.5">
+            <p className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)]">工作区</p>
+            {[
+              { id: 'teams', label: '团队工作区', icon: UsersRound },
+              { id: 'billing', label: '套餐与账单', icon: CreditCard },
+              { id: 'account', label: '账户与安全', icon: Building2 },
+              { id: 'offline', label: '离线同步', icon: CloudOff },
+              { id: 'admin', label: '管理后台', icon: ShieldCheck },
+            ].map((view) => {
+              const Icon = view.icon;
+              const isActive = currentView === view.id;
+              return <button key={view.id} onClick={() => onViewChange(view.id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${isActive ? 'bg-[var(--bg-active)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-active)] hover:text-[var(--text-primary)]'}`}>
+                <Icon size={18} className="text-[var(--text-tertiary)]" />
+                <span>{view.label}</span>
+              </button>;
+            })}
+          </div>
+        )}
 
         {/* Favorites Section */}
         {!collapsed && favoriteProjects.length > 0 && (
@@ -513,7 +541,7 @@ export default function Sidebar({ currentView, onViewChange, onLogout, onQuickCa
                 <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[var(--bg-primary)]" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-semibold text-[var(--text-primary)]">ww</span>
+                <span className="text-xs font-semibold text-[var(--text-primary)]">{userName}</span>
                 <span className="text-[10px] text-emerald-500 font-medium">在线</span>
               </div>
             </div>

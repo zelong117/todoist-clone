@@ -1,0 +1,19 @@
+node_modules
+server/node_modules
+dist
+.vite
+.git
+.gitignore
+
+# Secrets and runtime state
+server/.env*
+server/data
+server/logs
+*.log
+
+# Local-only artifacts
+*.db
+*.db-*
+*.tmp
+.playwright-cli
+*-preview.png

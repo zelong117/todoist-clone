@@ -5,15 +5,16 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
-const { queryOne, run } = require('../db');
-const { JWT_SECRET, authenticate } = require('../middleware/auth');
+const { queryOne, run, transaction } = require('../db');
+const { authenticate } = require('../middleware/auth');
+const { createAuthenticatedSession, issueToken, listSessions, revokeAllSessions, revokeOtherSessions, revokeSession } = require('../services/authSessions');
 const validate = require('../middleware/validate');
 const { registerSchema, loginSchema } = require('../validations/authSchemas');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { sendWelcomeEmail, sendPasswordResetEmail } = require('../services/emailService');
 const { generateResetToken, verifyResetToken } = require('../utils/passwordReset');
+const { logActivity } = require('../domain');
 
 /**
  * POST /register
@@ -30,9 +31,11 @@ router.post('/register', validate({ body: registerSchema }), asyncHandler(async 
 
   const id = uuidv4();
   const hash = await bcrypt.hash(password, 12);
-  run('INSERT INTO users (id, email, name, password_hash) VALUES (?, ?, ?, ?)', [id, normalizedEmail, name.trim(), hash]);
+  transaction(() => {
+    run('INSERT INTO users (id, email, name, password_hash) VALUES (?, ?, ?, ?)', [id, normalizedEmail, name.trim(), hash]);
+  });
 
-  const token = jwt.sign({ id, role: 'user' }, JWT_SECRET, { expiresIn: '7d' });
+  const { token } = createAuthenticatedSession({ id, role: 'user' }, req.get('user-agent'));
   res.status(201).json({ token, user: { id, email: normalizedEmail, name: name.trim() } });
 
   // 异步发送欢迎邮件（不阻塞响应）
@@ -54,7 +57,7 @@ router.post('/login', validate({ body: loginSchema }), asyncHandler(async (req, 
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) return res.status(401).json({ error: '邮箱或密码错误' });
 
-  const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+  const { token } = createAuthenticatedSession(user, req.get('user-agent'));
   res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
 }));
 
@@ -109,7 +112,10 @@ router.post('/reset-password', asyncHandler(async (req, res) => {
   if (!user) return res.status(400).json({ error: '用户不存在' });
 
   const hash = await bcrypt.hash(password, 12);
-  run('UPDATE users SET password_hash = ? WHERE id = ?', [hash, user.id]);
+  transaction(() => {
+    run('UPDATE users SET password_hash = ? WHERE id = ?', [hash, user.id]);
+    revokeAllSessions(user.id, 'password_reset');
+  });
 
   res.json({ success: true, message: '密码重置成功' });
 }));
@@ -124,8 +130,34 @@ router.post('/refresh', authenticate, asyncHandler(async (req, res) => {
   const user = queryOne('SELECT id, email, name, role FROM users WHERE id = ?', [req.user.id]);
   if (!user) return res.status(401).json({ error: 'User not found' });
 
-  const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+  const token = issueToken(user, { id: req.user.sid, tokenId: req.user.jti });
   res.json({ token, user });
+}));
+
+router.get('/sessions', authenticate, asyncHandler(async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ sessions: listSessions(req.user.id, req.user.sid) });
+}));
+
+router.delete('/sessions/:sessionId', authenticate, asyncHandler(async (req, res) => {
+  const { sessionId } = req.params;
+  if (sessionId === req.user.sid) return res.status(400).json({ error: 'Use logout to end this device session' });
+  if (!revokeSession(req.user.id, sessionId, 'remote_sign_out')) return res.status(404).json({ error: 'Active session not found' });
+  req.app.locals.wsManager?.disconnectSession(sessionId, 'Session signed out remotely');
+  logActivity(req.user.id, 'session_revoked', 'auth_session', sessionId, 'Signed out another device session');
+  res.json({ success: true });
+}));
+
+router.post('/sessions/revoke-others', authenticate, asyncHandler(async (req, res) => {
+  revokeOtherSessions(req.user.id, req.user.sid, 'revoke_other_sessions');
+  req.app.locals.wsManager?.disconnectOtherUserSessions(req.user.id, req.user.sid, 'Signed out from another device');
+  logActivity(req.user.id, 'sessions_revoked', 'auth_session', req.user.sid, 'Signed out all other device sessions');
+  res.json({ success: true });
+}));
+
+router.post('/logout', authenticate, asyncHandler(async (req, res) => {
+  revokeSession(req.user.id, req.user.sid, 'logout');
+  res.status(204).end();
 }));
 
 module.exports = router;

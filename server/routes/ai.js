@@ -1,33 +1,58 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
-const { queryOne } = require('../db');
+const { getUserPlan } = require('../services/plans');
+const { queryAll } = require('../db');
+const { mapProject, mapTask } = require('../utils');
+const { logActivity } = require('../domain');
+
+const IMAGE_DATA_URL_PATTERN = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/i;
+const MAX_IMAGE_DATA_URL_BYTES = 5 * 1024 * 1024;
+
+function isSupportedImageData(image) {
+  return typeof image === 'string' && image.length <= MAX_IMAGE_DATA_URL_BYTES && IMAGE_DATA_URL_PATTERN.test(image);
+}
+
+// Meter successful AI operations without persisting prompts, task snapshots, or image bytes.
+router.use((req, res, next) => {
+  res.on('finish', () => {
+    if (req.method === 'POST' && req.user?.id && res.locals.aiMetered !== false && res.statusCode >= 200 && res.statusCode < 300) {
+      logActivity(req.user.id, 'ai_usage', 'ai', req.path, `AI ${req.path} completed`);
+    }
+  });
+  next();
+});
 
 // 检查用户套餐是否为商务版
-function isBusinessUser(userId) {
-  if (!userId) return false;
-  const user = queryOne('SELECT plan, plan_expires_at FROM users WHERE id = ?', [userId]);
-  if (!user || user.plan !== 'business') return false;
-  // 检查是否过期
-  if (user.plan_expires_at && new Date(user.plan_expires_at) < new Date()) return false;
-  return true;
+function hasHostedAiAccess(userId) {
+  const user = getUserPlan(userId);
+  return Boolean(user?.entitlement?.hostedAi);
 }
 
 // 获取 AI 配置（服务器端或客户端）
-function getAIConfig(clientApiKey, clientApiUrl, clientModel) {
+const ALLOWED_AI_ENDPOINTS = new Set([
+  'https://openrouter.ai/api/v1/chat/completions',
+  'https://api.openai.com/v1/chat/completions',
+]);
+
+function getAIConfig() {
+  const configuredUrl = process.env.AI_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
+  const apiUrl = ALLOWED_AI_ENDPOINTS.has(configuredUrl)
+    ? configuredUrl
+    : 'https://openrouter.ai/api/v1/chat/completions';
   return {
-    apiKey: clientApiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || '',
-    apiUrl: clientApiUrl || process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions',
-    model: clientModel || process.env.AI_MODEL || 'gpt-4o-mini',
+    apiKey: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || '',
+    apiUrl,
+    model: process.env.AI_MODEL || 'openai/gpt-4o-mini',
   };
 }
 
 // POST /api/ai/extract-image - 从图片提取任务描述（商务版）
 router.post('/extract-image', async (req, res) => {
   try {
-    const { image, clientApiKey, clientApiUrl, clientModel, userId } = req.body;
+    const { image } = req.body;
 
-    if (!image || typeof image !== 'string') {
+    if (!image || !isSupportedImageData(image)) {
       return res.status(400).json({ error: '需要提供图片数据' });
     }
 
@@ -35,10 +60,11 @@ router.post('/extract-image', async (req, res) => {
       return res.status(413).json({ error: '图片太大，请小于 5MB' });
     }
 
-    const config = getAIConfig(clientApiKey, clientApiUrl, clientModel);
-    const canUseAI = config.apiKey && isBusinessUser(userId);
+    const config = getAIConfig();
+    const canUseAI = config.apiKey && hasHostedAiAccess(req.user.id);
 
     if (!canUseAI) {
+      res.locals.aiMetered = false;
       return res.json({
         result: '## ⚠️ 图片识别需要商务版\n\n免费版不支持 AI 图片识别功能。\n\n请在管理后台升级到商务版后使用。',
         mode: 'blocked'
@@ -90,17 +116,18 @@ router.post('/extract-image', async (req, res) => {
 // POST /api/ai/optimize-text - 文字优化
 router.post('/optimize-text', async (req, res) => {
   try {
-    const { text, tasks, projects, clientApiKey, clientApiUrl, clientModel, userId } = req.body;
+    const { text } = req.body;
 
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ error: '需要提供文字内容' });
     }
 
-    const config = getAIConfig(clientApiKey, clientApiUrl, clientModel);
-    const canUseAI = config.apiKey && isBusinessUser(userId);
+    const config = getAIConfig();
+    const canUseAI = config.apiKey && hasHostedAiAccess(req.user.id);
 
     if (canUseAI) {
       // 商务版：用 AI API 智能优化
+      let aiResult = null;
       const prompt = `你是一个文字优化助手。请把下面这段杂乱的描述整理成清晰明了的话语，保持原意不变，语言简洁专业。
 
 原始描述：
@@ -190,11 +217,11 @@ function optimizeTextLocal(text) {
 // POST /api/ai/organize - AI 整理目标和任务
 router.post('/organize', async (req, res) => {
   try {
-    const { tasks, projects, sections, clientApiKey, clientApiUrl, clientModel, userId } = req.body;
-
-    if (!tasks || !Array.isArray(tasks)) {
-      return res.status(400).json({ error: '需要提供任务数据' });
-    }
+    // Context is service-owned. Client snapshots must never decide what data the AI sees.
+    const tasks = queryAll('SELECT * FROM tasks WHERE user_id = ? ORDER BY sort_order, created_at DESC', [req.user.id]).map(mapTask);
+    const projects = queryAll('SELECT * FROM projects WHERE user_id = ? ORDER BY sort_order, created_at DESC', [req.user.id]).map(mapProject);
+    const sections = queryAll('SELECT id, project_id, name FROM sections WHERE user_id = ? ORDER BY sort_order', [req.user.id])
+      .map((section) => ({ id: section.id, projectId: section.project_id, name: section.name }));
 
     // 构建 prompt
     const taskList = tasks.map(t => {
@@ -229,8 +256,8 @@ ${taskList || '暂无任务'}
 请用 Markdown 格式输出，语言简洁明了。`;
 
     // 检查是否可以用 AI
-    const config = getAIConfig(clientApiKey, clientApiUrl, clientModel);
-    const canUseAI = config.apiKey && isBusinessUser(userId);
+    const config = getAIConfig();
+    const canUseAI = config.apiKey && hasHostedAiAccess(req.user.id);
 
     if (canUseAI) {
       // 商务版：AI 智能分析
@@ -275,12 +302,16 @@ router.post('/extract-tasks', authenticate, async (req, res) => {
     const { text, image } = req.body;
     const userId = req.user.id;
 
+    if (image && !isSupportedImageData(image)) {
+      return res.status(400).json({ error: 'Only PNG, JPEG, or WebP image data is supported' });
+    }
+
     if (!text && !image) {
       return res.status(400).json({ error: '需要提供文字或图片' });
     }
 
-    const config = getAIConfig('', '', '');
-    const canUseAI = config.apiKey && isBusinessUser(userId);
+    const config = getAIConfig();
+    const canUseAI = config.apiKey && hasHostedAiAccess(userId);
 
     if (canUseAI) {
       // 商务版：AI 智能提取
@@ -414,53 +445,31 @@ function extractTasksLocal(text) {
   return tasks;
 }
 
-// POST /api/ai/upgrade - 升级套餐（演示用，生产环境接支付回调）
-router.post('/upgrade', authenticate, async (req, res) => {
-  try {
-    const { plan } = req.body;
-    const { run } = require('../db');
-
-    if (!['free', 'business'].includes(plan)) {
-      return res.status(400).json({ error: '无效套餐' });
-    }
-
-    const expiresAt = plan === 'business'
-      ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()  // 1 年
-      : null;
-
-    run('UPDATE users SET plan = ?, plan_expires_at = ? WHERE id = ?', [plan, expiresAt, req.user.id]);
-
-    res.json({ success: true, plan, expiresAt });
-  } catch (error) {
-    console.error('Upgrade error:', error);
-    res.status(500).json({ error: '升级失败' });
-  }
-});
-
 // GET /api/ai/plan - 查看当前套餐
 router.get('/plan', authenticate, async (req, res) => {
   try {
-    const user = queryOne('SELECT plan, plan_expires_at FROM users WHERE id = ?', [req.user.id]);
-    const isBusiness = user?.plan === 'business' && (!user.plan_expires_at || new Date(user.plan_expires_at) > new Date());
+    const user = getUserPlan(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({
-      plan: user?.plan || 'free',
-      planExpiresAt: user?.plan_expires_at,
-      isBusiness,
+      plan: user.plan,
+      planExpiresAt: user.plan_expires_at,
+      isBusiness: user.plan === 'business',
+      entitlement: user.entitlement,
     });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: '查询失败' });
   }
 });
 
 // 本地规则引擎 - 不需要 API Key 也能用
-function generateLocalAnalysis(tasks, projects, sections) {
+function generateLocalAnalysis(tasks, projects) {
   const pendingTasks = tasks.filter(t => !t.isCompleted);
   const completedTasks = tasks.filter(t => t.isCompleted);
   const overdueTasks = pendingTasks.filter(t => {
     if (!t.dueDate) return false;
     return new Date(t.dueDate) < new Date();
   });
-  const highPriority = pendingTasks.filter(t => t.priority === 'urgent' || t.priority === 'high');
+  const highPriority = pendingTasks.filter((task) => task.priority <= 2);
   const todayTasks = pendingTasks.filter(t => {
     if (!t.dueDate) return false;
     const due = new Date(t.dueDate);
@@ -495,7 +504,7 @@ function generateLocalAnalysis(tasks, projects, sections) {
   projectNames.forEach(name => {
     result += `### ${name}\n`;
     byProject[name].forEach(t => {
-      const priority = t.priority === 'urgent' ? '🔴' : t.priority === 'high' ? '🟠' : t.priority === 'medium' ? '🟡' : '🔵';
+      const priority = t.priority === 1 ? '🔴' : t.priority === 2 ? '🟠' : t.priority === 3 ? '🟡' : '🔵';
       const due = t.dueDate ? `截止: ${t.dueDate}` : '无截止日期';
       result += `- ${priority} ${t.title} (${due})\n`;
     });

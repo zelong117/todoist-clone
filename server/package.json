@@ -6,7 +6,22 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "test": "node test/api.test.js"
+    "test": "node test/api.test.js",
+    "test:plans": "node test/plans.test.js",
+    "test:recurrence": "node test/recurrence.test.js",
+    "test:recurrence-api": "node test/recurrence-api.test.js",
+    "test:payment-webhook": "node test/payment-webhook.test.js",
+    "test:teams-api": "node test/teams-api.test.js",
+    "test:admin-api": "node test/admin-api.test.js",
+    "test:account-api": "node test/account-api.test.js",
+    "test:attachments-api": "node test/attachments-api.test.js",
+    "test:db-persistence": "node test/db-persistence.test.js",
+    "test:task-version-conflict": "node test/task-version-conflict.test.js",
+    "test:ai-security": "node test/ai-security.test.js",
+    "test:shares-api": "node test/shares-api.test.js",
+    "test:notification-state": "node test/notification-state.test.js",
+    "test:auth-sessions": "node test/auth-sessions.test.js",
+    "test:websocket-security": "node test/websocket-security.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
   res.json({
     openapi: '3.0.0',
     info: {
-      title: 'Todoist Clone API',
+      title: 'TaskFlow API',
       version: '2.0.0',
       description: '商用版 Todoist 克隆后端 API 文档',
     },
@@ -38,6 +38,24 @@ router.get('/', (req, res) => {
       },
       '/api/auth/wechat': {
         get: { summary: '微信登录', tags: ['OAuth'] },
+      },
+      '/api/auth/wechat/mini-login': {
+        post: { summary: 'WeChat Mini Program code exchange (requires server AppID/AppSecret)', tags: ['OAuth'] },
+      },
+      '/api/auth/sessions': {
+        get: { summary: 'List active, revocable device sessions', tags: ['Authentication'] },
+      },
+      '/api/auth/sessions/{sessionId}': {
+        delete: { summary: 'Revoke another device session', tags: ['Authentication'] },
+      },
+      '/api/auth/sessions/revoke-others': {
+        post: { summary: 'Revoke all other device sessions', tags: ['Authentication'] },
+      },
+      '/api/auth/logout': {
+        post: { summary: 'Revoke the current device session', tags: ['Authentication'] },
+      },
+      '/api/version': {
+        get: { summary: 'Read API version and stable API/WebSocket paths', tags: ['System'] },
       },
       '/api/tasks': {
         get: { summary: '获取任务列表', tags: ['任务'] },

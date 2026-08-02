@@ -3,8 +3,8 @@ import { persist } from 'zustand/middleware';
 import { isToday, parseISO, isBefore, startOfDay, addDays } from 'date-fns';
 import type { Task, Project, Section, Label, Comment, ViewMode, ActiveView, TimerMode, TimerStatus, PomodoroSettings, PomodoroSession } from './types';
 import { generateId } from './utils';
-import { parseRecurrenceRule, getNextDueDate } from './lib/recurrence';
 import { tasksAPI, projectsAPI, labelsAPI, sectionsAPI } from './api';
+import { isOfflineQueued } from './lib/offlineQueue';
 
 interface AppState {
   // Data
@@ -138,7 +138,9 @@ export const useStore = create<AppState>()(
 
       // ===== Task actions =====
       addTask: async (taskData) => {
+        const clientId = generateId();
         const apiTask = await tasksAPI.create({
+          id: clientId,
           title: taskData.title,
           description: taskData.description,
           projectId: taskData.projectId,
@@ -149,12 +151,37 @@ export const useStore = create<AppState>()(
           labels: taskData.labels,
           plannedPomodoros: taskData.plannedPomodoros,
         });
-        const task: Task = {
+        const task: Task = isOfflineQueued(apiTask) ? {
+          id: clientId,
+          title: taskData.title,
+          description: taskData.description || '',
+          projectId: taskData.projectId || null,
+          sectionId: taskData.sectionId || null,
+          parentId: taskData.parentId || null,
+          priority: taskData.priority,
+          dueDate: taskData.dueDate || null,
+          labels: taskData.labels || [],
+          plannedPomodoros: taskData.plannedPomodoros || 1,
+          completedPomodoros: 0,
+          pomodoroCount: 0,
+          estimatedMinutes: (taskData.plannedPomodoros || 1) * 25,
+          order: 0,
+          isRecurring: taskData.isRecurring || false,
+          recurrenceRule: taskData.recurrenceRule || null,
+          reminderAt: taskData.reminderAt || null,
+          location: taskData.location || null,
+          isCompleted: false,
+          completedAt: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } : {
           ...apiTask,
           description: apiTask.description || '',
           order: apiTask.order ?? apiTask.sortOrder ?? 0,
           isRecurring: apiTask.isRecurring ?? false,
           recurrenceRule: apiTask.recurrenceRule ?? null,
+          reminderAt: apiTask.reminderAt ?? null,
+          location: apiTask.location ?? null,
           pomodoroCount: apiTask.pomodoroCount ?? 0,
           estimatedMinutes: apiTask.estimatedMinutes ?? (apiTask.plannedPomodoros ?? 1) * 25,
         };
@@ -162,18 +189,22 @@ export const useStore = create<AppState>()(
       },
 
       updateTask: async (id, updates) => {
-        await tasksAPI.update(id, updates);
+        const currentTask = get().tasks.find((task) => task.id === id);
+        const updated = await tasksAPI.update(id, updates, currentTask?.updatedAt);
         set((state) => ({
           tasks: state.tasks.map((t) =>
             t.id === id
-              ? { ...t, ...updates, updatedAt: new Date().toISOString() }
+              ? isOfflineQueued(updated)
+                ? { ...t, ...updates }
+                : { ...t, ...updated, order: updated.order ?? updated.sortOrder ?? t.order }
               : t
           ),
         }));
       },
 
       deleteTask: async (id) => {
-        await tasksAPI.delete(id);
+        const currentTask = get().tasks.find((task) => task.id === id);
+        await tasksAPI.delete(id, currentTask?.updatedAt);
         set((state) => ({
           tasks: state.tasks.filter((t) => t.id !== id && t.parentId !== id),
           comments: state.comments.filter((c) => c.taskId !== id),
@@ -185,49 +216,16 @@ export const useStore = create<AppState>()(
         const task = get().tasks.find((t) => t.id === id);
         if (!task) return;
 
-        await tasksAPI.complete(id);
-
-        // 如果是循环任务且正在被完成（不是取消完成），生成下一个周期任务
-        let nextRecurrenceTask = null;
-        if (!task.isCompleted && task.isRecurring && task.recurrenceRule) {
-          try {
-            const rule = parseRecurrenceRule(task.recurrenceRule);
-            if (rule) {
-              const completedDate = new Date();
-              const nextDue = getNextDueDate(rule, completedDate, task.dueDate ? new Date(task.dueDate) : null);
-              if (nextDue) {
-                nextRecurrenceTask = {
-                  ...task,
-                  id: crypto.randomUUID(),
-                  title: task.title,
-                  isCompleted: false,
-                  completedAt: null,
-                  dueDate: nextDue.toISOString().split('T')[0],
-                  pomodoroCount: 0,
-                  completedPomodoros: 0,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-              }
-            }
-          } catch (e) {
-            console.error('Failed to generate next recurrence:', e);
-          }
+        const completed = await tasksAPI.complete(id, task.updatedAt);
+        if (isOfflineQueued(completed)) {
+          set((state) => ({ tasks: state.tasks.map((item) => item.id === id ? { ...item, isCompleted: !item.isCompleted, completedAt: !item.isCompleted ? new Date().toISOString() : null } : item) }));
+          return;
         }
 
         set((state) => ({
           tasks: [
-            ...state.tasks.map((t) =>
-              t.id === id
-                ? {
-                    ...t,
-                    isCompleted: !t.isCompleted,
-                    completedAt: !t.isCompleted ? new Date().toISOString() : null,
-                    updatedAt: new Date().toISOString(),
-                  }
-                : t
-            ),
-            ...(nextRecurrenceTask ? [nextRecurrenceTask] : []),
+            ...state.tasks.map((t) => t.id === id ? { ...t, ...completed } : t),
+            ...(completed.nextTask ? [{ ...completed.nextTask, order: completed.nextTask.order ?? completed.nextTask.sortOrder ?? 0 }] : []),
           ],
         }));
       },

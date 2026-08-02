@@ -52,7 +52,7 @@ router.post('/tasks/:taskId/comments', authenticate, validate({ params: taskIdPa
   // 🔔 WebSocket: 广播评论创建通知
   const { notificationService, messageQueue, wsManager } = getWsServices(req);
   if (notificationService) {
-    notificationService.broadcast('comment:create', {
+    notificationService.notify(req.user.id, 'comment:create', {
       comment,
       taskTitle: task.title,
       userId: req.user.id,
@@ -74,7 +74,7 @@ router.delete('/comments/:id', authenticate, validate({ params: commentIdParamSc
   // 🔔 WebSocket: 广播评论删除通知
   const { notificationService, messageQueue, wsManager } = getWsServices(req);
   if (notificationService) {
-    notificationService.broadcast('comment:delete', {
+    notificationService.notify(req.user.id, 'comment:delete', {
       commentId: req.params.id,
       taskId: c.task_id,
       userId: req.user.id,

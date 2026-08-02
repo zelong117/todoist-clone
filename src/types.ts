@@ -8,6 +8,8 @@
   priority: 1 | 2 | 3 | 4;
   labels: string[];
   dueDate: string | null;
+  reminderAt?: string | null;
+  location?: string | null;
   isRecurring: boolean;
   recurrenceRule: string | null;
   isCompleted: boolean;
@@ -70,7 +72,7 @@ export interface ActivityLog {
 
 export interface NotificationItem {
   id: string;
-  type: 'overdue' | 'due_today' | 'high_priority' | 'inbox_triage';
+  type: 'overdue' | 'due_today' | 'high_priority' | 'inbox_triage' | 'reminder_due';
   severity: 'info' | 'warning' | 'critical';
   taskId: string;
   title: string;

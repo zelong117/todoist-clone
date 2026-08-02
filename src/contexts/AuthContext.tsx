@@ -1,5 +1,6 @@
 import { useState, createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useStore } from '../store';
+import { authAPI } from '../api';
 
 interface User {
   id: string;
@@ -76,7 +77,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const checkAuth = async () => {
       if (!token) {
-        setLoading(false);
+        const oauthCode = window.location.pathname === '/oauth/callback'
+          ? new URLSearchParams(window.location.search).get('code')
+          : null;
+        if (!oauthCode) {
+          setLoading(false);
+          return;
+        }
+        try {
+          const response = await fetch(`${API_URL}/auth/oauth/exchange`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: oauthCode }),
+          });
+          if (!response.ok) throw new Error('OAuth sign-in failed');
+          const data = await response.json();
+          activateWorkspace(data.user.id);
+          localStorage.setItem('todoist_token', data.token);
+          window.history.replaceState({}, '', '/app/inbox');
+          setUser(data.user);
+          setToken(data.token);
+          startRefreshTimer(data.token);
+        } catch (error) {
+          console.error('OAuth exchange failed:', error);
+          window.history.replaceState({}, '', '/login');
+        } finally {
+          setLoading(false);
+        }
         return;
       }
 
@@ -195,6 +222,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    if (token) void authAPI.logout().catch(() => undefined);
     localStorage.removeItem('todoist_token');
     const ownerId = localStorage.getItem(OWNER_KEY);
     const currentData = localStorage.getItem(STORAGE_KEY);

@@ -33,6 +33,8 @@ function mapTask(row) {
     completedAt: row.completed_at,
     priority: row.priority,
     dueDate: row.due_date,
+    reminderAt: row.reminder_at || null,
+    location: row.location || null,
     labels: parseJsonArray(row.labels),
     plannedPomodoros: row.planned_pomodoros || 0,
     completedPomodoros: row.completed_pomodoros || 0,

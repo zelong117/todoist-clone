@@ -1,0 +1,1 @@
+<view class="page"><text class="title">TaskFlow</text><input placeholder="Email" bindinput="emailInput"/><input password placeholder="Password" bindinput="passwordInput"/><button bindtap="signIn">Sign in</button><button class="secondary" bindtap="wechatSignIn">Continue with WeChat</button><text wx:if="{{error}}" class="error">{{error}}</text></view>

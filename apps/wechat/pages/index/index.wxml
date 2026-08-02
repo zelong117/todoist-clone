@@ -1,0 +1,8 @@
+<view class="page">
+  <view class="header"><view><text class="eyebrow">TASKFLOW</text><text class="title">{{view === 'today' ? '今天' : '收件箱'}}</text></view><button size="mini" bindtap="refresh">刷新</button></view>
+  <view class="tabs"><button data-view="today" bindtap="setView" class="{{view === 'today' ? 'selected' : ''}}">今天</button><button data-view="inbox" bindtap="setView" class="{{view === 'inbox' ? 'selected' : ''}}">收件箱</button></view>
+  <view class="quick-add"><input value="{{title}}" placeholder="添加一项任务" bindinput="titleInput" confirm-type="done" bindconfirm="createTask"/><button loading="{{creating}}" disabled="{{!title || creating}}" bindtap="createTask">添加</button></view>
+  <view wx:if="{{loading}}" class="empty">正在同步…</view>
+  <view wx:elif="{{tasks.length === 0}}" class="empty">{{view === 'today' ? '今天没有待办，给自己留一点空间。' : '收件箱为空，先记录下一件事。'}}</view>
+  <view wx:for="{{tasks}}" wx:key="id" class="task"><button class="complete" data-id="{{item.id}}" bindtap="completeTask" aria-label="完成任务"></button><view><text>{{item.title}}</text><text class="due">{{item.dueDate || '收件箱'}}</text></view></view>
+</view>

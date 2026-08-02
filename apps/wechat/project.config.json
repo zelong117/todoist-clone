@@ -1,0 +1,6 @@
+{
+  "miniprogramRoot": "./",
+  "projectname": "taskflow-wechat",
+  "description": "TaskFlow mini program",
+  "setting": { "urlCheck": true, "es6": true, "minified": true }
+}

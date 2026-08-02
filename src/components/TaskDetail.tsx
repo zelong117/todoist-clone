@@ -100,6 +100,10 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [showRecurrencePicker, setShowRecurrencePicker] = useState(false);
+  const [editingReminder, setEditingReminder] = useState(false);
+  const [editingLocation, setEditingLocation] = useState(false);
+  const [reminderAt, setReminderAt] = useState('');
+  const [location, setLocation] = useState('');
   const panelRef = useRef<HTMLDivElement>(null);
   const tagDropdownRef = useRef<HTMLDivElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -111,6 +115,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       setTitle(task.title);
       setDescription(task.description || '');
       setShowDescription(!!task.description);
+      setReminderAt(task.reminderAt ? task.reminderAt.slice(0, 16) : '');
+      setLocation(task.location || '');
     }
   }, [task]);
 
@@ -179,6 +185,34 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       }
     }
   }, [task, description, updateTask]);
+
+  const saveReminder = useCallback(async () => {
+    if (!task) return;
+    const nextReminderAt = reminderAt ? new Date(reminderAt).toISOString() : null;
+    if (nextReminderAt !== task.reminderAt) {
+      try {
+        await updateTask(task.id, { reminderAt: nextReminderAt });
+      } catch (error) {
+        showTaskOperationError(error);
+        return;
+      }
+    }
+    setEditingReminder(false);
+  }, [task, reminderAt, updateTask]);
+
+  const saveLocation = useCallback(async () => {
+    if (!task) return;
+    const nextLocation = location.trim() || null;
+    if (nextLocation !== task.location) {
+      try {
+        await updateTask(task.id, { location: nextLocation });
+      } catch (error) {
+        showTaskOperationError(error);
+        return;
+      }
+    }
+    setEditingLocation(false);
+  }, [task, location, updateTask]);
 
   const handleAddSubtask = useCallback(async () => {
     if (!task || !newSubtask.trim()) return;
@@ -928,38 +962,30 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 </div>
               </div>
 
-              {/* Reminders */}
-              <div className="flex items-center justify-between group">
+              {/* Reminder and location persist through the authenticated task API. */}
+              <div className="flex items-center justify-between gap-3 group">
                 <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">提醒</span>
-                <button
-                  onClick={() => {
-                    const reminder = prompt('输入提醒时间 (YYYY-MM-DD HH:MM)：');
-                    if (reminder) {
-                      alert(`提醒已设置: ${reminder}`);
-                    }
-                  }}
-                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors font-medium"
-                >
-                  <Bell size={14} />
-                  <span>+ 添加提醒</span>
-                </button>
+                {editingReminder ? (
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <input aria-label="提醒时间" type="datetime-local" value={reminderAt} onChange={(event) => setReminderAt(event.target.value)} className="min-w-0 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-2 py-1 text-xs text-[var(--text-primary)]" />
+                    <button type="button" onClick={saveReminder} className="rounded-lg bg-[var(--accent)] px-2 py-1 text-xs font-bold text-white">保存</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => setEditingReminder(true)} className="flex min-w-0 items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors font-medium">
+                    <Bell size={14} /><span className="truncate">{task.reminderAt ? new Date(task.reminderAt).toLocaleString() : '+ 添加提醒'}</span>
+                  </button>
+                )}
               </div>
 
-              {/* Location */}
-              <div className="flex items-center justify-between group">
+              <div className="flex items-center justify-between gap-3 group">
                 <span className="text-[11px] font-bold text-[var(--text-tertiary)] w-16 uppercase tracking-wider">地点</span>
-                <button
-                  onClick={() => {
-                    const location = prompt('输入地点：');
-                    if (location) {
-                      alert(`地点已设置: ${location}`);
-                    }
-                  }}
-                  className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors font-medium"
-                >
-                  <MapPin size={14} />
-                  <span>设置地点</span>
-                </button>
+                {editingLocation ? (
+                  <input aria-label="任务地点" autoFocus maxLength={300} value={location} onChange={(event) => setLocation(event.target.value)} onBlur={saveLocation} onKeyDown={(event) => { if (event.key === 'Enter') void saveLocation(); }} className="min-w-0 flex-1 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-2 py-1 text-sm text-[var(--text-primary)]" />
+                ) : (
+                  <button type="button" onClick={() => setEditingLocation(true)} className="flex min-w-0 items-center gap-1.5 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors font-medium">
+                    <MapPin size={14} /><span className="truncate">{task.location || '设置地点'}</span>
+                  </button>
+                )}
               </div>
 
               {/* Meta info */}

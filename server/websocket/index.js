@@ -1,26 +1,14 @@
-/**
- * WebSocket 服务器管理器
- *
- * 功能:
- *   - 基于 ws 库的 WebSocket 服务器
- *   - JWT 认证中间件
- *   - 心跳检测（30秒间隔）
- *   - 用户连接管理（同一用户多设备支持）
- *   - 在线状态追踪
- */
 const { WebSocketServer } = require('ws');
-const url = require('url');
-const { JWT_SECRET } = require('../middleware/auth');
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../middleware/auth');
+const { queryOne } = require('../db');
+const { findActiveSession } = require('../services/authSessions');
 
-// 心跳间隔 30 秒
 const HEARTBEAT_INTERVAL = 30 * 1000;
-// 心跳超时 10 秒（客户端必须在此时间内响应 pong）
-const HEARTBEAT_TIMEOUT = 10 * 1000;
+const AUTH_TIMEOUT = 5 * 1000;
 
 class WebSocketManager {
   constructor() {
-    // userId -> Set<{ ws, lastPong, connectedAt }>
     this.clients = new Map();
     this.wss = null;
     this.heartbeatTimer = null;
@@ -28,303 +16,166 @@ class WebSocketManager {
     this.messageQueue = null;
   }
 
-  /**
-   * 初始化 WebSocket 服务器，挂载到 HTTP 服务器
-   */
   init(httpServer, notificationService, messageQueue) {
     this.notificationService = notificationService;
     this.messageQueue = messageQueue;
-
-    this.wss = new WebSocketServer({
-      server: httpServer,
-      path: '/ws',
-      // 验证连接: 从 query string 或第一个消息中获取 token
-      verifyClient: (info, callback) => {
-        try {
-          const parsed = url.parse(info.req.url, true);
-          const token = parsed.query.token;
-          if (!token) {
-            callback(false, 401, 'Missing token');
-            return;
-          }
-          const decoded = jwt.verify(token, JWT_SECRET);
-          info.req.user = decoded;
-          callback(true);
-        } catch (err) {
-          console.log('[WS] Auth failed:', err.message);
-          callback(false, 401, 'Invalid token');
-        }
-      },
-    });
-
-    this.wss.on('connection', (ws, req) => this._onConnection(ws, req));
-    this.wss.on('error', (err) => console.error('[WS] Server error:', err.message));
-
-    // 启动心跳检测
+    this.wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+    this.wss.on('connection', (ws) => this._onConnection(ws));
+    this.wss.on('error', (error) => console.error('[WS] Server error:', error.message));
     this._startHeartbeat();
-
-    // 定期清理消息队列 (每小时)
-    setInterval(() => {
-      if (this.messageQueue) this.messageQueue.cleanup();
-    }, 60 * 60 * 1000);
-
+    setInterval(() => this.messageQueue?.cleanup(), 60 * 60 * 1000).unref?.();
     console.log('[WS] WebSocket server initialized on path /ws');
     return this;
   }
 
-  /**
-   * 处理新连接
-   */
-  _onConnection(ws, req) {
-    const user = req.user;
-    const userId = user.id;
+  _onConnection(ws) {
+    let clientInfo = null;
+    let userId = null;
+    const timeout = setTimeout(() => {
+      if (!clientInfo) ws.close(4001, 'Authentication timeout');
+    }, AUTH_TIMEOUT);
 
-    // 记录连接
-    if (!this.clients.has(userId)) {
-      this.clients.set(userId, new Set());
-    }
-    const clientInfo = { ws, lastPong: Date.now(), connectedAt: Date.now() };
-    this.clients.get(userId).add(clientInfo);
-
-    console.log(`[WS] User connected: ${userId} (devices: ${this.clients.get(userId).size})`);
-
-    // 发送欢迎消息 + 在线用户信息
-    this._send(ws, {
-      type: 'connected',
-      userId,
-      serverTime: Date.now(),
-      message: 'WebSocket connection established',
-    });
-
-    // 注册默认频道订阅
-    if (this.notificationService) {
-      this.notificationService.subscribeDefaults(userId, this);
-    }
-
-    // 推送离线缓存消息
-    if (this.messageQueue && this.messageQueue.hasMessages(userId)) {
-      const pending = this.messageQueue.flush(userId);
-      this._send(ws, {
-        type: 'offline_messages',
-        messages: pending,
-        count: pending.length,
-      });
-    }
-
-    // 处理客户端消息
     ws.on('message', (data) => {
       try {
-        const msg = JSON.parse(data.toString());
-        this._onMessage(userId, msg);
-      } catch (e) {
-        this._send(ws, { type: 'error', message: 'Invalid JSON' });
+        const message = JSON.parse(data.toString());
+        if (!clientInfo) {
+          if (message.type !== 'authenticate' || typeof message.token !== 'string') return ws.close(4001, 'Authentication required');
+          const user = jwt.verify(message.token, JWT_SECRET);
+          const account = queryOne('SELECT id, is_frozen FROM users WHERE id = ?', [user.id]);
+          if (!account || account.is_frozen || !findActiveSession(user.id, user.sid, user.jti)) return ws.close(4001, 'Session has expired or was revoked');
+          clearTimeout(timeout);
+          userId = user.id;
+          clientInfo = this._registerClient(ws, user);
+          return;
+        }
+        this._onMessage(userId, message);
+      } catch {
+        if (!clientInfo) ws.close(4001, 'Invalid authentication token');
+        else this._send(ws, { type: 'error', message: 'Invalid JSON' });
       }
     });
 
-    // 处理 pong 响应（心跳）
-    ws.on('pong', () => {
-      clientInfo.lastPong = Date.now();
-    });
-
-    // 连接关闭
     ws.on('close', () => {
-      this._removeClient(userId, clientInfo);
+      clearTimeout(timeout);
+      if (clientInfo) this._removeClient(userId, clientInfo);
     });
-
-    ws.on('error', (err) => {
-      console.error(`[WS] Client error for ${userId}:`, err.message);
-      this._removeClient(userId, clientInfo);
+    ws.on('error', (error) => {
+      console.error(`[WS] Client error${userId ? ` for ${userId}` : ''}:`, error.message);
+      if (clientInfo) this._removeClient(userId, clientInfo);
     });
   }
 
-  /**
-   * 处理客户端消息
-   */
-  _onMessage(userId, msg) {
-    switch (msg.type) {
+  _registerClient(ws, user) {
+    if (!this.clients.has(user.id)) this.clients.set(user.id, new Set());
+    const clientInfo = { ws, sessionId: user.sid, lastPong: Date.now(), connectedAt: Date.now() };
+    this.clients.get(user.id).add(clientInfo);
+    ws.on('pong', () => { clientInfo.lastPong = Date.now(); });
+    this._send(ws, { type: 'connected', userId: user.id, serverTime: Date.now() });
+    this.notificationService?.subscribeDefaults(user.id, this);
+    if (this.messageQueue?.hasMessages(user.id)) {
+      const messages = this.messageQueue.flush(user.id);
+      this._send(ws, { type: 'offline_messages', messages, count: messages.length });
+    }
+    return clientInfo;
+  }
+
+  _onMessage(userId, message) {
+    switch (message.type) {
       case 'ping':
         this.sendToUser(userId, { type: 'pong', timestamp: Date.now() });
         break;
-
       case 'subscribe':
-        if (msg.channel && this.notificationService) {
-          this.notificationService.subscribe(msg.channel, userId, this);
-        }
+        if (typeof message.channel === 'string') this.notificationService?.subscribe(message.channel, userId, this);
         break;
-
       case 'unsubscribe':
-        if (msg.channel && this.notificationService) {
-          this.notificationService.unsubscribe(msg.channel, userId);
-        }
+        if (typeof message.channel === 'string') this.notificationService?.unsubscribe(message.channel, userId);
         break;
-
       case 'get_channels':
-        this.sendToUser(userId, {
-          type: 'channels',
-          channels: this.notificationService
-            ? this.notificationService.getChannels()
-            : [],
-        });
+        this.sendToUser(userId, { type: 'channels', channels: this.notificationService?.getChannels() || [] });
         break;
-
-      case 'get_online_users':
-        this.sendToUser(userId, {
-          type: 'online_users',
-          users: this.getOnlineUserIds(),
-          count: this.clients.size,
-        });
-        break;
-
       default:
-        this.sendToUser(userId, {
-          type: 'error',
-          message: `Unknown message type: ${msg.type}`,
-        });
+        this.sendToUser(userId, { type: 'error', message: 'Unknown message type' });
     }
   }
 
-  /**
-   * 发送消息给指定用户（支持多设备）
-   * @returns {boolean} 是否至少有一个设备在线
-   */
   sendToUser(userId, message) {
     const connections = this.clients.get(userId);
-    if (!connections || connections.size === 0) return false;
-
+    if (!connections?.size) return false;
     const payload = JSON.stringify(message);
     let sent = false;
-
     for (const client of connections) {
       if (client.ws.readyState === 1) {
-        // WebSocket.OPEN
         client.ws.send(payload);
         sent = true;
       }
     }
-
     return sent;
   }
 
-  /**
-   * 广播消息给所有在线用户
-   */
-  broadcast(message) {
-    const payload = JSON.stringify(message);
-    for (const [, connections] of this.clients.entries()) {
+  disconnectSession(sessionId, reason = 'Session revoked') {
+    for (const [userId, connections] of this.clients.entries()) {
       for (const client of connections) {
-        if (client.ws.readyState === 1) {
-          client.ws.send(payload);
+        if (client.sessionId === sessionId) {
+          client.ws.close(4001, reason);
+          this._removeClient(userId, client);
         }
       }
     }
   }
 
-  /**
-   * 获取在线用户ID列表
-   */
-  getOnlineUserIds() {
-    return Array.from(this.clients.keys());
+  disconnectOtherUserSessions(userId, currentSessionId, reason = 'Sessions revoked') {
+    const connections = this.clients.get(userId);
+    if (!connections) return;
+    for (const client of connections) {
+      if (client.sessionId !== currentSessionId) {
+        client.ws.close(4001, reason);
+        this._removeClient(userId, client);
+      }
+    }
   }
 
-  /**
-   * 检查用户是否在线
-   */
-  isOnline(userId) {
-    return this.clients.has(userId) && this.clients.get(userId).size > 0;
-  }
+  isOnline(userId) { return Boolean(this.clients.get(userId)?.size); }
+  getOnlineCount() { return this.clients.size; }
+  getOnlineUserIds() { return [...this.clients.keys()]; }
 
-  /**
-   * 获取在线用户数
-   */
-  getOnlineCount() {
-    return this.clients.size;
-  }
-
-  /**
-   * 移除客户端连接
-   */
   _removeClient(userId, clientInfo) {
     const connections = this.clients.get(userId);
     if (!connections) return;
-
     connections.delete(clientInfo);
-
-    if (connections.size === 0) {
+    if (!connections.size) {
       this.clients.delete(userId);
-      // 清除该用户的频道订阅
-      if (this.notificationService) {
-        this.notificationService.removeAllForUser(userId);
-      }
-      console.log(`[WS] User disconnected: ${userId}`);
+      this.notificationService?.removeAllForUser(userId);
     }
   }
 
-  /**
-   * 启动心跳检测
-   * 每 30 秒向所有客户端发送 ping，如果超过 10 秒没收到 pong 则断开
-   */
   _startHeartbeat() {
     this.heartbeatTimer = setInterval(() => {
-      const now = Date.now();
-
+      const deadline = Date.now() - HEARTBEAT_INTERVAL - 10 * 1000;
       for (const [userId, connections] of this.clients.entries()) {
         for (const client of connections) {
-          // 检查上次 pong 是否超时
-          if (now - client.lastPong > HEARTBEAT_INTERVAL + HEARTBEAT_TIMEOUT) {
-            console.log(`[WS] Heartbeat timeout for user ${userId}`);
+          if (client.lastPong < deadline) {
             client.ws.terminate();
             this._removeClient(userId, client);
-            continue;
-          }
-
-          // 发送 ping
-          if (client.ws.readyState === 1) {
-            client.ws.ping();
-          }
+          } else if (client.ws.readyState === 1) client.ws.ping();
         }
       }
     }, HEARTBEAT_INTERVAL);
+    this.heartbeatTimer.unref?.();
   }
 
-  /**
-   * 安全发送 JSON 消息
-   */
-  _send(ws, data) {
-    if (ws.readyState === 1) {
-      ws.send(JSON.stringify(data));
-    }
+  _send(ws, message) {
+    if (ws.readyState === 1) ws.send(JSON.stringify(message));
   }
 
-  /**
-   * 关闭 WebSocket 服务器
-   */
   close() {
-    if (this.heartbeatTimer) {
-      clearInterval(this.heartbeatTimer);
-    }
-    if (this.wss) {
-      this.wss.close();
-    }
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    this.wss?.close();
     this.clients.clear();
-    console.log('[WS] WebSocket server shut down');
   }
 
-  /**
-   * 获取状态统计
-   */
   getStats() {
-    let totalConnections = 0;
-    for (const connections of this.clients.values()) {
-      totalConnections += connections.size;
-    }
-    return {
-      onlineUsers: this.clients.size,
-      totalConnections,
-      channels: this.notificationService
-        ? this.notificationService.getStats()
-        : {},
-      messageQueue: this.messageQueue ? this.messageQueue.getStats() : null,
-    };
+    const totalConnections = [...this.clients.values()].reduce((total, clients) => total + clients.size, 0);
+    return { onlineUsers: this.clients.size, totalConnections, channels: this.notificationService?.getStats() || {}, messageQueue: this.messageQueue?.getStats() || null };
   }
 }
 

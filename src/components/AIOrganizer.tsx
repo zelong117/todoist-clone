@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import { useStore } from '../store';
-import { Sparkles, X, Copy, Check, RefreshCw, Wand2, Target, Image as ImageIcon, Settings } from 'lucide-react';
+import { Sparkles, X, Copy, Check, RefreshCw, Wand2, Target, Image as ImageIcon } from 'lucide-react';
 import DraggableWidget from './DraggableWidget';
+import { aiAPI } from '../api';
 
-type TabMode = 'optimize' | 'goals' | 'settings';
+type TabMode = 'optimize' | 'goals';
 
 export default function AIOrganizer() {
   const { tasks, projects, sections } = useStore();
@@ -19,22 +20,6 @@ export default function AIOrganizer() {
   const dragMovedRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // API Key 配置（存 localStorage）
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('ai_api_key') || '');
-  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('ai_api_url') || '');
-  const [apiModel, setApiModel] = useState(() => localStorage.getItem('ai_model') || 'gpt-4o-mini');
-  const [keySaved, setKeySaved] = useState(false);
-
-  const saveKeyConfig = () => {
-    localStorage.setItem('ai_api_key', apiKey);
-    localStorage.setItem('ai_api_url', apiUrl);
-    localStorage.setItem('ai_model', apiModel);
-    setKeySaved(true);
-    setTimeout(() => setKeySaved(false), 2000);
-  };
-
-  const hasApiKey = !!(localStorage.getItem('ai_api_key'));
-
   // 文字优化
   const handleOptimize = useCallback(async () => {
     if (!inputText.trim()) return;
@@ -42,20 +27,7 @@ export default function AIOrganizer() {
     setLoadingMsg('正在优化文字...');
     setResult('');
     try {
-      const apiUrl = `${window.location.protocol}//${window.location.hostname}:3001/api/ai/optimize-text`;
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: inputText,
-          tasks,
-          projects,
-          clientApiKey: apiKey || undefined,
-          clientApiUrl: apiUrl || undefined,
-          clientModel: apiModel || undefined,
-        }),
-      });
-      const data = await res.json();
+      const data = await aiAPI.optimizeText(inputText);
       if (data.result) {
         setResult(data.result);
       } else {
@@ -65,7 +37,7 @@ export default function AIOrganizer() {
       setResult('网络错误，请检查后端是否运行。');
     }
     setLoading(false);
-  }, [inputText, tasks, projects]);
+  }, [inputText]);
 
   // 图片提取任务
   const handleExtractImage = useCallback(async () => {
@@ -74,18 +46,7 @@ export default function AIOrganizer() {
     setLoadingMsg('正在识别图片内容...');
     setResult('');
     try {
-      const apiUrl = `${window.location.protocol}//${window.location.hostname}:3001/api/ai/extract-image`;
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image: imageData,
-          clientApiKey: apiKey || undefined,
-          clientApiUrl: apiUrl || undefined,
-          clientModel: apiModel || undefined,
-        }),
-      });
-      const data = await res.json();
+      const data = await aiAPI.extractImage(imageData);
       if (data.result) {
         setResult(data.result);
       } else {
@@ -131,20 +92,7 @@ export default function AIOrganizer() {
     setLoadingMsg('正在分析任务数据...');
     setResult('');
     try {
-      const apiUrl = `${window.location.protocol}//${window.location.hostname}:3001/api/ai/organize`;
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tasks,
-          projects,
-          sections,
-          clientApiKey: apiKey || undefined,
-          clientApiUrl: apiUrl || undefined,
-          clientModel: apiModel || undefined,
-        }),
-      });
-      const data = await res.json();
+      const data = await aiAPI.organize({ tasks, projects, sections });
       if (data.result) {
         setResult(data.result);
       } else {
@@ -162,21 +110,28 @@ export default function AIOrganizer() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const escapeHtml = (value: string) => value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
   const renderMarkdown = (md: string) => {
     return md
       .split('\n')
       .map((line) => {
-        if (line.startsWith('# ')) return `<h1 class="text-xl font-bold text-[var(--text-primary)] mb-3">${line.slice(2)}</h1>`;
-        if (line.startsWith('## ')) return `<h2 class="text-lg font-semibold text-[var(--text-primary)] mt-5 mb-2 pb-1 border-b border-[var(--border-light)]">${line.slice(3)}</h2>`;
-        if (line.startsWith('### ')) return `<h3 class="text-base font-semibold text-[var(--text-secondary)] mt-3 mb-1">${line.slice(4)}</h3>`;
+        if (line.startsWith('# ')) return `<h1 class="text-xl font-bold text-[var(--text-primary)] mb-3">${escapeHtml(line.slice(2))}</h1>`;
+        if (line.startsWith('## ')) return `<h2 class="text-lg font-semibold text-[var(--text-primary)] mt-5 mb-2 pb-1 border-b border-[var(--border-light)]">${escapeHtml(line.slice(3))}</h2>`;
+        if (line.startsWith('### ')) return `<h3 class="text-base font-semibold text-[var(--text-secondary)] mt-3 mb-1">${escapeHtml(line.slice(4))}</h3>`;
         if (line.startsWith('- ')) {
-          const text = line.slice(2)
+          const text = escapeHtml(line.slice(2))
             .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
             .replace(/`(.*?)`/g, '<code class="text-xs bg-[var(--bg-card)] px-1.5 py-0.5 rounded border border-[var(--border-light)]">$1</code>');
           return `<div class="flex items-start gap-2 py-0.5 ml-2"><span class="text-[var(--accent-primary)] mt-0.5">•</span><span class="text-[var(--text-secondary)]">${text}</span></div>`;
         }
         if (line.trim() === '') return '<div class="h-2"></div>';
-        const text = line
+        const text = escapeHtml(line)
           .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-[var(--text-primary)]">$1</strong>')
           .replace(/`(.*?)`/g, '<code class="text-xs bg-[var(--bg-card)] px-1.5 py-0.5 rounded border border-[var(--border-light)]">$1</code>');
         return `<p class="text-sm text-[var(--text-secondary)] py-0.5">${text}</p>`;
@@ -249,18 +204,6 @@ export default function AIOrganizer() {
                 >
                   <Target size={14} />
                   目标分析
-                </button>
-                <button
-                  onClick={() => setTab('settings')}
-                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-all ml-auto ${
-                    tab === 'settings'
-                      ? 'text-gray-500 border-gray-500'
-                      : 'text-[var(--text-tertiary)] border-transparent hover:text-[var(--text-secondary)]'
-                  }`}
-                >
-                  <Settings size={14} />
-                  设置
-                  {hasApiKey && <span className="w-1.5 h-1.5 rounded-full bg-green-500" />}
                 </button>
               </div>
             </div>
@@ -353,56 +296,6 @@ export default function AIOrganizer() {
                     <Target size={14} />
                     开始分析
                   </button>
-                </div>
-              )}
-
-              {/* 设置 Tab */}
-              {tab === 'settings' && (
-                <div className="space-y-4 max-w-md">
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">API Key</label>
-                    <input
-                      type="password"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="sk-... 或你的 API Key"
-                      className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">API 地址（可选，默认 OpenAI）</label>
-                    <input
-                      type="text"
-                      value={apiUrl}
-                      onChange={(e) => setApiUrl(e.target.value)}
-                      placeholder="https://api.openai.com/v1/chat/completions"
-                      className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
-                    />
-                    <p className="text-xs text-[var(--text-tertiary)] mt-1">支持 OpenAI / DeepSeek / 其他兼容接口</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">模型名称</label>
-                    <input
-                      type="text"
-                      value={apiModel}
-                      onChange={(e) => setApiModel(e.target.value)}
-                      placeholder="gpt-4o-mini"
-                      className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-light)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-purple-500/30"
-                    />
-                    <p className="text-xs text-[var(--text-tertiary)] mt-1">推荐：gpt-4o-mini / deepseek-chat / glm-4-flash</p>
-                  </div>
-                  <button
-                    onClick={saveKeyConfig}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-medium hover:opacity-90 transition-opacity"
-                  >
-                    {keySaved ? <Check size={14} /> : <Settings size={14} />}
-                    {keySaved ? '已保存' : '保存配置'}
-                  </button>
-                  {!hasApiKey && (
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 text-xs">
-                      💡 配置 API Key 后，文字优化、图片识别、目标分析都将使用 AI 智能处理。不配置则使用本地规则引擎（功能有限）。
-                    </div>
-                  )}
                 </div>
               )}
 

@@ -18,6 +18,7 @@ const validate = require('../middleware/validate');
 const { createTaskSchema, updateTaskSchema, taskIdParamSchema } = require('../validations/taskSchemas');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { logActivity, refreshNotifications } = require('../domain');
+const { getNextDueDate, getNextReminderAt, parseRule } = require('../services/recurrence');
 
 // Helper: get WebSocket services from app.locals
 function getWsServices(req) {
@@ -43,6 +44,17 @@ function verifyOwnership(entityType, entityId, userId) {
   if (!entityId) return true; // null/undefined 涓嶉渶瑕侀獙璇?
   const entity = queryOne(`SELECT id FROM ${entityType} WHERE id = ? AND user_id = ?`, [entityId, userId]);
   return !!entity;
+}
+
+function rejectStaleTaskVersion(req, res, task) {
+  const expectedUpdatedAt = req.get('If-Match-Updated-At');
+  if (!expectedUpdatedAt || expectedUpdatedAt === task.updated_at) return false;
+  res.status(409).json({
+    error: 'This task changed on another device. Review the latest version before retrying.',
+    code: 'TASK_VERSION_CONFLICT',
+    task: mapTask(task),
+  });
+  return true;
 }
 
 /**
@@ -136,7 +148,8 @@ router.get('/:id', authenticate, validate({ params: taskIdParamSchema }), asyncH
  * 鍒涘缓鏂颁换鍔?- 楠岃瘉鍏宠仈瀹炰綋鎵€鏈夋潈
  */
 router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandler(async (req, res) => {
-  const { title, description, projectId, sectionId, parentId, priority, dueDate, labels, plannedPomodoros, isRecurring, recurrenceRule } = req.body;
+  const { id: requestedId, title, description, projectId, sectionId, parentId, priority, dueDate, reminderAt, location, labels, plannedPomodoros, isRecurring, recurrenceRule } = req.body;
+  if (isRecurring && !parseRule(recurrenceRule)) return res.status(400).json({ error: 'Invalid recurrence rule' });
 
   // 銆愭暟鎹殧绂汇€戦獙璇?projectId 灞炰簬褰撳墠鐢ㄦ埛
   if (projectId && !verifyOwnership('projects', projectId, req.user.id)) {
@@ -153,18 +166,21 @@ router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandle
     if (!section || section.project_id !== projectId) return res.status(400).json({ error: '版块不属于所选项目' });
   }
 
-  const id = uuidv4();
+  const id = requestedId || uuidv4();
+  if (requestedId && queryOne('SELECT id FROM tasks WHERE id = ? AND user_id = ?', [requestedId, req.user.id])) {
+    return res.status(409).json({ error: 'Task already exists' });
+  }
   const now = new Date().toISOString();
   const pp = plannedPomodoros || 1;
-  run('INSERT INTO tasks (id, user_id, project_id, section_id, parent_id, title, description, priority, due_date, labels, planned_pomodoros, estimated_minutes, is_recurring, recurrence_rule, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, req.user.id, nullableId(projectId), nullableId(sectionId), nullableId(parentId), title.trim(), description || '', priority || 1, dueDate || null, JSON.stringify(Array.isArray(labels) ? labels : []), pp, pp * 25, isRecurring ? 1 : 0, recurrenceRule || null, now, now]);
+  run('INSERT INTO tasks (id, user_id, project_id, section_id, parent_id, title, description, priority, due_date, reminder_at, location, labels, planned_pomodoros, estimated_minutes, is_recurring, recurrence_rule, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, req.user.id, nullableId(projectId), nullableId(sectionId), nullableId(parentId), title.trim(), description || '', priority || 1, dueDate || null, reminderAt || null, location || null, JSON.stringify(Array.isArray(labels) ? labels : []), pp, pp * 25, isRecurring ? 1 : 0, recurrenceRule || null, now, now]);
 
   const task = queryOne('SELECT * FROM tasks WHERE id = ?', [id]);
   const mapped = mapTask(task);
 
   // 馃敂 WebSocket: 骞挎挱浠诲姟鍒涘缓閫氱煡
   const { notificationService, messageQueue, wsManager } = getWsServices(req);
-  notificationService.broadcast('task:create', { task: mapped, userId: req.user.id }, wsManager, messageQueue);
+  notificationService.notify(req.user.id, 'task:create', { task: mapped, userId: req.user.id }, wsManager, messageQueue);
   logActivity(req.user.id, 'task_created', 'task', id, 'Created task: ' + mapped.title);
   refreshNotifications(req.user.id);
 
@@ -178,9 +194,13 @@ router.post('/', authenticate, validate({ body: createTaskSchema }), asyncHandle
 router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: updateTaskSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   if (!task) return res.status(404).json({ error: 'Task not found' });
+  if (rejectStaleTaskVersion(req, res, task)) return;
 
-  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId', 'isRecurring', 'recurrenceRule'];
+  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'reminderAt', 'location', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId', 'isRecurring', 'recurrenceRule'];
   const sanitized = pick(req.body, allowed);
+  if ((sanitized.isRecurring ?? !!task.is_recurring) && !parseRule(sanitized.recurrenceRule ?? task.recurrence_rule)) {
+    return res.status(400).json({ error: 'Invalid recurrence rule' });
+  }
 
   // 銆愭暟鎹殧绂汇€戝鏋滄洿鏂颁簡 projectId锛岄獙璇佹柊椤圭洰灞炰簬褰撳墠鐢ㄦ埛
   if (sanitized.projectId !== undefined && sanitized.projectId !== null && sanitized.projectId !== '') {
@@ -209,11 +229,12 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
 
   const fieldMap = {
     title: 'title', description: 'description', isCompleted: 'is_completed',
-    completedAt: 'completed_at', priority: 'priority', dueDate: 'due_date',
+    completedAt: 'completed_at', priority: 'priority', dueDate: 'due_date', reminderAt: 'reminder_at', location: 'location',
     labels: 'labels', plannedPomodoros: 'planned_pomodoros',
     completedPomodoros: 'completed_pomodoros', pomodoroCount: 'pomodoro_count',
     estimatedMinutes: 'estimated_minutes', sortOrder: 'sort_order',
-    projectId: 'project_id', sectionId: 'section_id', parentId: 'parent_id'
+    projectId: 'project_id', sectionId: 'section_id', parentId: 'parent_id',
+    isRecurring: 'is_recurring', recurrenceRule: 'recurrence_rule'
   };
 
   const sets = [];
@@ -222,7 +243,7 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
     if (sanitized[jk] !== undefined) {
       let val = sanitized[jk];
       if (jk === 'labels') val = JSON.stringify(val);
-      if (['projectId', 'sectionId', 'parentId', 'dueDate', 'completedAt'].includes(jk)) val = nullableId(val);
+      if (['projectId', 'sectionId', 'parentId', 'dueDate', 'reminderAt', 'completedAt', 'location'].includes(jk)) val = nullableId(val);
       if (jk === 'isCompleted') val = val ? 1 : 0;
       sets.push(`${dk} = ?`);
       values.push(val);
@@ -240,7 +261,7 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
 
   // 馃敂 WebSocket: 骞挎挱浠诲姟鏇存柊閫氱煡
   const { notificationService: ns, messageQueue: mq, wsManager: wm } = getWsServices(req);
-  ns.broadcast('task:update', { task: mapped, changes: Object.keys(sanitized), userId: req.user.id }, wm, mq);
+  ns.notify(req.user.id, 'task:update', { task: mapped, changes: Object.keys(sanitized), userId: req.user.id }, wm, mq);
   logActivity(req.user.id, 'task_updated', 'task', req.params.id, 'Updated task: ' + mapped.title);
   refreshNotifications(req.user.id);
 
@@ -254,9 +275,13 @@ router.put('/:id', authenticate, validate({ params: taskIdParamSchema, body: upd
 router.patch('/:id', authenticate, validate({ params: taskIdParamSchema, body: updateTaskSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   if (!task) return res.status(404).json({ error: 'Task not found' });
+  if (rejectStaleTaskVersion(req, res, task)) return;
 
-  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId', 'isRecurring', 'recurrenceRule'];
+  const allowed = ['title', 'description', 'isCompleted', 'completedAt', 'priority', 'dueDate', 'reminderAt', 'location', 'labels', 'plannedPomodoros', 'completedPomodoros', 'pomodoroCount', 'estimatedMinutes', 'sortOrder', 'projectId', 'sectionId', 'parentId', 'isRecurring', 'recurrenceRule'];
   const sanitized = pick(req.body, allowed);
+  if ((sanitized.isRecurring ?? !!task.is_recurring) && !parseRule(sanitized.recurrenceRule ?? task.recurrence_rule)) {
+    return res.status(400).json({ error: 'Invalid recurrence rule' });
+  }
 
   if (sanitized.projectId !== undefined && sanitized.projectId !== null && sanitized.projectId !== '') {
     if (!verifyOwnership('projects', sanitized.projectId, req.user.id)) {
@@ -282,11 +307,12 @@ router.patch('/:id', authenticate, validate({ params: taskIdParamSchema, body: u
 
   const fieldMap = {
     title: 'title', description: 'description', isCompleted: 'is_completed',
-    completedAt: 'completed_at', priority: 'priority', dueDate: 'due_date',
+    completedAt: 'completed_at', priority: 'priority', dueDate: 'due_date', reminderAt: 'reminder_at', location: 'location',
     labels: 'labels', plannedPomodoros: 'planned_pomodoros',
     completedPomodoros: 'completed_pomodoros', pomodoroCount: 'pomodoro_count',
     estimatedMinutes: 'estimated_minutes', sortOrder: 'sort_order',
-    projectId: 'project_id', sectionId: 'section_id', parentId: 'parent_id'
+    projectId: 'project_id', sectionId: 'section_id', parentId: 'parent_id',
+    isRecurring: 'is_recurring', recurrenceRule: 'recurrence_rule'
   };
 
   const sets = [];
@@ -295,7 +321,7 @@ router.patch('/:id', authenticate, validate({ params: taskIdParamSchema, body: u
     if (sanitized[jk] !== undefined) {
       let val = sanitized[jk];
       if (jk === 'labels') val = JSON.stringify(val);
-      if (['projectId', 'sectionId', 'parentId', 'dueDate', 'completedAt'].includes(jk)) val = nullableId(val);
+      if (['projectId', 'sectionId', 'parentId', 'dueDate', 'reminderAt', 'completedAt', 'location'].includes(jk)) val = nullableId(val);
       if (jk === 'isCompleted') val = val ? 1 : 0;
       sets.push(`${dk} = ?`);
       values.push(val);
@@ -326,6 +352,7 @@ router.patch('/:id', authenticate, validate({ params: taskIdParamSchema, body: u
 router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   if (!task) return res.status(404).json({ error: 'Task not found' });
+  if (rejectStaleTaskVersion(req, res, task)) return;
 
   transaction(() => {
     const childIds = queryAll('SELECT id FROM tasks WHERE parent_id = ? AND user_id = ?', [req.params.id, req.user.id]).map(row => row.id);
@@ -339,7 +366,7 @@ router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asy
 
   // 馃敂 WebSocket: 骞挎挱浠诲姟鍒犻櫎閫氱煡
   const { notificationService, messageQueue, wsManager } = getWsServices(req);
-  notificationService.broadcast('task:delete', { taskId: req.params.id, userId: req.user.id }, wsManager, messageQueue);
+  notificationService.notify(req.user.id, 'task:delete', { taskId: req.params.id, userId: req.user.id }, wsManager, messageQueue);
   logActivity(req.user.id, 'task_deleted', 'task', req.params.id, 'Deleted task: ' + task.title);
   refreshNotifications(req.user.id);
 
@@ -353,19 +380,36 @@ router.delete('/:id', authenticate, validate({ params: taskIdParamSchema }), asy
 router.post('/:id/complete', authenticate, validate({ params: taskIdParamSchema }), asyncHandler(async (req, res) => {
   const task = queryOne('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   if (!task) return res.status(404).json({ error: 'Task not found' });
+  if (rejectStaleTaskVersion(req, res, task)) return;
 
   const newStatus = task.is_completed ? 0 : 1;
-  run('UPDATE tasks SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?', [newStatus, newStatus ? new Date().toISOString() : null, new Date().toISOString(), req.params.id]);
+  const completedAt = new Date().toISOString();
+  let nextTask = null;
+  transaction(() => {
+    run('UPDATE tasks SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?', [newStatus, newStatus ? completedAt : null, completedAt, req.params.id]);
+    if (newStatus && task.is_recurring && parseRule(task.recurrence_rule)) {
+      const nextId = uuidv4();
+      const nextDueDate = getNextDueDate(task.recurrence_rule, new Date(completedAt), task.due_date);
+      const nextReminderAt = getNextReminderAt(task.reminder_at, task.due_date, nextDueDate);
+      run(
+        'INSERT INTO tasks (id, user_id, project_id, section_id, parent_id, title, description, priority, due_date, reminder_at, location, labels, planned_pomodoros, estimated_minutes, is_recurring, recurrence_rule, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [nextId, task.user_id, task.project_id, task.section_id, task.parent_id, task.title, task.description, task.priority, nextDueDate, nextReminderAt, task.location, task.labels, task.planned_pomodoros, task.estimated_minutes, 1, task.recurrence_rule, task.sort_order, completedAt, completedAt]
+      );
+      nextTask = queryOne('SELECT * FROM tasks WHERE id = ?', [nextId]);
+    }
+  });
   const updated = queryOne('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
   const mapped = mapTask(updated);
+  const mappedNextTask = mapTask(nextTask);
 
   // 馃敂 WebSocket: 骞挎挱浠诲姟瀹屾垚鐘舵€佸彉鏇撮€氱煡
   const { notificationService: ns2, messageQueue: mq2, wsManager: wm2 } = getWsServices(req);
-  ns2.broadcast('task:complete', { task: mapped, completed: !!newStatus, userId: req.user.id }, wm2, mq2);
+  ns2.notify(req.user.id, 'task:complete', { task: mapped, completed: !!newStatus, userId: req.user.id }, wm2, mq2);
+  if (mappedNextTask) ns2.notify(req.user.id, 'task:create', { task: mappedNextTask, userId: req.user.id }, wm2, mq2);
   logActivity(req.user.id, newStatus ? 'task_completed' : 'task_updated', 'task', req.params.id, (newStatus ? 'Completed task: ' : 'Reopened task: ') + mapped.title);
   refreshNotifications(req.user.id);
 
-  res.json(mapped);
+  res.json({ ...mapped, nextTask: mappedNextTask });
 }));
 
 module.exports = router;

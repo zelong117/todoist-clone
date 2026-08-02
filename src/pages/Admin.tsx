@@ -24,9 +24,10 @@ export default function Admin() {
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [users, setUsers] = useState<UserAccount[]>([]);
+  const [planUpdatingUserId, setPlanUpdatingUserId] = useState<string | null>(null);
 
 
-  const API_URL = `${window.location.protocol}//${window.location.hostname}:3001/api`;
+  const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:3001/api`;
 
   // Stats
   const stats = useMemo(() => ({
@@ -44,13 +45,13 @@ export default function Admin() {
     const fetchUsers = async () => {
   
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('todoist_token');
         const res = await fetch(`${API_URL}/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const data = await res.json();
-          setUsers(data);
+          setUsers(Array.isArray(data) ? data : data.data || []);
         }
       } catch (e) {
         console.error('Failed to fetch users:', e);
@@ -62,7 +63,7 @@ export default function Admin() {
     // 获取服务端统计
     const fetchStats = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('todoist_token');
         const res = await fetch(`${API_URL}/admin/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -76,6 +77,24 @@ export default function Admin() {
 
 
   }, []);
+
+  const updatePlan = async (userId: string, plan: 'free' | 'pro' | 'business') => {
+    setPlanUpdatingUserId(userId);
+    try {
+      const token = localStorage.getItem('todoist_token');
+      const response = await fetch(`${API_URL}/billing/admin/assign-plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ userId, plan }),
+      });
+      if (!response.ok) throw new Error('Unable to update plan');
+      setUsers((current) => current.map((user) => user.id === userId ? { ...user, plan } : user));
+    } catch (error) {
+      console.error('Failed to update plan:', error);
+    } finally {
+      setPlanUpdatingUserId(null);
+    }
+  };
 
   // Filtered tasks
   const filteredTasks = useMemo(() => {
@@ -340,6 +359,19 @@ export default function Admin() {
                       <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold ${u.plan === 'pro' ? 'bg-emerald-500/10 text-emerald-600' : u.plan === 'business' ? 'bg-blue-500/10 text-blue-600' : 'bg-[var(--bg-active)] text-[var(--text-tertiary)]'}`}>
                         {u.plan === 'pro' ? 'Pro' : u.plan === 'business' ? 'Business' : 'Free'}
                       </span>
+                    </td>
+                    <td className="px-6 py-3.5 text-center">
+                      <select
+                        aria-label={`Update ${u.email} plan`}
+                        value={u.plan || 'free'}
+                        disabled={planUpdatingUserId === u.id}
+                        onChange={(event) => updatePlan(u.id, event.target.value as 'free' | 'pro' | 'business')}
+                        className="bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-md px-2 py-1 text-xs disabled:opacity-50"
+                      >
+                        <option value="free">Free</option>
+                        <option value="pro">Pro</option>
+                        <option value="business">Business</option>
+                      </select>
                     </td>
                     <td className="px-6 py-3.5 text-center text-xs text-[var(--text-tertiary)]">{formatTime(u.created_at)}</td>
                   </tr>

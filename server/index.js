@@ -5,7 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
-const { initDB } = require('./db');
+const { initDB, flushPendingWrites } = require('./db');
 
 // ============================================================
 // 瀵煎叆涓棿浠?
@@ -15,6 +15,8 @@ const { ipFilter, apiLimiter, authLimiter, writeLimiter, adminLimiter } = requir
 const { getCacheStats, invalidateByUser } = require('./middleware/cache');
 const { requestTimer, collectMetrics, getMetrics, getMemoryUsage, startMemoryMonitor, createSlowQueryWrapper } = require('./middleware/performance');
 const { checkProjectQuota, checkAiQuota } = require('./middleware/quota');
+const { authenticate } = require('./middleware/auth');
+const billingRoutes = require('./routes/billing');
 
 // ============================================================
 // WebSocket 妯″潡
@@ -25,6 +27,7 @@ const MessageQueue = require('./websocket/messageQueue');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const API_VERSION = '1.0.0';
 
 // ============================================================
 // 瀹夊叏涓棿浠讹紙鏈€澶栧眰锛?
@@ -32,7 +35,8 @@ const PORT = process.env.PORT || 3001;
 app.use(helmetConfig);                    // Helmet 瀹夊叏澶?
 app.use(cors(corsOptions));               // CORS 閰嶇疆
 app.use(extraSecurityHeaders);            // 棰濆瀹夊叏澶?+ Request ID
-app.use(express.json({ limit: '512kb' })); // 璇锋眰浣撳ぇ灏忛檺鍒讹紙浠?1MB 闄嶅埌 512KB锛?
+app.use(express.json({ limit: '512kb', verify: (req, res, buffer) => { req.rawBody = Buffer.from(buffer); } })); // Preserve the provider-signed payload.
+app.post('/api/billing/webhooks/:provider', apiLimiter, billingRoutes.handleWebhook);
 app.use(requestBodyGuard(512 * 1024));    // 鍙岄噸妫€鏌ヨ姹備綋澶у皬
 app.use(ipFilter);                        // IP 榛戝悕鍗曡繃婊?
 
@@ -56,6 +60,10 @@ app.locals.messageQueue = messageQueue;
 // ============================================================
 // 閫氱敤 API 闄愭祦
 // ============================================================
+app.use('/api', (req, res, next) => {
+  res.setHeader('X-API-Version', API_VERSION);
+  next();
+});
 app.use('/api', apiLimiter);
 
 // ============================================================
@@ -66,55 +74,59 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 
 // 椤圭洰璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛?
-app.use('/api/projects', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), (req, res, next) => req.method === 'POST' ? checkProjectQuota(req, res, next) : next(), require('./routes/projects'));
+app.use('/api/projects', authenticate, (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), (req, res, next) => req.method === 'POST' ? checkProjectQuota(req, res, next) : next(), require('./routes/projects'));
 
 // 浠诲姟璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛橈紙鏇寸煭 TTL锛屽洜涓轰换鍔″彉鍖栭绻侊級
-app.use('/api/tasks', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/tasks'));
+app.use('/api/tasks', authenticate, (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/tasks'));
 
 // 鏍囩璺敱 - 鍐欐搷浣滈檺娴?+ 璇荤紦瀛?
-app.use('/api/labels', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/labels'));
-app.use('/api/sections', (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/sections'));
+app.use('/api/labels', authenticate, (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/labels'));
+app.use('/api/sections', authenticate, (req, res, next) => req.method === 'GET' ? next() : writeLimiter(req, res, next), require('./routes/sections'));
 
-app.use('/api/filters', writeLimiter, require('./routes/filters'));
-app.use('/api/notifications', writeLimiter, require('./routes/notifications'));
-app.use('/api/insights', require('./routes/insights'));
+app.use('/api/filters', authenticate, writeLimiter, require('./routes/filters'));
+app.use('/api/notifications', authenticate, writeLimiter, require('./routes/notifications'));
+app.use('/api/insights', authenticate, require('./routes/insights'));
 
 
 // 璇勮璺敱 - 鍐欐搷浣滈檺娴?
-app.use('/api/comments', writeLimiter, require('./routes/comments'));
+app.use('/api/comments', authenticate, writeLimiter, require('./routes/comments'));
 
 // 鐣寗閽熻矾鐢?- 鍐欐搷浣滈檺娴?
-app.use('/api/pomodoro', writeLimiter, require('./routes/pomodoro'));
+app.use('/api/pomodoro', authenticate, writeLimiter, require('./routes/pomodoro'));
 
 // 绠＄悊鍛樿矾鐢?- 绠＄悊鍛橀檺娴?
-app.use('/api/admin', adminLimiter, require('./routes/admin'));
-app.use('/api/ai', checkAiQuota, require('./routes/ai'));
+app.use('/api/admin', authenticate, adminLimiter, require('./routes/admin'));
+app.use('/api/billing', billingRoutes.router);
+app.use('/api/ai', authenticate, checkAiQuota, require('./routes/ai'));
 console.log('[AI] AI route registered at /api/ai');
 
 // 项目共享路由
-app.use('/api/projects', require('./routes/shares'));
+app.use('/api/projects', authenticate, require('./routes/shares'));
 
 // 用户路由（头像/设置）
-app.use('/api/users', require('./routes/users'));
+app.use('/api/users', authenticate, require('./routes/users'));
 
 // 附件路由
 app.use('/api', require('./routes/attachments'));
 
 // 静态文件（上传的头像/附件）
 app.use('/api/uploads', express.static(path.join(__dirname, 'data', 'uploads')));
-app.use('/api/attachments/file', express.static(path.join(__dirname, 'data', 'attachments')));
 
 // OAuth 路由
 app.use('/api/auth', require('./routes/oauth'));
 
 // 团队路由
-app.use('/api/teams', require('./routes/teams'));
+app.use('/api/teams', authenticate, require('./routes/teams'));
 
 // 审计日志路由
-app.use('/api/audit-logs', require('./routes/auditLogs'));
+app.use('/api/audit-logs', authenticate, require('./routes/auditLogs'));
 
 // API 文档
 app.use('/api/docs', require('./routes/docs'));
+
+// Browsers request this automatically when opening API documentation. A 204 keeps
+// the documentation endpoint free of a misleading console error without serving assets.
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // ============================================================
 // 鍋ュ悍妫€鏌ュ拰鐩戞帶绔偣
@@ -274,6 +286,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/api/version', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ version: API_VERSION, apiBasePath: '/api', websocketPath: '/ws' });
+});
+
 // WebSocket 鐘舵€佺鐐?
 app.get('/api/ws/stats',
   require('./middleware/auth').authenticate,
@@ -336,6 +353,7 @@ const DEADLINE_CHECK_INTERVAL = 5 * 60 * 1000;
 function checkDeadlines() {
   try {
     const { queryAll } = require('./db');
+    const { refreshAllNotifications } = require('./domain');
     const now = new Date();
     const in30Min = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
     const nowISO = now.toISOString();
@@ -362,6 +380,7 @@ function checkDeadlines() {
         messageQueue
       );
     }
+    refreshAllNotifications();
   } catch (err) {
     console.error('[Deadline] Check error:', err.message);
   }
@@ -398,6 +417,7 @@ initDB().then(() => {
   // 浼橀泤鍏抽棴
   const gracefulShutdown = () => {
     console.log('\n馃洃 Shutting down gracefully...');
+    flushPendingWrites();
     wsManager.close();
     server.close(() => {
       console.log('鉁?Server closed');

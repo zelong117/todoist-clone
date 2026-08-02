@@ -108,10 +108,14 @@ function upsertNotification(userId, taskId, type, severity, title, message) {
 function refreshNotifications(userId) {
   const tasks = queryAll('SELECT * FROM tasks WHERE user_id = ?', [userId]).map(mapTask);
   const today = dateOnly(new Date().toISOString());
+  const now = new Date();
 
   transaction(() => {
     for (const task of tasks) {
       if (task.isCompleted) continue;
+      if (task.reminderAt && new Date(task.reminderAt) <= now) {
+        upsertNotification(userId, task.id, 'reminder_due', 'info', task.title, `Reminder: ${new Date(task.reminderAt).toLocaleString()}`);
+      }
       if (task.dueDate && task.dueDate < today) {
         upsertNotification(userId, task.id, 'overdue', 'critical', task.title, `Overdue since ${task.dueDate}`);
       } else if (task.dueDate === today) {
@@ -125,6 +129,15 @@ function refreshNotifications(userId) {
       }
     }
 
+    const derivedTaskIds = {
+      reminder_due: tasks.filter((task) => !task.isCompleted && task.reminderAt && new Date(task.reminderAt) <= now).map((task) => task.id),
+      overdue: tasks.filter((task) => !task.isCompleted && task.dueDate && task.dueDate < today).map((task) => task.id),
+      due_today: tasks.filter((task) => !task.isCompleted && task.dueDate === today).map((task) => task.id),
+      high_priority: tasks.filter((task) => !task.isCompleted && task.priority <= 2).map((task) => task.id),
+      inbox_triage: tasks.filter((task) => !task.isCompleted && !task.projectId && (!task.labels || task.labels.length === 0) && !task.dueDate).map((task) => task.id),
+    };
+    for (const type of DERIVED_NOTIFICATION_TYPES) removeStaleDerivedNotifications(userId, type, derivedTaskIds[type]);
+
     run(
       `DELETE FROM notifications
        WHERE user_id = ? AND task_id IN (SELECT id FROM tasks WHERE user_id = ? AND is_completed = 1)`,
@@ -134,6 +147,22 @@ function refreshNotifications(userId) {
 
   return queryAll('SELECT * FROM notifications WHERE user_id = ? ORDER BY read_at IS NOT NULL, created_at DESC LIMIT 50', [userId])
     .map(mapNotification);
+}
+
+const DERIVED_NOTIFICATION_TYPES = ['reminder_due', 'overdue', 'due_today', 'high_priority', 'inbox_triage'];
+
+function removeStaleDerivedNotifications(userId, type, taskIds) {
+  if (taskIds.length === 0) {
+    run('DELETE FROM notifications WHERE user_id = ? AND type = ?', [userId, type]);
+    return;
+  }
+  const placeholders = taskIds.map(() => '?').join(', ');
+  run(`DELETE FROM notifications WHERE user_id = ? AND type = ? AND task_id NOT IN (${placeholders})`, [userId, type, ...taskIds]);
+}
+
+function refreshAllNotifications() {
+  const users = queryAll('SELECT DISTINCT user_id FROM tasks');
+  for (const { user_id: userId } of users) refreshNotifications(userId);
 }
 
 function getStatsSnapshot(userId) {
@@ -160,5 +189,6 @@ module.exports = {
   getFilteredTasks,
   logActivity,
   refreshNotifications,
+  refreshAllNotifications,
   getStatsSnapshot,
 };

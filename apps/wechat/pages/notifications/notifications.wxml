@@ -1,0 +1,1 @@
+<view class="page"><text class="title">Notifications</text><view wx:if="{{loading}}" class="empty">Loading...</view><view wx:elif="{{!items.length}}" class="empty">You are all caught up.</view><view wx:for="{{items}}" wx:key="id" class="item" bindtap="markRead" data-id="{{item.id}}"><text>{{item.title}}</text><text class="meta">{{item.message}}</text></view></view>

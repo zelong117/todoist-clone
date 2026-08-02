@@ -8,6 +8,7 @@ const uuidSchema = Joi.string().uuid({ version: 'uuidv4' }).allow(null, '');
 
 // 创建任务验证
 const createTaskSchema = Joi.object({
+  id: Joi.string().uuid({ version: 'uuidv4' }).optional(),
   title: Joi.string().trim().min(1).max(500).required().messages({
     'string.empty': '任务标题不能为空',
     'string.max': '任务标题不能超过500个字符',
@@ -22,8 +23,12 @@ const createTaskSchema = Joi.object({
     'number.max': '优先级必须在1-4之间',
   }),
   dueDate: Joi.string().isoDate().allow(null, '').optional(),
+  reminderAt: Joi.string().isoDate().allow(null, '').optional(),
+  location: Joi.string().trim().max(300).allow('', null).optional(),
   labels: Joi.array().items(Joi.string().trim().max(100)).max(50).default([]),
   plannedPomodoros: Joi.number().integer().min(0).max(100).default(1),
+  isRecurring: Joi.boolean().default(false),
+  recurrenceRule: Joi.string().trim().max(64).allow(null, '').optional(),
 });
 
 // 更新任务验证（所有字段可选）
@@ -40,6 +45,8 @@ const updateTaskSchema = Joi.object({
     'number.max': '优先级必须在1-4之间',
   }),
   dueDate: Joi.string().isoDate().allow(null, ''),
+  reminderAt: Joi.string().isoDate().allow(null, ''),
+  location: Joi.string().trim().max(300).allow('', null),
   labels: Joi.array().items(Joi.string().trim().max(100)).max(50),
   plannedPomodoros: Joi.number().integer().min(0).max(100),
   completedPomodoros: Joi.number().integer().min(0).max(1000),
@@ -49,6 +56,8 @@ const updateTaskSchema = Joi.object({
   projectId: uuidSchema.allow(null, ''),
   sectionId: uuidSchema.allow(null, ''),
   parentId: uuidSchema.allow(null, ''),
+  isRecurring: Joi.boolean(),
+  recurrenceRule: Joi.string().trim().max(64).allow(null, ''),
 }).min(1).messages({
   'object.min': '至少需要提供一个更新字段',
 });

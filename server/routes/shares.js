@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { authenticate } = require('../middleware/auth');
 const { queryAll, queryOne, run } = require('../db');
 const { asyncHandler } = require('../middleware/errorHandler');
+const PROJECT_ROLES = new Set(['admin', 'member', 'viewer']);
 
 /**
  * GET /api/projects/:id/shares
@@ -36,6 +37,8 @@ router.get('/:id/shares', authenticate, asyncHandler(async (req, res) => {
  */
 router.post('/:id/share', authenticate, asyncHandler(async (req, res) => {
   const { email, role } = req.body;
+  const normalizedRole = role || 'member';
+  if (!PROJECT_ROLES.has(normalizedRole)) return res.status(400).json({ error: 'Invalid project role' });
   if (!email) return res.status(400).json({ error: '请输入邮箱' });
 
   const project = queryOne('SELECT * FROM projects WHERE id = ?', [req.params.id]);
@@ -55,9 +58,9 @@ router.post('/:id/share', authenticate, asyncHandler(async (req, res) => {
   if (existing) return res.status(400).json({ error: '该用户已是项目成员' });
 
   const id = uuidv4();
-  run('INSERT INTO project_members (id, project_id, user_id, role, invited_by) VALUES (?, ?, ?, ?, ?)', [id, req.params.id, invitee.id, role || 'member', req.user.id]);
+  run('INSERT INTO project_members (id, project_id, user_id, role, invited_by) VALUES (?, ?, ?, ?, ?)', [id, req.params.id, invitee.id, normalizedRole, req.user.id]);
 
-  res.status(201).json({ success: true, member: { id, user_id: invitee.id, name: invitee.name, email: invitee.email, role: role || 'member' } });
+  res.status(201).json({ success: true, member: { id, user_id: invitee.id, name: invitee.name, email: invitee.email, role: normalizedRole } });
 }));
 
 /**

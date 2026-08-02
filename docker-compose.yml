@@ -8,7 +8,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET before starting the production stack}
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost,http://localhost:3001}
     volumes:
       - app-data:/app/server/data

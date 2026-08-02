@@ -3,12 +3,17 @@ const fs = require('fs');
 const path = require('path');
 
 const DATA_DIR = path.join(__dirname, 'data');
-const DB_PATH = path.join(DATA_DIR, 'todoist.db');
+const DB_PATH = path.resolve(process.env.DB_PATH || path.join(DATA_DIR, 'todoist.db'));
 
 let db = null;
 let inTransaction = false;
+const WRITE_FLUSH_MS = Math.min(1000, Math.max(50, Number.parseInt(process.env.DB_WRITE_FLUSH_MS, 10) || 150));
+let dirty = false;
+let persistenceTimer = null;
+let persistenceFlushes = 0;
 
 async function initDB() {
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   const SQL = await initSqlJs();
 
   // Load existing DB or create new one
@@ -58,6 +63,8 @@ async function initDB() {
       description TEXT DEFAULT '',
       priority INTEGER DEFAULT 1,
       due_date TEXT,
+      reminder_at TEXT,
+      location TEXT,
       is_completed INTEGER DEFAULT 0,
       completed_at TEXT,
       labels TEXT DEFAULT '[]',
@@ -150,6 +157,47 @@ async function initDB() {
       created_at TEXT DEFAULT (datetime('now'))
     );
   `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      plan TEXT NOT NULL,
+      status TEXT NOT NULL,
+      source TEXT NOT NULL,
+      current_period_start TEXT,
+      current_period_end TEXT,
+      cancel_at_period_end INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS payment_orders (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      provider TEXT NOT NULL,
+      provider_event_id TEXT UNIQUE,
+      plan TEXT NOT NULL,
+      amount_cents INTEGER NOT NULL,
+      currency TEXT NOT NULL,
+      status TEXT NOT NULL,
+      payload_hash TEXT,
+      processed_at TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS auth_sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      token_id TEXT UNIQUE NOT NULL,
+      device_label TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      last_seen_at TEXT DEFAULT (datetime('now')),
+      revoked_at TEXT,
+      revoked_reason TEXT
+    );
+  `);
   db.run('CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id, sort_order)');
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id, sort_order)');
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(user_id, project_id)');
@@ -160,6 +208,9 @@ async function initDB() {
   db.run('CREATE INDEX IF NOT EXISTS idx_filters_user ON filters(user_id, sort_order)');
   db.run('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read_at, created_at)');
   db.run('CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id, created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_subscriptions_user_status ON subscriptions(user_id, status, updated_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_payment_orders_user_status ON payment_orders(user_id, status, created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_auth_sessions_user_active ON auth_sessions(user_id, revoked_at, last_seen_at)');
 
   // 项目成员表（共享/群组）
   db.run(`
@@ -194,6 +245,13 @@ async function initDB() {
   // 用户表追加字段（安全添加）
   try { db.run('ALTER TABLE users ADD COLUMN avatar_url TEXT'); } catch {}
   try { db.run('ALTER TABLE users ADD COLUMN settings TEXT'); } catch {}
+  try { db.run('ALTER TABLE users ADD COLUMN is_frozen INTEGER DEFAULT 0'); } catch {}
+  try { db.run('ALTER TABLE subscriptions ADD COLUMN grace_period_end TEXT'); } catch {}
+  try { db.run('ALTER TABLE subscriptions ADD COLUMN failed_attempts INTEGER DEFAULT 0'); } catch {}
+  try { db.run('ALTER TABLE subscriptions ADD COLUMN last_payment_error TEXT'); } catch {}
+  // Task metadata was added after the initial schema. These migrations are safe for existing local databases.
+  try { db.run('ALTER TABLE tasks ADD COLUMN reminder_at TEXT'); } catch {}
+  try { db.run('ALTER TABLE tasks ADD COLUMN location TEXT'); } catch {}
 
   // 团队表
   db.run(`
@@ -225,11 +283,37 @@ async function initDB() {
 
 function saveDB() {
   if (!db) return;
+  if (persistenceTimer) {
+    clearTimeout(persistenceTimer);
+    persistenceTimer = null;
+  }
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   const data = db.export();
   const tmpPath = `${DB_PATH}.tmp`;
   fs.writeFileSync(tmpPath, Buffer.from(data));
   fs.renameSync(tmpPath, DB_PATH);
+  dirty = false;
+  persistenceFlushes += 1;
+}
+
+function schedulePersistence() {
+  dirty = true;
+  if (persistenceTimer) return;
+  persistenceTimer = setTimeout(() => {
+    persistenceTimer = null;
+    flushPendingWrites();
+  }, WRITE_FLUSH_MS);
+  persistenceTimer.unref?.();
+}
+
+function flushPendingWrites() {
+  if (!dirty) return false;
+  saveDB();
+  return true;
+}
+
+function getPersistenceStats() {
+  return { dirty, scheduled: Boolean(persistenceTimer), flushes: persistenceFlushes, flushIntervalMs: WRITE_FLUSH_MS };
 }
 
 // Wrapper: run a query and return all rows
@@ -253,7 +337,7 @@ function queryOne(sql, params = []) {
 // Wrapper: run INSERT/UPDATE/DELETE
 function run(sql, params = []) {
   db.run(sql, params);
-  if (!inTransaction) saveDB();
+  if (!inTransaction) schedulePersistence();
 }
 
 function transaction(fn) {
@@ -279,6 +363,6 @@ function getLastInsertId() {
   return row ? row.id : null;
 }
 
-module.exports = { initDB, queryAll, queryOne, run, transaction, saveDB, getLastInsertId };
+module.exports = { initDB, queryAll, queryOne, run, transaction, saveDB, flushPendingWrites, getPersistenceStats, getLastInsertId };
 
 

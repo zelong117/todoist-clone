@@ -28,6 +28,10 @@ function errorHandler(err, req, res, _next) {
     return res.status(err.statusCode).json({ error: err.message });
   }
 
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'Attachment exceeds the 10MB limit' });
+  }
+
   // Joi 验证错误（不应到达此处，因为 validate 中间件已处理，但作为安全兜底）
   if (err.isJoi) {
     return res.status(400).json({ error: err.details.map(d => d.message).join('; ') });

@@ -9,7 +9,19 @@
                     "lint":  "oxlint",
                     "preview":  "vite preview",
                     "serve":  "npm run build \u0026\u0026 npm --prefix server start",
-                    "server":  "npm --prefix server start"
+                    "server":  "npm --prefix server start",
+                    "test:plans": "npm --prefix server run test:plans",
+                    "test:recurrence": "npm --prefix server run test:recurrence",
+                    "test:recurrence-api": "npm --prefix server run test:recurrence-api",
+                    "test:payment-webhook": "npm --prefix server run test:payment-webhook",
+    "test:teams-api": "npm --prefix server run test:teams-api",
+    "test:admin-api": "npm --prefix server run test:admin-api",
+    "test:account-api": "npm --prefix server run test:account-api",
+    "test:attachments-api": "npm --prefix server run test:attachments-api",
+    "test:db-persistence": "npm --prefix server run test:db-persistence",
+    "test:task-version-conflict": "npm --prefix server run test:task-version-conflict",
+    "test:auth-sessions": "npm --prefix server run test:auth-sessions",
+    "test:websocket-security": "npm --prefix server run test:websocket-security"
                 },
     "dependencies":  {
                          "@dnd-kit/core":  "^6.3.1",

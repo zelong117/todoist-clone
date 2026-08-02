@@ -1,37 +1,35 @@
 const jwt = require('jsonwebtoken');
+const { queryOne } = require('../db');
+const { findActiveSession } = require('../services/authSessions');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  console.error('JWT_SECRET environment variable is required!');
-  console.error('Generate one: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+  console.error('JWT_SECRET environment variable is required');
   process.exit(1);
 }
 
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: '未登录' });
-  }
-
-  const token = authHeader.split(' ')[1];
-
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Authentication required' });
+  const token = authHeader.slice('Bearer '.length);
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
+    req.user = jwt.verify(token, JWT_SECRET);
+    const account = queryOne('SELECT id, role, is_frozen FROM users WHERE id = ?', [req.user.id]);
+    if (!account) return res.status(401).json({ error: 'Account no longer exists' });
+    if (account.is_frozen) return res.status(403).json({ error: 'Account is frozen' });
+    if (!findActiveSession(account.id, req.user.sid, req.user.jti)) return res.status(401).json({ error: 'Session has expired or was revoked' });
+    req.user.role = account.role;
     next();
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: '登录已过期，请重新登录' });
-    }
-    return res.status(401).json({ error: '无效的认证令牌' });
+    return res.status(401).json({ error: error.name === 'TokenExpiredError' ? 'Session expired' : 'Invalid authentication token' });
   }
 }
 
 function requireAdmin(req, res, next) {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: '需要管理员权限' });
-  }
+  if (!req.user) return res.status(403).json({ error: 'Administrator permission required' });
+  const user = queryOne('SELECT role, is_frozen FROM users WHERE id = ?', [req.user.id]);
+  if (!user || user.is_frozen || user.role !== 'admin') return res.status(403).json({ error: 'Administrator permission required' });
   next();
 }
 

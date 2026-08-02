@@ -32,7 +32,7 @@ async function sendMail({ to, subject, html, text }) {
     return { mock: true };
   }
 
-  const from = process.env.SMTP_FROM || `"Todoist Clone" <${process.env.SMTP_USER}>`;
+  const from = process.env.SMTP_FROM || `"TaskFlow" <${process.env.SMTP_USER}>`;
 
   const info = await t.sendMail({
     from,
@@ -48,7 +48,7 @@ async function sendMail({ to, subject, html, text }) {
 async function sendWelcomeEmail(to, name) {
   return sendMail({
     to,
-    subject: '欢迎注册 Todoist Clone',
+    subject: 'Welcome to TaskFlow',
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #DC4C3E;">欢迎，${name}！</h2>
@@ -66,7 +66,7 @@ async function sendWelcomeEmail(to, name) {
 async function sendPasswordResetEmail(to, resetLink) {
   return sendMail({
     to,
-    subject: '密码重置 - Todoist Clone',
+    subject: 'TaskFlow password reset',
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #DC4C3E;">密码重置</h2>

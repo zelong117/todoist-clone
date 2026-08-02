@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, UserRound } from 'lucide-react';
+import AuthWorkflowPanel from '../components/AuthWorkflowPanel';
 import { useAuth } from '../contexts/AuthContext';
 
 interface RegisterPageProps {
@@ -12,210 +14,89 @@ export default function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!name.trim()) {
-      newErrors.name = '请输入用户名';
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError('');
+    if (!name.trim() || !email.trim() || !password) {
+      setError('Complete each field to create your workspace.');
+      return;
     }
-    
-    if (!email) {
-      newErrors.email = '请输入邮箱';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = '邮箱格式不正确';
+    if (password.length < 8) {
+      setError('Use a password with at least 8 characters.');
+      return;
     }
-    
-    if (!password) {
-      newErrors.password = '请输入密码';
-    } else if (password.length < 6) {
-      newErrors.password = '密码至少6位';
-    }
-    
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = '两次密码不一致';
+      setError('The passwords do not match.');
+      return;
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
 
     setLoading(true);
     try {
-      await register(email, name, password);
+      await register(email.trim(), name.trim(), password);
     } catch (err: any) {
-      setErrors({ submit: err.message || '注册失败' });
+      setError(err.message || 'Unable to create your account. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--accent)] flex items-center justify-center shadow-lg">
-            <span className="text-white text-3xl font-bold">T</span>
-          </div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Todoist Clone</h1>
-          <p className="text-[var(--text-secondary)] mt-2">创建账号，开始高效工作</p>
-        </div>
+    <main className="auth-shell">
+      <AuthWorkflowPanel />
+      <section className="auth-form-panel">
+        <div className="auth-form-wrap">
+          <p className="auth-eyebrow">CREATE YOUR WORKSPACE</p>
+          <h2 className="auth-form-title">Start with one clear next step.</h2>
+          <p className="auth-form-copy">Create a personal workspace now. Projects, focus time, and progress build from there.</p>
 
-        {/* 注册表单 */}
-        <div className="bg-[var(--bg-card)] rounded-2xl shadow-xl p-8 border border-[var(--border-color)]">
-          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-6">注册</h2>
-          
-          {errors.submit && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
-              {errors.submit}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* 用户名 */}
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                用户名
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="请输入用户名"
-                className={`w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all ${
-                  errors.name ? 'border-red-500' : 'border-[var(--border-color)]'
-                }`}
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-              )}
-            </div>
-
-            {/* 邮箱 */}
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                邮箱
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="请输入邮箱"
-                className={`w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all ${
-                  errors.email ? 'border-red-500' : 'border-[var(--border-color)]'
-                }`}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-              )}
-            </div>
-
-            {/* 密码 */}
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                密码
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="请输入密码（至少6位）"
-                  className={`w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all pr-12 ${
-                    errors.password ? 'border-red-500' : 'border-[var(--border-color)]'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
-                >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
+            {error && <div className="auth-form-error" role="alert">{error}</div>}
+            <label>
+              <span>Name</span>
+              <div className="auth-input-wrap">
+                <UserRound size={17} aria-hidden="true" />
+                <input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="How should we call you?" autoComplete="name" required />
+              </div>
+            </label>
+            <label>
+              <span>Email</span>
+              <div className="auth-input-wrap">
+                <Mail size={17} aria-hidden="true" />
+                <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" required />
+              </div>
+            </label>
+            <label>
+              <span>Password</span>
+              <div className="auth-input-wrap">
+                <LockKeyhole size={17} aria-hidden="true" />
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" autoComplete="new-password" required />
+                <button type="button" className="auth-icon-button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500">{errors.password}</p>
-              )}
-            </div>
-
-            {/* 确认密码 */}
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                确认密码
-              </label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="请再次输入密码"
-                className={`w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-[var(--border-color)]'
-                }`}
-              />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
-              )}
-            </div>
-
-            {/* 服务条款 */}
-            <label className="flex items-start gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 mt-0.5 rounded border-[var(--border-color)] text-[var(--accent)] focus:ring-[var(--accent)]" required />
-              <span className="text-sm text-[var(--text-secondary)]">
-                我已阅读并同意{' '}
-                <button type="button" className="text-[var(--accent)] hover:underline">服务条款</button>
-                {' '}和{' '}
-                <button type="button" className="text-[var(--accent)] hover:underline">隐私政策</button>
-              </span>
             </label>
-
-            {/* 注册按钮 */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-[var(--accent)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? '注册中...' : '创建账号'}
+            <label>
+              <span>Confirm password</span>
+              <div className="auth-input-wrap">
+                <LockKeyhole size={17} aria-hidden="true" />
+                <input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Repeat your password" autoComplete="new-password" required />
+              </div>
+            </label>
+            <button type="submit" className="auth-submit" disabled={loading}>
+              <span>{loading ? 'Creating workspace...' : 'Create workspace'}</span>
+              <ArrowRight size={18} aria-hidden="true" />
             </button>
           </form>
 
-          {/* 分割线 */}
-          <div className="my-6 flex items-center gap-4">
-            <div className="flex-1 h-px bg-[var(--border-color)]"></div>
-            <span className="text-sm text-[var(--text-tertiary)]">或</span>
-            <div className="flex-1 h-px bg-[var(--border-color)]"></div>
-          </div>
-
-          {/* 社交注册 */}
-          <div className="space-y-3">
-            <button className="w-full py-3 px-4 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl font-medium hover:bg-[var(--bg-hover)] transition-colors flex items-center justify-center gap-2">
-              <span>🌐</span>
-              <span>使用 Google 注册</span>
-            </button>
-            <button className="w-full py-3 px-4 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl font-medium hover:bg-[var(--bg-hover)] transition-colors flex items-center justify-center gap-2">
-              <span>💬</span>
-              <span>使用微信注册</span>
-            </button>
-          </div>
-
-          {/* 登录链接 */}
-          <p className="mt-6 text-center text-sm text-[var(--text-secondary)]">
-            已有账号？
-            <button
-              onClick={onSwitchToLogin}
-              className="ml-1 text-[var(--accent)] hover:underline font-medium"
-            >
-              立即登录
-            </button>
+          <p className="auth-switch-copy">
+            Already have an account?
+            <button type="button" onClick={onSwitchToLogin}>Sign in</button>
           </p>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

@@ -5,6 +5,8 @@ import { formatTimer, isOverdue } from './utils';
 import { useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import MarketingPage from './pages/MarketingPage';
+import LegalPage from './pages/LegalPage';
 import Sidebar from './components/Sidebar';
 import TaskList from './components/TaskList';
 import TaskDetail from './components/TaskDetail';
@@ -17,21 +19,30 @@ import CalendarView from './components/CalendarView';
 import StatsView from './components/StatsView';
 import FilterPage from './components/FilterPage';
 import ActivityLog from './components/ActivityLog';
-import Admin from './pages/Admin';
+import AdminConsole from './components/AdminConsole';
+import NotificationCenter from './components/NotificationCenter';
+import BillingCenter from './components/BillingCenter';
+import TeamWorkspace from './components/TeamWorkspace';
+import AccountCenter from './components/AccountCenter';
+import OfflineQueueCenter from './components/OfflineQueueCenter';
+import MobileBottomNav from './components/MobileBottomNav';
 import AIAssistant from './components/AIAssistant';
 import DraggableWidget from './components/DraggableWidget';
 import SharePanel from './components/SharePanel';
 import QuickCapture from './components/QuickCapture';
+import CommandPalette from './components/CommandPalette';
 import ViewOptionsMenu, { DEFAULT_VIEW_OPTIONS } from './components/ViewOptionsMenu';
 import type { ViewOptions } from './components/ViewOptionsMenu';
 import { initClickSounds } from './utils/sounds';
 import { parseRoute, pathForTask, pathForView } from './lib/router';
+import { flushTaskQueue } from './api';
+import { connectRealtime } from './lib/realtime';
 import { Inbox, CalendarDays, CalendarClock, LayoutDashboard, Users, MessageSquare, MoreHorizontal, Activity, Pause, Play, Settings, Filter, Menu } from 'lucide-react';
 import { SkeletonTask } from './components/Skeleton';
 import { EmptyState } from './components/EmptyState';
 
 export default function App() {
-  const { user, loading, logout } = useAuth();
+  const { user, token, loading, logout } = useAuth();
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   
   const {
@@ -58,11 +69,13 @@ export default function App() {
   } = useStore();
 
   const initialRoute = useMemo(() => parseRoute(window.location.pathname), []);
+  const [locationPath, setLocationPath] = useState(window.location.pathname);
   const [currentView, setCurrentView] = useState<string>(initialRoute.view);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(initialRoute.sectionId);
   const [showSharePanel, setShowSharePanel] = useState(false);
   const [showQuickCapture, setShowQuickCapture] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showPomodoroSettings, setShowPomodoroSettings] = useState(false);
   const [viewOptions, setViewOptions] = useState<ViewOptions>(DEFAULT_VIEW_OPTIONS);
@@ -80,8 +93,26 @@ export default function App() {
   }, [user, fetchData, initialRoute.taskId, setSelectedTaskId]);
 
   useEffect(() => {
+    if (!user) return;
+    const synchronizeQueuedTasks = () => {
+      flushTaskQueue(user.id)
+        .then(() => fetchData())
+        .catch((error) => console.warn('Queued task synchronization deferred:', error));
+    };
+    synchronizeQueuedTasks();
+    window.addEventListener('online', synchronizeQueuedTasks);
+    return () => window.removeEventListener('online', synchronizeQueuedTasks);
+  }, [user, fetchData]);
+
+  useEffect(() => {
+    if (!user || !token) return;
+    return connectRealtime(token, () => { void fetchData(); });
+  }, [user, token, fetchData]);
+
+  useEffect(() => {
     const handlePopState = () => {
       const route = parseRoute(window.location.pathname);
+      setLocationPath(window.location.pathname);
       setCurrentView(route.view);
       setSelectedSectionId(route.sectionId);
       setSelectedTaskId(route.taskId);
@@ -126,10 +157,8 @@ export default function App() {
       setActiveView('filter');
     } else if (currentView === 'log') {
       setActiveView('filter');
-    } else if (currentView === 'admin') {
-      setActiveView('inbox'); // admin doesn't need active view sync
-    } else if (currentView === 'settings') {
-      setActiveView('inbox'); // settings doesn't need active view sync
+    } else if (['admin', 'settings', 'notifications', 'billing', 'teams', 'account', 'offline'].includes(currentView)) {
+      setActiveView('inbox');
     }
   }, [currentView, setActiveView, setSelectedProjectId]);
 
@@ -137,18 +166,19 @@ export default function App() {
   useEffect(() => {
     initClickSounds();
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setShowQuickAdd(true);
+        setShowCommandPalette(true);
       }
       if (e.key === 'Escape') {
-        if (showQuickAdd) setShowQuickAdd(false);
+        if (showCommandPalette) setShowCommandPalette(false);
+        else if (showQuickAdd) setShowQuickAdd(false);
         else if (selectedTaskId) setSelectedTaskId(null);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [showQuickAdd, selectedTaskId, setSelectedTaskId]);
+  }, [showCommandPalette, showQuickAdd, selectedTaskId, setSelectedTaskId]);
 
   // Pomodoro timer - runs in App.tsx so it never unmounts
   useEffect(() => {
@@ -413,7 +443,12 @@ export default function App() {
       case 'log':
         return []; // Activity log doesn't show task list
       case 'admin':
-        return []; // Admin view manages its own data
+      case 'notifications':
+      case 'billing':
+      case 'teams':
+      case 'account':
+      case 'offline':
+      return []; // Admin view manages its own data
       case 'settings':
         return []; // Settings view doesn't show tasks
       default:
@@ -496,6 +531,11 @@ export default function App() {
       case 'filters': return activeFilter.label || '过滤器 & 标签';
       case 'log': return '日志';
       case 'admin': return '管理后台';
+      case 'notifications': return '通知中心';
+      case 'billing': return '套餐与账单';
+      case 'teams': return '团队工作区';
+      case 'account': return '账户与安全';
+      case 'offline': return '离线同步';
       case 'settings': return '设置';
       default:
         if (currentProject) return currentProject.name;
@@ -522,16 +562,27 @@ export default function App() {
   }
 
   if (!user) {
-    if (authView === 'register') {
+    if (locationPath === '/') return <MarketingPage />;
+    if (locationPath === '/privacy') return <LegalPage document="privacy" />;
+    if (locationPath === '/terms') return <LegalPage document="terms" />;
+    if (locationPath === '/register' || authView === 'register') {
       return (
         <RegisterPage
-          onSwitchToLogin={() => setAuthView('login')}
+          onSwitchToLogin={() => {
+            setAuthView('login');
+            setLocationPath('/login');
+            window.history.pushState({}, '', '/login');
+          }}
         />
       );
     }
     return (
       <LoginPage
-        onSwitchToRegister={() => setAuthView('register')}
+        onSwitchToRegister={() => {
+          setAuthView('register');
+          setLocationPath('/register');
+          window.history.pushState({}, '', '/register');
+        }}
       />
     );
   }
@@ -549,7 +600,7 @@ export default function App() {
 
       {/* Sidebar - desktop always visible, mobile as overlay */}
       <div className="hidden md:block">
-        <Sidebar currentView={currentView} onViewChange={handleViewChange} onLogout={logout} onQuickCapture={() => setShowQuickCapture(true)} />
+        <Sidebar currentView={currentView} onViewChange={handleViewChange} onLogout={logout} onQuickCapture={() => setShowQuickCapture(true)} userName={user.name} userEmail={user.email} />
       </div>
 
       {/* Mobile sidebar overlay */}
@@ -557,13 +608,13 @@ export default function App() {
         <>
           <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden" onClick={() => setShowMobileMenu(false)} />
           <div className="fixed inset-y-0 left-0 z-50 md:hidden">
-            <Sidebar currentView={currentView} onViewChange={(view) => { handleViewChange(view); setShowMobileMenu(false); }} onLogout={logout} onQuickCapture={() => { setShowQuickCapture(true); setShowMobileMenu(false); }} />
+            <Sidebar currentView={currentView} onViewChange={(view) => { handleViewChange(view); setShowMobileMenu(false); }} onLogout={logout} onQuickCapture={() => { setShowQuickCapture(true); setShowMobileMenu(false); }} userName={user.name} userEmail={user.email} />
           </div>
         </>
       )}
 
       {/* Main Content */}
-      <main className={`flex-1 flex overflow-hidden ${darkClasses} transition-colors duration-200`}>
+      <main className={`flex-1 flex overflow-hidden pb-20 md:pb-0 ${darkClasses} transition-colors duration-200`}>
         {/* Task List / View Content */}
         <div className="flex-1 overflow-y-auto">
           {/* View Header */}
@@ -731,7 +782,17 @@ export default function App() {
             ) : currentView === 'log' ? (
               <ActivityLog />
             ) : currentView === 'admin' ? (
-              <Admin />
+              <AdminConsole />
+            ) : currentView === 'notifications' ? (
+              <NotificationCenter />
+            ) : currentView === 'billing' ? (
+              <BillingCenter />
+            ) : currentView === 'teams' ? (
+              <TeamWorkspace />
+            ) : currentView === 'account' ? (
+              <AccountCenter />
+            ) : currentView === 'offline' ? (
+              <OfflineQueueCenter />
             ) : currentView === 'settings' ? (
               <SettingsPage />
             ) : isTaskListView ? (
@@ -787,6 +848,12 @@ export default function App() {
 
       </main>
 
+      <MobileBottomNav
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        onQuickAdd={() => setShowQuickAdd(true)}
+      />
+
       {/* Task Detail Modal (centered overlay) */}
       {selectedTaskId && (
         <TaskDetail
@@ -803,6 +870,16 @@ export default function App() {
             onClose={() => setShowQuickAdd(false)}
           />
         </div>
+      )}
+
+      {showCommandPalette && (
+        <CommandPalette
+          tasks={tasks}
+          onClose={() => setShowCommandPalette(false)}
+          onOpenTask={setSelectedTaskId}
+          onQuickAdd={() => setShowQuickAdd(true)}
+          onNavigate={handleViewChange}
+        />
       )}
 
       {/* Pomodoro Settings Modal */}

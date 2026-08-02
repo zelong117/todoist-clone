@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useStore } from '../store';
 import { showTaskOperationError } from '../utils';
+import { aiAPI } from '../api';
 import { Mic, MicOff, Image as ImageIcon, X, Sparkles, CheckSquare, Plus } from 'lucide-react';
 
 interface QuickCaptureProps {
@@ -12,6 +13,13 @@ interface ExtractedTask {
   priority: string;
   dueDate: string;
   selected: boolean;
+}
+
+function toTaskPriority(value: string): 1 | 2 | 3 | 4 {
+  if (value === 'urgent') return 1;
+  if (value === 'high') return 2;
+  if (value === 'low') return 4;
+  return 3;
 }
 
 export default function QuickCapture({ onClose }: QuickCaptureProps) {
@@ -125,22 +133,7 @@ export default function QuickCapture({ onClose }: QuickCaptureProps) {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const apiUrl = `${window.location.protocol}//${window.location.hostname}:3001/api/ai/extract-tasks`;
-
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          text: transcript,
-          image: imageData,
-        }),
-      });
-
-      const data = await res.json();
+      const data = await aiAPI.extractTasks(transcript, imageData);
 
       if (data.tasks && data.tasks.length > 0) {
         setExtractedTasks(data.tasks.map((t: any) => ({
@@ -173,7 +166,7 @@ export default function QuickCapture({ onClose }: QuickCaptureProps) {
         description: '',
         projectId: targetProject,
         sectionId: targetSection,
-        priority: task.priority as any,
+        priority: toTaskPriority(task.priority),
         dueDate: task.dueDate || null,
         labels: [],
         pomodoroCount: 1,

@@ -36,7 +36,7 @@ export function parseRoute(pathname: string): AppRoute {
   }
 
   const view = parts[0] === 'app' && parts[1] ? parts[1] : 'inbox';
-  const supported = new Set(['inbox', 'today', 'upcoming', 'filters', 'log', 'stats', 'settings']);
+  const supported = new Set(['inbox', 'today', 'upcoming', 'filters', 'log', 'stats', 'settings', 'notifications', 'billing', 'teams', 'account', 'offline']);
   return {
     view: supported.has(view) ? view : 'inbox',
     projectId: null,
